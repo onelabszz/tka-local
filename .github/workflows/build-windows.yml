@@ -81,14 +81,14 @@ jobs:
         shell: pwsh
         run: |
           $ver = "${{ steps.version.outputs.value }}"
-          # Cari iscc.exe (compiler Inno Setup)
           $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          # Compile script, kirim versi sebagai parameter
+          
+          # Compile script dengan parameter versi
           & $iscc installer.iss /DMyAppVersion=$ver
           
-          # Pindahkan hasil .exe ke root agar mudah di-upload
-          Move-Item Output\TKA-Setup-v$ver.exe .\
-          Write-Host "Installer created: TKA-Setup-v$ver.exe"
+          # Perbaikan: nama file hasil compile sudah TKA-Setup-v17.7.exe
+          Move-Item Output\TKA-Setup-$ver.exe .\
+          Write-Host "Installer created: TKA-Setup-$ver.exe"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -113,7 +113,7 @@ jobs:
             Aplikasi ujian lokal untuk sekolah. Berjalan di Windows tanpa instalasi Node.js.
 
             ### Cara Pakai
-            **Opsi 1 (Installer):** Download `TKA-Setup-v${{ steps.version.outputs.value }}.exe`, klik 2x, lalu ikuti wizard instalasi.
+            **Opsi 1 (Installer):** Download `TKA-Setup-${{ steps.version.outputs.value }}.exe`, klik 2x, lalu ikuti wizard instalasi.
             **Opsi 2 (Portable):** Download ZIP, ekstrak ke folder (misal `D:\TKA`), lalu klik 2x `start.bat`.
 
             © 2026 Ekwan Nugroho · Wonogiri

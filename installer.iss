@@ -5,19 +5,25 @@
 #endif
 #define MyAppPublisher "Ekwan Nugroho"
 #define MyAppURL "https://github.com/onelabszz/tka-local"
+#define MyAppExeName "start.bat"
 
 [Setup]
-; JANGAN gunakan C:\Program Files agar tidak kena blokir izin tulis
+AppId={{TKA-LOCAL-HOST-2026}}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
 DefaultDirName=C:\TKA
-DefaultGroupName=TKA Local Host
+DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=Output
-OutputBaseFilename=TKA-Setup-v{#MyAppVersion}
+OutputBaseFilename=TKA-Setup-{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
-; SetupIconFile=app.ico ; Aktifkan ini jika punya file icon .ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -26,15 +32,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; Salin semua isi folder dist ke C:\TKA
 Source: "dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-; Buat shortcut di Start Menu
-Name: "{group}\TKA Local Host"; Filename: "{app}\start.bat"; WorkingDir: "{app}"
-; Buat shortcut di Desktop
-Name: "{autodesktop}\TKA Local Host"; Filename: "{app}\start.bat"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-; Jalankan aplikasi setelah instalasi selesai
-Filename: "{app}\start.bat"; Description: "{cm:LaunchProgram,TKA Local Host}"; Flags: shellexec postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: shellexec postinstall skipifsilent
