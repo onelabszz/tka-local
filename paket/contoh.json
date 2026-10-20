@@ -1,0 +1,35 @@
+{
+  "id": "contoh",
+  "judul": "Paket Contoh (PG, MCMA, BS)",
+  "mapel": "Campuran",
+  "durasiMenit": 15,
+  "acakMode": "per-tipe",
+  "soal": [
+    {
+      "id": "contoh-s1",
+      "tipe": "pg",
+      "q": "Ibu kota Indonesia adalah...",
+      "options": ["Bandung", "Jakarta", "Surabaya", "Medan"],
+      "key": 1,
+      "pembahasan": "Jakarta adalah ibu kota NKRI."
+    },
+    {
+      "id": "contoh-s2",
+      "tipe": "mcma",
+      "q": "Manakah yang termasuk bilangan prima? (Pilih lebih dari satu)",
+      "options": ["2", "4", "5", "9"],
+      "key": [0, 2],
+      "pembahasan": "2 dan 5 adalah bilangan prima. 4 dan 9 bukan."
+    },
+    {
+      "id": "contoh-s3",
+      "tipe": "bs",
+      "q": "Tentukan Benar atau Salah untuk pernyataan berikut:",
+      "pernyataan": [
+        { "teks": "Air membeku pada suhu 0 derajat Celsius", "key": true },
+        { "teks": "Planet terdekat dengan Matahari adalah Bumi", "key": false }
+      ],
+      "pembahasan": "Air membeku pada 0°C. Planet terdekat adalah Merkurius."
+    }
+  ]
+}
