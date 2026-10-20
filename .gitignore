@@ -12,7 +12,6 @@ tka.log
 tka.log.*
 
 # Paket soal (data pribadi sekolah)
-paket/*.json
 paket/gambar/*
 !paket/contoh-tka.json
 
@@ -33,3 +32,4 @@ dist/
 *.zip
 paket/contoh-tka.json
 paket/template-soal-3.json
+paket/contoh.json
