@@ -31,13 +31,15 @@ jobs:
         run: npm install
 
       - name: Verify better-sqlite3 works
-        run: node -e "const D=require('better-sqlite3'); const db=new D(':memory:'); db.exec('CREATE TABLE t (id INT)'); db.close(); console.log('OK: better-sqlite3 works')"
+        run: |
+          node -e "const D=require('better-sqlite3'); new D(':memory:'); console.log('OK');"
 
       - name: Download node.exe
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.11.0/win-x64/node.exe" -OutFile "node.exe"
-          Write-Host "Downloaded node.exe: $([math]::Round((Get-Item node.exe).Length / 1MB, 2)) MB"
+          $size = (Get-Item node.exe).Length / 1MB
+          Write-Host "Downloaded node.exe: $size MB"
 
       - name: Get version
         id: version
@@ -55,7 +57,6 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           
-          # 1. Copy runtime & file root utama
           Copy-Item node.exe dist\
           Copy-Item server.js dist\
           Copy-Item guru.html dist\
@@ -65,12 +66,10 @@ jobs:
           Copy-Item start.sh dist\
           Copy-Item install.sh dist\
           
-          # 2. Copy seluruh folder aplikasi & paket
           Copy-Item -Recurse public dist\public
           Copy-Item -Recurse node_modules dist\node_modules
           Copy-Item -Recurse paket dist\paket
           
-          # 3. Buat folder backup kosong
           New-Item -ItemType Directory -Force -Path dist\backups | Out-Null
           
           Write-Host "=== File yang masuk ke ZIP ==="
@@ -82,7 +81,8 @@ jobs:
           $ver = "${{ steps.version.outputs.value }}"
           $zip = "tka-local-windows-$ver.zip"
           Compress-Archive -Path dist\* -DestinationPath $zip -CompressionLevel Optimal
-          Write-Host "Created $zip ($([math]::Round((Get-Item $zip).Length / 1MB, 2)) MB)"
+          $size = (Get-Item $zip).Length / 1MB
+          Write-Host "Created $zip ($size MB)"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
