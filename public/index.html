@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#1e40af">
+<title>Try Out TKA</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/siswa.css">
+</head>
+<body>
+
+<!-- LOGIN UJIAN -->
+<div id="loginView" class="login-wrap">
+  <div class="login-card">
+    <div class="login-header">
+      <span class="login-kemen">Try Out TKA</span>
+      <h1 class="login-title">Tes Kemampuan Akademik</h1>
+    </div>
+    <p class="login-sub">Masukkan data untuk memulai ujian</p>
+    <form onsubmit="join(event)">
+      <div class="field"><label>Nama Lengkap</label><input id="name" type="text" placeholder="Nama sesuai absen" required autocomplete="name"></div>
+      <div class="field"><label>Kelas</label><input id="kelas" type="text" placeholder="Contoh: XI IPA 1" autocomplete="off"></div>
+      <div class="field"><label>Token Ujian</label><input id="token" class="token-input" type="text" placeholder="XXXXXXXX" autocapitalize="characters" required maxlength="8" autocomplete="off"></div>
+      <button type="submit" class="btn btn-primary" id="joinBtn">Mulai Ujian</button>
+      <p id="err" class="err-msg"></p>
+      <p id="resuming" class="hidden" style="text-align:center;color:var(--g500);margin-top:12px;font-size:13px;">Memuat sesi sebelumnya…</p>
+      <div style="text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid var(--g200)">
+        <a href="#" onclick="event.preventDefault();bukaLatihanMode()" style="color:var(--primary);font-weight:600;font-size:14px;text-decoration:none">🎓 Mode Latihan Mandiri →</a>
+      </div>
+      <p class="copyright">© 2026 Ekwan Nugroho · Wonogiri</p>
+    </form>
+  </div>
+</div>
+
+<!-- LATIHAN -->
+<div id="latihanView" class="login-wrap hidden">
+  <div class="login-card" style="max-width:520px">
+    <div class="login-header">
+      <span class="login-kemen">Mode Latihan</span>
+      <h1 class="login-title">Latihan Mandiri</h1>
+    </div>
+    <p class="login-sub">Pilih paket untuk berlatih. Tidak perlu token.</p>
+    <div id="latihanPaketList" style="margin-bottom:20px"><p style="text-align:center;color:var(--g500)">Memuat paket…</p></div>
+    <button class="btn btn-secondary" style="width:100%" onclick="kembaliKeLogin()">← Kembali ke Ujian</button>
+  </div>
+</div>
+
+<!-- EXAM -->
+<div id="examView" class="exam-shell hidden">
+  <header class="exam-header">
+    <div class="exam-header-left">
+      <div class="exam-logo" id="examBadge">TKA</div>
+      <div style="min-width:0">
+        <div class="exam-title" id="studentName">-</div>
+        <div class="exam-sub" id="studentClass">-</div>
+      </div>
+    </div>
+    <div class="exam-header-right">
+      <span id="syncIndicator" class="sync-indicator"></span>
+      <div class="exam-timer" id="timer"><span id="timerText">--:--</span></div>
+      <button class="btn-nav-toggle" onclick="toggleSidebar()">☰ Soal</button>
+    </div>
+  </header>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="exam-body">
+    <main class="exam-main">
+      <div class="exam-main-content">
+        <div id="questionContainer"></div>
+      </div>
+      <div class="exam-footer-nav">
+        <button class="btn-nav" id="prevBtn" onclick="prevQuestion()">← Sebelumnya</button>
+        <button class="btn-ragu" id="raguBtn" onclick="toggleRagu()">🚩 Ragu</button>
+        <button class="btn-nav-primary" id="nextBtn" onclick="nextQuestion()">Selanjutnya →</button>
+      </div>
+    </main>
+
+    <aside class="exam-sidebar" id="examSidebar">
+      <div class="sidebar-content">
+        <div class="sidebar-header">
+          <h3>Navigasi Soal</h3>
+          <button class="btn-close-sidebar" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div class="sidebar-progress">
+          <div class="sidebar-progress-stats">
+            <div><span class="stat-num" id="statDijawab">0</span><span class="stat-label">Dijawab</span></div>
+            <div><span class="stat-num" id="statRagu">0</span><span class="stat-label">Ragu</span></div>
+            <div><span class="stat-num" id="statKosong">0</span><span class="stat-label">Kosong</span></div>
+          </div>
+          <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="sidebarProgressFill"></div></div>
+          <div class="sidebar-progress-label" id="sidebarProgressLabel">0 dari 0 soal dijawab</div>
+        </div>
+        <div class="nav-legend">
+          <span><span class="dot dot-answered"></span>Dijawab</span>
+          <span><span class="dot dot-ragu"></span>Ragu</span>
+          <span><span class="dot dot-empty"></span>Kosong</span>
+          <span><span class="dot dot-current"></span>Saat ini</span>
+        </div>
+        <div class="nav-grid" id="navGrid"></div>
+      </div>
+      <div class="sidebar-footer">
+        <button class="btn-selesai" onclick="submitExam()">Selesai &amp; Kirim</button>
+      </div>
+    </aside>
+  </div>
+
+  <div id="navOverlay" class="nav-overlay hidden" onclick="toggleSidebar()"></div>
+</div>
+
+<!-- DONE -->
+<div id="doneView" class="done-wrap hidden">
+  <div class="done-card">
+    <div class="done-icon">✓</div>
+    <h1 class="done-title" id="doneTitle">Ujian Selesai</h1>
+    <div class="done-score">
+      <div class="score-label">Skor Kamu</div>
+      <div class="score-value" id="result">-</div>
+    </div>
+    <p id="late" class="done-late"></p>
+    <button class="btn btn-primary" onclick="bukaPembahasan()" style="margin-bottom:8px;">Lihat Pembahasan</button>
+    <button class="btn btn-secondary" onclick="window.location.reload()" style="width:100%;">Selesai</button>
+    <p id="reviewInfo" class="err-msg"></p>
+  </div>
+</div>
+
+<!-- REVIEW -->
+<div id="reviewView" class="hidden">
+  <header class="review-header">
+    <button class="btn btn-secondary" style="color:var(--g900);" onclick="window.location.reload()">Tutup</button>
+    <h1 class="review-title">Pembahasan</h1>
+    <div style="width:80px"></div>
+  </header>
+  <p id="reviewWho" class="review-who"></p>
+  <div id="reviewList" class="review-list"></div>
+  <p class="review-copyright">© 2026 Ekwan Nugroho · Wonogiri · Try Out TKA</p>
+</div>
+
+<script src="/js/siswa-app.js"></script>
+</body>
+</html>

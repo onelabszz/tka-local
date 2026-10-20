@@ -1,0 +1,50 @@
+============================================================
+  TKA LOCAL HOST — CARA PAKAI
+============================================================
+
+1. Extract ZIP ini ke folder apa saja (misal: D:\TKA)
+   JANGAN extract ke folder yang ada spasinya.
+   BURUK: C:\Program Files\TKA
+   BAIK : D:\TKA  atau  C:\TKA
+
+2. Double-click "start.bat"
+
+3. Akan muncul:
+   - Window hitam berisi log server
+   - Browser otomatis buka ke http://localhost:3000/guru
+
+4. Kalau muncul peringatan Windows Firewall:
+   - Klik "Allow access"
+   - Centang "Private networks"
+   - Klik "Allow access"
+
+5. Ikuti panduan di dashboard guru untuk memulai ujian.
+
+============================================================
+  PENTING
+============================================================
+
+- JANGAN tutup window hitam selama ujian berlangsung
+- Siswa harus terhubung ke Wi-Fi yang sama dengan laptop ini
+- Untuk menghentikan: tutup window hitam, atau klik
+  "Matikan Server" di dashboard guru
+- Data ujian tersimpan di file "tka.db" — JANGAN dihapus
+- Untuk backup: dashboard guru → tombol "Backup ZIP"
+
+============================================================
+  KEBUTUHAN
+============================================================
+
+- Windows 10 atau 11 (64-bit)
+- RAM minimal 4 GB
+- Folder dengan izin tulis (bukan C:\Program Files)
+- File node.exe sudah disertakan, TIDAK perlu install Node.js
+
+============================================================
+  BUTUH BANTUAN?
+============================================================
+
+Dashboard guru → menu "Bantuan" → "Panduan Lengkap"
+atau buka: http://localhost:3000/panduan
+
+© 2026 Ekwan Nugroho - Wonogiri
