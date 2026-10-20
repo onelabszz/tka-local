@@ -38,8 +38,6 @@ jobs:
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.11.0/win-x64/node.exe" -OutFile "node.exe"
-          $size = (Get-Item node.exe).Length / 1MB
-          Write-Host "Downloaded node.exe: $size MB"
 
       - name: Get version
         id: version
@@ -56,7 +54,6 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          
           Copy-Item node.exe dist\
           Copy-Item server.js dist\
           Copy-Item guru.html dist\
@@ -65,15 +62,10 @@ jobs:
           Copy-Item BACA-SAYA.txt dist\
           Copy-Item start.sh dist\
           Copy-Item install.sh dist\
-          
           Copy-Item -Recurse public dist\public
           Copy-Item -Recurse node_modules dist\node_modules
           Copy-Item -Recurse paket dist\paket
-          
           New-Item -ItemType Directory -Force -Path dist\backups | Out-Null
-          
-          Write-Host "=== File yang masuk ke ZIP ==="
-          Get-ChildItem dist | Format-Table Name, Length -AutoSize
 
       - name: Create ZIP
         shell: pwsh
@@ -81,21 +73,39 @@ jobs:
           $ver = "${{ steps.version.outputs.value }}"
           $zip = "tka-local-windows-$ver.zip"
           Compress-Archive -Path dist\* -DestinationPath $zip -CompressionLevel Optimal
-          $size = (Get-Item $zip).Length / 1MB
-          Write-Host "Created $zip ($size MB)"
 
-      - name: Upload artifact
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build EXE Installer
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.version.outputs.value }}"
+          # Cari iscc.exe (compiler Inno Setup)
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          # Compile script, kirim versi sebagai parameter
+          & $iscc installer.iss /DMyAppVersion=$ver
+          
+          # Pindahkan hasil .exe ke root agar mudah di-upload
+          Move-Item Output\TKA-Setup-v$ver.exe .\
+          Write-Host "Installer created: TKA-Setup-v$ver.exe"
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tka-local-windows
-          path: tka-local-windows-*.zip
+          path: |
+            tka-local-windows-*.zip
+            TKA-Setup-*.exe
           retention-days: 30
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: tka-local-windows-*.zip
+          files: |
+            tka-local-windows-*.zip
+            TKA-Setup-*.exe
           name: TKA Local Host ${{ steps.version.outputs.value }}
           body: |
             ## TKA Local Host ${{ steps.version.outputs.value }}
@@ -103,10 +113,8 @@ jobs:
             Aplikasi ujian lokal untuk sekolah. Berjalan di Windows tanpa instalasi Node.js.
 
             ### Cara Pakai
-            1. Download ZIP
-            2. Extract ke folder (misal `D:\TKA`)
-            3. Double-click `start.bat`
-            4. Ikuti `BACA-SAYA.txt`
+            **Opsi 1 (Installer):** Download `TKA-Setup-v${{ steps.version.outputs.value }}.exe`, klik 2x, lalu ikuti wizard instalasi.
+            **Opsi 2 (Portable):** Download ZIP, ekstrak ke folder (misal `D:\TKA`), lalu klik 2x `start.bat`.
 
             © 2026 Ekwan Nugroho · Wonogiri
         env:
