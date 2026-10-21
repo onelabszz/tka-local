@@ -117,7 +117,7 @@ footer.doc-footer .brand { color: var(--primary); font-weight: 700; font-size: 1
     <div class="sub">Aplikasi Try Out TKA — Local Host</div>
   </div>
   <div class="meta">
-    <b>Versi 16</b><br>
+    <b>Versi 17+</b><br>
     © 2026 Ekwan Nugroho<br>
     Wonogiri
     <br>
@@ -129,10 +129,11 @@ footer.doc-footer .brand { color: var(--primary); font-weight: 700; font-size: 1
   <h3>Daftar Isi</h3>
   <ol>
     <li><a href="#tentang">Tentang Aplikasi</a></li>
-    <li><a href="#setup">Setup & Menjalankan</a></li>
-    <li><a href="#paket">Membuat Paket Soal</a></li>
+    <li><a href="#setup">Instalasi & Menjalankan</a></li>
+    <li><a href="#paket">Membuat & Mengedit Paket Soal</a></li>
     <li><a href="#siswa-data">Mengelola Data Siswa</a></li>
     <li><a href="#ujian">Menjalankan Ujian</a></li>
+    <li><a href="#latihan">Mode Latihan Mandiri</a></li>
     <li><a href="#pantau">Memantau & Analisis</a></li>
     <li><a href="#backup">Backup & Pemulihan</a></li>
     <li><a href="#siswa-cara">Panduan untuk Siswa</a></li>
@@ -142,225 +143,205 @@ footer.doc-footer .brand { color: var(--primary); font-weight: 700; font-size: 1
 
 <section id="tentang">
   <h2>1. Tentang Aplikasi</h2>
-  <p>Try Out TKA Local Host adalah aplikasi ujian berbasis web yang berjalan <b>sepenuhnya di laptop guru</b> tanpa memerlukan internet. Siswa terhubung melalui Wi-Fi lokal (hotspot laptop atau Wi-Fi sekolah) dan mengerjakan soal dari browser HP masing-masing.</p>
+  <p>Try Out TKA Local Host adalah aplikasi ujian berbasis web yang berjalan <b>sepenuhnya di laptop guru</b> tanpa memerlukan koneksi internet. Siswa terhubung melalui Wi-Fi lokal (hotspot laptop atau Wi-Fi sekolah) dan mengerjakan soal dari browser HP/laptop masing-masing.</p>
   <table>
     <tr><th>Fitur</th><th>Keterangan</th></tr>
-    <tr><td>Tipe soal</td><td>PG (satu jawaban), MCMA (pilihan ganda kompleks), BS (Benar/Salah)</td></tr>
-    <tr><td>Gambar</td><td>Dukung gambar di soal, opsi jawaban, dan pembahasan</td></tr>
-    <tr><td>Mode acak</td><td>Per tipe, acak total, atau tidak diacak</td></tr>
-    <tr><td>Anti-cheat</td><td>Acak urutan, log pindah tab, blokir copy/paste</td></tr>
-    <tr><td>Auto-save</td><td>Jawaban tersimpan otomatis, tahan offline</td></tr>
-    <tr><td>Analisis</td><td>Statistik kelas, p-value, daya beda, distraktor</td></tr>
-    <tr><td>Latihan mandiri</td><td>Siswa bisa berlatih tanpa token</td></tr>
+    <tr><td>3 Tipe Soal</td><td>PG (satu jawaban), MCMA (pilihan ganda kompleks), Benar/Salah (BS).</td></tr>
+    <tr><td>Gambar</td><td>Dukung gambar di teks soal, opsi jawaban, dan pembahasan.</td></tr>
+    <tr><td>Mode Acak</td><td>Per tipe (PG→MCMA→BS), Acak total, atau Tidak diacak.</td></tr>
+    <tr><td>Editor UI</td><td>Edit paket soal secara visual tanpa harus mengedit file CSV/JSON.</td></tr>
+    <tr><td>Anti-cheat</td><td>Acak urutan, log pindah tab, blokir copy/paste.</td></tr>
+    <tr><td>Auto-save</td><td>Jawaban tersimpan otomatis, tahan offline (jaringan putus).</td></tr>
+    <tr><td>Analisis</td><td>Statistik kelas, ranking, p-value, daya beda, distraktor.</td></tr>
+    <tr><td>Latihan Mandiri</td><td>Siswa bisa berlatih tanpa token dan langsung melihat pembahasan.</td></tr>
   </table>
 </section>
 
 <section id="setup">
-  <h2>2. Setup & Menjalankan</h2>
-  <h3>Pertama kali</h3>
+  <h2>2. Instalasi & Menjalankan (Windows)</h2>
+  <h3>Pilihan A: Menggunakan Installer (.exe) — Disarankan</h3>
   <ol>
-    <li>Buka terminal, masuk ke folder aplikasi:
-      <pre><code>cd ~/tka-local</code></pre>
-    </li>
-    <li>Jalankan setup sekali saja:
-      <pre><code>chmod +x install.sh start.sh
-./install.sh</code></pre>
-    </li>
-    <li>Ikon <b>TKA Local Host</b> muncul di desktop dan menu aplikasi.</li>
+    <li>Unduh file <code>TKA-Setup-v...exe</code> dari link yang diberikan guru/admin.</li>
+    <li>Klik dua kali file tersebut.</li>
+    <li>Jika muncul peringatan biru <b>"Windows protected your PC"</b>, klik <b>More info</b> lalu <b>Run anyway</b>. (Ini normal karena aplikasi belum memiliki sertifikat digital berbayar).</li>
+    <li>Ikuti proses instalasi (Next > Next > Install). Aplikasi akan terpasang di <code>C:\TKA</code>.</li>
+    <li>Ikon <b>TKA Local Host</b> akan muncul di Desktop. Klik ikon tersebut untuk menjalankan.</li>
   </ol>
 
-  <h3>Setiap hari</h3>
+  <h3>Pilihan B: Versi Portable (.zip)</h3>
   <ol>
-    <li>Klik ikon <b>TKA Local Host</b> di desktop.</li>
-    <li>Tunggu 2–3 detik — browser otomatis terbuka ke dashboard guru.</li>
-    <li>Terminal tidak perlu dibuka.</li>
+    <li>Ekstrak file <code>tka-local-windows-v...zip</code> ke folder yang mudah diakses, misalnya <code>D:\TKA</code>.</li>
+    <li>Buka folder tersebut, klik dua kali file <b><code>start.bat</code></b>.</li>
   </ol>
 
   <div class="callout ok">
-    <b>Tips:</b> untuk menghentikan server, klik tombol <b>Matikan Server</b> di dashboard, atau tutup laptop seperti biasa.
+    <b>Catatan Firewall:</b> Saat pertama kali dijalankan, Windows mungkin memunculkan kotak dialog Firewall. Klik <b>Allow access</b> dan pastikan centang <b>Private networks</b> terpilih. Jika tidak diizinkan, HP siswa tidak akan bisa terhubung.
   </div>
 </section>
 
 <section id="paket">
-  <h2>3. Membuat Paket Soal</h2>
-  <h3>Format CSV</h3>
-  <p>Buat di Excel/LibreOffice, simpan sebagai <b>CSV UTF-8</b>. Kolom:</p>
+  <h2>3. Membuat & Mengedit Paket Soal</h2>
+  <p>Ada dua cara membuat paket soal: Import dari CSV (cepat untuk banyak soal) atau Edit langsung via UI (mudah untuk tambah gambar).</p>
+
+  <h3>Menggunakan Editor UI (Direkomendasikan)</h3>
+  <ol>
+    <li>Buka dashboard guru → menu <b>Paket Soal</b>.</li>
+    <li>Klik tombol <b>Edit</b> pada paket yang sudah ada (atau import CSV dulu untuk paket baru).</li>
+    <li>Di halaman editor, Anda bisa menambah soal, mengubah teks, memilih tipe soal (PG/MCMA/BS), dan mengatur kunci jawaban.</li>
+    <li>Untuk menambah gambar, klik tombol <b>📷 Pilih Gambar</b>. Anda bisa meng-upload file baru, atau melakukan <i>Copy-Paste</i> (Ctrl+V) screenshot langsung dari clipboard.</li>
+    <li>Klik <b>Simpan</b> jika sudah selesai.</li>
+  </ol>
+
+  <h3>Menggunakan Import CSV</h3>
+  <p>Buat file di Excel/LibreOffice, simpan sebagai <b>CSV UTF-8</b>. Format kolom:</p>
   <pre><code>no,tipe,soal,img,opsi_a,opsi_b,opsi_c,opsi_d,kunci,pernyataan_1,kunci_1,pernyataan_2,kunci_2,pembahasan</code></pre>
   <table>
-    <tr><th>Tipe</th><th>Isi kolom</th></tr>
-    <tr><td><code>pg</code></td><td><code>opsi_a</code>–<code>opsi_d</code>, <code>kunci</code> = satu huruf (a/b/c/d)</td></tr>
-    <tr><td><code>mcma</code></td><td><code>opsi_a</code>–<code>opsi_d</code>, <code>kunci</code> = dua huruf atau lebih (contoh: <code>ac</code>)</td></tr>
-    <tr><td><code>bs</code></td><td><code>pernyataan_1</code>–<code>pernyataan_5</code>, <code>kunci_1</code>–<code>kunci_5</code> = B/S</td></tr>
+    <tr><th>Tipe</th><th>Cara Mengisi Kolom</th></tr>
+    <tr><td><code>pg</code></td><td>Isi <code>opsi_a</code> s.d <code>opsi_d</code>. Kolom <code>kunci</code> = satu huruf (contoh: <code>b</code>).</td></tr>
+    <tr><td><code>mcma</code></td><td>Isi <code>opsi_a</code> s.d <code>opsi_d</code>. Kolom <code>kunci</code> = dua huruf atau lebih (contoh: <code>ac</code>).</td></tr>
+    <tr><td><code>bs</code></td><td>Isi <code>pernyataan_1</code> s.d <code>pernyataan_5</code>. Kolom <code>kunci_1</code> s.d <code>kunci_5</code> = B atau S.</td></tr>
   </table>
 
-  <h3>Langkah import</h3>
-  <ol>
-    <li>Buka dashboard guru → sidebar <b>Paket Soal</b></li>
-    <li>Isi ID paket, Judul, Mapel, Durasi</li>
-    <li>Pilih file CSV → klik <b>Import</b></li>
-    <li>Klik <b>Preview</b> untuk cek hasil</li>
-  </ol>
-
-  <h3>Menggunakan gambar</h3>
-  <ol>
-    <li>Upload gambar di sidebar <b>Gambar</b> — catat nama filenya</li>
-    <li>Di CSV, isi kolom <code>img</code> dengan nama file (contoh: <code>peta.png</code>)</li>
-    <li>Untuk gambar di opsi, isi kolom <code>opsi_a_img</code>, <code>opsi_b_img</code>, dst</li>
-  </ol>
-
-  <h3>Mode acak</h3>
-  <p>Di editor paket, pilih mode acak:</p>
+  <h3>Mode Acak Soal</h3>
+  <p>Di editor paket, Anda bisa memilih:</p>
   <ul>
-    <li><b>Acak per tipe</b> (default) — PG dulu (acak), lalu MCMA, lalu BS. Cocok untuk ujian formal.</li>
-    <li><b>Acak total</b> — semua soal dicampur. Cocok untuk kuis singkat.</li>
-    <li><b>Tidak diacak</b> — urutan sesuai CSV. Cocok untuk ujian bertahap mudah → sulit.</li>
+    <li><b>Acak per tipe:</b> PG dulu, lalu MCMA, lalu BS. Cocok untuk ujian formal.</li>
+    <li><b>Acak total:</b> Semua tipe soal dicampur. Cocok untuk kuis singkat.</li>
+    <li><b>Tidak diacak:</b> Urutan sesuai CSV (biasanya dari mudah ke sulit).</li>
   </ul>
   <div class="callout">
-    <b>Catatan:</b> urutan <i>opsi</i> jawaban tetap diacak per siswa di semua mode — anti-cheat tetap jalan.
+    Urutan <i>opsi jawaban</i> (A/B/C/D) selalu diacak secara otomatis per siswa untuk mencegah siswa saling mencontek.
   </div>
 </section>
 
 <section id="siswa-data">
   <h2>4. Mengelola Data Siswa</h2>
-  <p>Data siswa dipakai untuk <b>validasi login</b>: siswa hanya bisa join kalau namanya ada di daftar.</p>
-  <h3>Format CSV</h3>
-  <pre><code>nis,nama,kelas
-2301,Budi Santoso,XI IPA 1
-2302,Siti Nurhaliza,XI IPA 1</code></pre>
+  <p>Data siswa dipakai untuk <b>validasi login</b>: siswa hanya bisa masuk jika namanya terdaftar.</p>
   <ol>
-    <li>Buka sidebar <b>Data Siswa</b></li>
-    <li>Pilih mode import: <b>Tambah</b> atau <b>Ganti semua</b></li>
-    <li>Pilih file CSV → <b>Import</b></li>
-    <li>Aktifkan toggle <b>Wajib terdaftar</b></li>
+    <li>Buka menu <b>Data Siswa</b> di sidebar.</li>
+    <li>Pilih file CSV dengan format: <code>nis,nama,kelas</code> (NIS dan kelas opsional).</li>
+    <li>Pilih mode import: <b>Tambah</b> (menambahkan ke daftar) atau <b>Ganti semua</b>.</li>
+    <li>Klik <b>Import</b>.</li>
+    <li>Aktifkan toggle <b>Wajib terdaftar</b>. Jika aktif, siswa yang tidak ada di daftar akan ditolak saat login ujian.</li>
   </ol>
   <div class="callout warn">
-    <b>Penting:</b> nama siswa harus <b>persis sama</b> (huruf besar/kecil tidak masalah) dengan yang diketik saat login.
+    Pastikan nama siswa yang diketik saat login <b>persis sama</b> dengan yang ada di CSV (huruf besar/kecil tidak masalah, tapi ejaannya harus sama).
   </div>
 </section>
 
 <section id="ujian">
   <h2>5. Menjalankan Ujian</h2>
   <ol>
-    <li>Sidebar <b>Dashboard</b> → pilih paket</li>
-    <li>Klik <b>Mulai Ujian</b></li>
-    <li>Token muncul di kotak besar</li>
-    <li>Tampilkan <b>QR code</b> ke siswa (klik "Perbesar untuk Proyektor")</li>
-    <li>Siswa scan QR atau ketik token di HP</li>
+    <li>Buka menu <b>Dashboard</b>.</li>
+    <li>Pilih paket soal dari dropdown, lalu klik <b>Mulai Ujian</b>.</li>
+    <li>Token 8 digit akan muncul di layar. Tulis di papan tulis atau tampilkan.</li>
+    <li>Klik <b>Perbesar untuk Proyektor</b> pada QR Code agar siswa bisa scan langsung dari layar.</li>
+    <li>Siswa membuka HP, scan QR / ketik alamat IP, lalu login menggunakan nama dan token.</li>
+    <li>Pantau progress siswa di menu <b>Peserta</b>.</li>
   </ol>
-
-  <h3>Alur siswa</h3>
-  <ol>
-    <li>Buka halaman siswa → isi nama, kelas, token</li>
-    <li>Klik <b>Mulai Ujian</b></li>
-    <li>Kerjakan soal — setiap jawaban otomatis tersimpan</li>
-    <li>Tandai soal ragu dengan tombol <b>🚩 Ragu</b></li>
-    <li>Navigasi soal lewat grid di sidebar</li>
-    <li>Klik <b>Selesai & Kirim</b> di footer sidebar</li>
-  </ol>
-
   <div class="callout">
-    <b>Tips:</b> klik tombol Mulai Ujian <b>setelah siswa siap</b> — timer mulai berjalan untuk semua siswa saat itu juga.
+    <b>Penting:</b> Waktu ujian mulai berjalan untuk <b>semua siswa</b> begitu Anda mengklik "Mulai Ujian". Pastikan siswa sudah siap sebelum Anda mengkliknya.
   </div>
 
-  <h3>Setelah ujian</h3>
+  <h3>Akhir Ujian</h3>
   <ol>
-    <li>Klik <b>Rilis Pembahasan</b> agar siswa bisa melihat kunci dan pembahasan</li>
-    <li>Buka sidebar <b>Analisis</b> untuk melihat statistik kelas</li>
-    <li>Klik <b>Backup ZIP</b> untuk menyimpan semua data</li>
+    <li>Server akan otomatis mengumpulkan jawaban (auto-submit) saat waktu habis.</li>
+    <li>Klik tombol <b>Rilis Pembahasan</b> di Dashboard. Setelah ini, siswa bisa melihat kunci jawaban dan pembahasan di HP masing-masing.</li>
+    <li>Klik <b>Backup ZIP</b> untuk menyimpan data hasil ujian ke komputer.</li>
+  </ol>
+</section>
+
+<section id="latihan">
+  <h2>6. Mode Latihan Mandiri</h2>
+  <p>Fitur ini memungkinkan siswa berlatih soal di rumah tanpa harus menunggu guru membuat sesi ujian (tidak butuh token).</p>
+  <h3>Cara Guru Mengaktifkan:</h3>
+  <ol>
+    <li>Buka menu <b>Paket Soal</b>.</li>
+    <li>Pada baris paket yang diinginkan, klik tombol abu-abu <b>Latihan: OFF</b> hingga berubah menjadi hijau <b>Latihan: ON</b>.</li>
+  </ol>
+  <h3>Cara Siswa Mengakses:</h3>
+  <ol>
+    <li>Buka halaman utama TKA di HP.</li>
+    <li>Di bawah tombol login, klik tautan <b>🎓 Mode Latihan Mandiri</b>.</li>
+    <li>Pilih paket, isi nama, dan langsung kerjakan.</li>
+    <li>Setelah selesai submit, pembahasan akan langsung terbuka.</li>
   </ol>
 </section>
 
 <section id="pantau">
-  <h2>6. Memantau & Analisis</h2>
-  <h3>Selama ujian</h3>
-  <p>Sidebar <b>Peserta</b> menampilkan:</p>
+  <h2>7. Memantau & Analisis</h2>
+  <h3>Selama Ujian</h3>
+  <p>Di menu <b>Peserta</b>, Anda bisa melihat siapa yang sudah selesai, sedang mengerjakan, dan berapa soal yang sudah dijawab. Anda juga bisa melihat jumlah pelanggaran (jika siswa pindah tab/aplikasi).</p>
+  
+  <h3>Analisis Butir Soal</h3>
+  <p>Buka menu <b>Analisis</b>, lalu klik <b>Muat Analisis</b> setelah ujian selesai. Anda akan mendapatkan:</p>
   <ul>
-    <li>Nama, kelas, progress (dijawab/total)</li>
-    <li>Status: Mengerjakan / Selesai / Auto-submit</li>
-    <li>Jumlah pelanggaran (pindah tab)</li>
-    <li>Tombol <b>Hapus</b> untuk siswa yang salah masuk</li>
+    <li><b>Statistik Kelas:</b> Nilai rata-rata, tertinggi, terendah, dan standar deviasi.</li>
+    <li><b>Ranking Peserta:</b> Urutan nilai siswa dari tertinggi.</li>
+    <li><b>Analisis Soal:</b> Tingkat kesulitan soal (p-value) dan daya beda (D-index). Berguna untuk mengevaluasi kualitas soal.</li>
   </ul>
-
-  <h3>Analisis butir soal</h3>
-  <table>
-    <tr><th>Metrik</th><th>Arti</th></tr>
-    <tr><td>p-value</td><td>Proporsi siswa yang benar. &gt; 0.7 = mudah, &lt; 0.3 = sulit</td></tr>
-    <tr><td>D-index</td><td>Daya beda. &gt; 0.4 = sangat baik, &lt; 0.2 = perlu revisi</td></tr>
-    <tr><td>Distraktor</td><td>Sebaran pilihan salah. Yang tidak pernah dipilih = tidak berfungsi</td></tr>
-    <tr><td>Flag</td><td>Otomatis menandai soal bermasalah</td></tr>
-  </table>
-  <div class="callout warn">
-    <b>Butuh minimal 8 peserta</b> untuk analisis daya beda yang bermakna.
-  </div>
 </section>
 
 <section id="backup">
-  <h2>7. Backup & Pemulihan</h2>
-  <h3>Backup otomatis</h3>
-  <p>Setiap klik <b>Mulai Ujian</b>, sistem otomatis menyimpan salinan database ke folder <code>backups/</code>. Maksimal 14 file terakhir disimpan.</p>
-
-  <h3>Backup manual</h3>
-  <p>Klik <b>Backup ZIP</b> di dashboard → file <code>tka-backup-YYYY-MM-DD.zip</code> terunduh.</p>
-  <p>Isi ZIP:</p>
-  <pre><code>tka.db              ← database
-paket/              ← semua paket soal
-paket/gambar/       ← semua gambar soal</code></pre>
-
-  <h3>Pemulihan</h3>
+  <h2>8. Backup & Pemulihan</h2>
+  <p>Setiap kali Anda menekan <b>Mulai Ujian</b>, sistem otomatis membuat backup database ke folder <code>backups/</code> di laptop.</p>
+  <h3>Backup Manual</h3>
+  <p>Klik tombol <b>Backup ZIP</b> di Dashboard. File <code>.zip</code> akan terunduh. Simpan file ini di flashdisk atau Google Drive sebagai cadangan. ZIP berisi:</p>
+  <ul>
+    <li><code>tka.db</code> (Database siswa, jawaban, nilai)</li>
+    <li><code>paket/</code> (Semua soal)</li>
+    <li><code>paket/gambar/</code> (Semua gambar soal)</li>
+  </ul>
+  <h3>Pemulihan (Restore)</h3>
   <ol>
-    <li>Matikan server</li>
-    <li>Extract isi ZIP ke folder <code>~/tka-local/</code> (timpa file lama)</li>
-    <li>Jalankan server lagi</li>
+    <li>Matikan aplikasi TKA.</li>
+    <li>Ekstrak file ZIP backup.</li>
+    <li>Timpa file/folder di direktori instalasi (misal <code>C:\TKA</code>) dengan file dari ZIP.</li>
+    <li>Jalankan aplikasi kembali.</li>
   </ol>
 </section>
 
 <section id="siswa-cara">
-  <h2>8. Panduan untuk Siswa</h2>
-  <h3>Login ujian</h3>
+  <h2>9. Panduan untuk Siswa</h2>
+  <h3>Login Ujian</h3>
   <ol>
-    <li>Scan QR dari layar guru, atau buka alamat yang tampil di proyektor</li>
-    <li>Isi nama lengkap, kelas, dan token dari guru</li>
-    <li>Klik <b>Mulai Ujian</b></li>
+    <li>Pastikan HP terhubung ke Wi-Fi yang sama dengan laptop guru.</li>
+    <li>Scan QR Code atau ketik alamat IP (contoh: <code>192.168.1.5:3000</code>) di browser.</li>
+    <li>Isi Nama Lengkap (sesuai absen), Kelas, dan Token dari guru.</li>
+    <li>Klik <b>Mulai Ujian</b>.</li>
   </ol>
 
-  <h3>Saat mengerjakan</h3>
+  <h3>Antarmuka Ujian</h3>
   <ul>
-    <li><b>Pilih jawaban</b> — untuk PG klik satu opsi; untuk MCMA klik semua yang benar; untuk BS pilih B/S per pernyataan</li>
-    <li><b>Tandai ragu</b> — klik tombol 🚩 Ragu jika ingin kembali lagi nanti</li>
-    <li><b>Navigasi</b> — gunakan tombol Sebelumnya/Selanjutnya, atau klik nomor soal di grid</li>
-    <li><b>Status soal</b> ditandai warna: biru = sudah dijawab, kuning = ragu, abu-abu = kosong</li>
+    <li><b>Tampilan Desktop:</b> Jika menggunakan laptop, daftar nomor soal akan otomatis muncul di sebelah kanan layar.</li>
+    <li><b>Tampilan HP:</b> Klik tombol <b>☰ Soal</b> di pojok kanan atas untuk membuka daftar nomor soal.</li>
+    <li><b>Ragu-ragu:</b> Klik tombol <b>🚩 Tandai Ragu</b> jika Anda ingin meninjau soal tersebut nanti. Nomor soal akan berwarna kuning.</li>
+    <li><b>Auto-save:</b> Setiap kali Anda menjawab, akan muncul tulisan "Tersimpan" di atas. Jika internet terputus (muncul tanda "⚠ Offline"), Anda tetap bisa menjawab. Jawaban akan otomatis dikirim saat internet tersambung kembali.</li>
+    <li><b>Shortcut Laptop:</b> Gunakan tombol panah Kiri/Kanan untuk pindah soal, dan tombol <b>R</b> untuk menandai ragu-ragu.</li>
   </ul>
 
   <h3>Submit</h3>
   <ol>
-    <li>Klik <b>Selesai & Kirim</b> di bagian bawah grid soal</li>
-    <li>Konfirmasi akan menampilkan jumlah soal belum dijawab dan soal ragu</li>
-    <li>Setelah kirim, jawaban tidak bisa diubah</li>
+    <li>Klik tombol <b>Selesai & Kirim</b> di bagian bawah daftar soal (atau di bilah navigasi HP).</li>
+    <li>Akan muncul konfirmasi berisi jumlah soal yang belum dijawab dan yang masih ragu. Periksa kembali.</li>
+    <li>Klik <b>Kirim Sekarang</b>. Jawaban tidak dapat diubah setelah ini.</li>
   </ol>
-
-  <h3>Mode latihan mandiri</h3>
-  <p>Di halaman login, klik <b>Mode Latihan Mandiri</b>. Tidak perlu token — pilih paket, isi nama, langsung mengerjakan. Pembahasan langsung terbuka setelah submit.</p>
-
-  <div class="callout">
-    <b>Tips:</b> jangan tutup tab atau pindah aplikasi saat ujian — aktivitas tersebut tercatat sebagai pelanggaran dan dilaporkan ke guru.
-  </div>
 </section>
 
 <section id="troubleshooting">
-  <h2>9. Troubleshooting</h2>
+  <h2>10. Troubleshooting</h2>
   <table>
     <tr><th>Gejala</th><th>Solusi</th></tr>
-    <tr><td>HP siswa tidak bisa buka halaman</td><td>Pastikan HP terhubung ke Wi-Fi yang sama dengan laptop. Cek Windows Firewall (izinkan Node.js di Private network).</td></tr>
-    <tr><td>QR code tidak muncul</td><td>Klik tombol Refresh QR di dashboard. Kalau masih kosong, restart server.</td></tr>
-    <tr><td>Import CSV gagal</td><td>Baca pesan error — biasanya menyebut baris bermasalah. Periksa kolom kunci dan tanda kutip di teks.</td></tr>
-    <tr><td>Siswa tidak bisa join</td><td>Cek: (1) token benar? (2) waktu belum habis? (3) nama terdaftar kalau validasi aktif?</td></tr>
-    <tr><td>Browser menampilkan halaman basi</td><td>Tekan Ctrl+Shift+R (Windows) atau Cmd+Shift+R (Mac).</td></tr>
-    <tr><td>Server mati tiba-tiba</td><td>Buka terminal, jalankan <code>cd ~/tka-local && node server.js</code>, salin error yang muncul.</td></tr>
+    <tr><td>HP siswa tidak bisa membuka halaman</td><td>Pastikan HP terhubung ke Wi-Fi yang sama. Cek Windows Firewall (izinkan Node.js di Private network).</td></tr>
+    <tr><td>Windows memblokir file .exe</td><td>Klik "More info" lalu "Run anyway" pada peringatan Windows SmartScreen.</td></tr>
+    <tr><td>Siswa tidak bisa join (Nama tidak terdaftar)</td><td>Matikan toggle "Wajib terdaftar" di menu Data Siswa, atau perbaiki ejaan nama di daftar siswa.</td></tr>
+    <tr><td>Import CSV gagal</td><td>Baca pesan error. Pastikan kolom kunci terisi benar (huruf) dan tidak ada koma di dalam teks tanpa tanda kutip ("").</td></tr>
+    <tr><td>Server tiba-tiba mati</td><td>Buka aplikasi TKA kembali (jika pakai .exe) atau jalankan <code>start.bat</code>. Data tidak akan hilang.</td></tr>
   </table>
 </section>
 
 <footer class="doc-footer">
-  <div class="brand">Try Out TKA</div>
+  <div class="brand">Try Out TKA Local Host</div>
   <div>© 2026 Ekwan Nugroho · Wonogiri</div>
   <div style="margin-top:8px;opacity:.7">Aplikasi ujian lokal untuk sekolah — berjalan tanpa internet.</div>
 </footer>

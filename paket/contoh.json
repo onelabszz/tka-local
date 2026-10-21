@@ -1,35 +1,68 @@
 {
   "id": "contoh",
-  "judul": "Paket Contoh (PG, MCMA, BS)",
+  "judul": "contoh",
   "mapel": "Campuran",
   "durasiMenit": 15,
-  "acakMode": "per-tipe",
   "soal": [
     {
-      "id": "contoh-s1",
-      "tipe": "pg",
-      "q": "Ibu kota Indonesia adalah...",
-      "options": ["Bandung", "Jakarta", "Surabaya", "Medan"],
-      "key": 1,
-      "pembahasan": "Jakarta adalah ibu kota NKRI."
-    },
-    {
-      "id": "contoh-s2",
-      "tipe": "mcma",
-      "q": "Manakah yang termasuk bilangan prima? (Pilih lebih dari satu)",
-      "options": ["2", "4", "5", "9"],
-      "key": [0, 2],
-      "pembahasan": "2 dan 5 adalah bilangan prima. 4 dan 9 bukan."
-    },
-    {
-      "id": "contoh-s3",
-      "tipe": "bs",
-      "q": "Tentukan Benar atau Salah untuk pernyataan berikut:",
-      "pernyataan": [
-        { "teks": "Air membeku pada suhu 0 derajat Celsius", "key": true },
-        { "teks": "Planet terdekat dengan Matahari adalah Bumi", "key": false }
+      "id": "contoh-s01",
+      "q": "Ibu kota Indonesia adalah",
+      "options": [
+        "Bandung",
+        "Jakarta",
+        "Surabaya",
+        "Medan"
       ],
-      "pembahasan": "Air membeku pada 0°C. Planet terdekat adalah Merkurius."
+      "key": 1,
+      "pembahasan": "Jakarta adalah ibu kota NKRI"
+    },
+    {
+      "id": "contoh-s11",
+      "q": "Hasil 5 × 3 adalah",
+      "options": [
+        "10",
+        "12",
+        "15",
+        "20"
+      ],
+      "key": 2,
+      "pembahasan": "5 × 3 = 15"
+    },
+    {
+      "id": "contoh-s21",
+      "q": "Planet terdekat Matahari",
+      "options": [
+        "Venus",
+        "Bumi",
+        "Merkurius",
+        "Mars"
+      ],
+      "key": 2,
+      "pembahasan": "Merkurius paling dekat dari Matahari"
+    },
+    {
+      "id": "contoh-s31",
+      "q": "Rumus kimia air",
+      "options": [
+        "O2",
+        "CO2",
+        "H2O",
+        "NaCl"
+      ],
+      "key": 2,
+      "pembahasan": "Air terdiri dari 2 atom H dan 1 atom O"
+    },
+    {
+      "id": "contoh-s41",
+      "q": "Hasil 12 : 4 adalah",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "6"
+      ],
+      "key": 1,
+      "pembahasan": "12 dibagi 4 sama dengan 3"
     }
   ]
 }

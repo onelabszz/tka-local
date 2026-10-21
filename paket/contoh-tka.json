@@ -1,0 +1,146 @@
+{
+  "id": "contoh-tka",
+  "judul": "Contoh Paket TKA - Campuran",
+  "mapel": "Campuran",
+  "durasiMenit": 15,
+  "soal": [
+    {
+      "id": "s1",
+      "q": "Hasil dari 2 + 2 adalah...",
+      "options": [
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "key": 1,
+      "pembahasan": "2 + 2 = 4. Jawaban yang benar adalah 4.",
+      "tipe": "pg",
+      "img": "image.png",
+      "optionImgs": [
+        null,
+        "logo.png",
+        null,
+        null
+      ]
+    },
+    {
+      "id": "s2",
+      "q": "Ibu kota Indonesia adalah...",
+      "options": [
+        "Bandung",
+        "Jakarta",
+        "Surabaya",
+        "Medan"
+      ],
+      "key": 1,
+      "pembahasan": "Jakarta adalah ibu kota Indonesia. Bandung ibu kota Jawa Barat, Surabaya ibu kota Jawa Timur, Medan ibu kota Sumatera Utara.",
+      "tipe": "pg"
+    },
+    {
+      "id": "s3",
+      "q": "Hasil dari 5 × 3 adalah...",
+      "options": [
+        "10",
+        "12",
+        "15",
+        "20"
+      ],
+      "key": 2,
+      "pembahasan": "5 × 3 = 15. Ingat: perkalian adalah penjumlahan berulang, 5+5+5 = 15.",
+      "tipe": "pg"
+    },
+    {
+      "id": "s4",
+      "q": "Planet terdekat dengan Matahari...",
+      "options": [
+        "Venus",
+        "Bumi",
+        "Merkurius",
+        "Mars"
+      ],
+      "key": 2,
+      "pembahasan": "Merkurius adalah planet terdekat dari Matahari, dengan jarak rata-rata 58 juta km.",
+      "tipe": "pg"
+    },
+    {
+      "id": "s5",
+      "q": "Rumus kimia air adalah...",
+      "options": [
+        "O2",
+        "CO2",
+        "H2O",
+        "NaCl"
+      ],
+      "key": 2,
+      "pembahasan": "Air terdiri dari 2 atom hidrogen dan 1 atom oksigen, sehingga rumusnya H2O.",
+      "tipe": "pg"
+    },
+    {
+      "id": "s6",
+      "q": "Hasil dari 12 : 4 adalah...",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "6"
+      ],
+      "key": 1,
+      "pembahasan": "12 : 4 = 3. Karena 4 × 3 = 12.",
+      "tipe": "pg"
+    },
+    {
+      "id": "s7",
+      "q": "Organ pernapasan utama manusia...",
+      "options": [
+        "Jantung",
+        "Paru-paru",
+        "Hati",
+        "Ginjal"
+      ],
+      "key": 1,
+      "pembahasan": "Paru-paru adalah organ utama pernapasan. Jantung memompa darah, hati menyaring racun, ginjal menyaring darah menjadi urin.",
+      "tipe": "pg"
+    },
+    {
+      "id": "s8",
+      "q": "Proklamasi Kemerdekaan RI tahun...",
+      "options": [
+        "1942",
+        "1945",
+        "1949",
+        "1950"
+      ],
+      "key": 1,
+      "pembahasan": "Proklamasi Kemerdekaan Indonesia dibacakan pada 17 Agustus 1945 oleh Soekarno-Hatta.",
+      "tipe": "pg"
+    },
+    {
+      "id": "s9",
+      "q": "Hasil dari 7 × 8 adalah...",
+      "options": [
+        "48",
+        "54",
+        "56",
+        "64"
+      ],
+      "key": 2,
+      "pembahasan": "7 × 8 = 56. Sering tertukar dengan 8 × 8 = 64 atau 7 × 7 = 49.",
+      "tipe": "pg"
+    },
+    {
+      "id": "s10",
+      "q": "Satuan gaya dalam SI adalah...",
+      "options": [
+        "Joule",
+        "Watt",
+        "Newton",
+        "Pascal"
+      ],
+      "key": 2,
+      "pembahasan": "Gaya diukur dalam Newton (N). Joule = energi, Watt = daya, Pascal = tekanan.",
+      "tipe": "pg"
+    }
+  ],
+  "latihanMandiri": false
+}
