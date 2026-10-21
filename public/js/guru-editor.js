@@ -1,31 +1,18 @@
-// ============================================================
-// guru-editor.js — v13
-// Editor paket + image picker + paste + drag-drop + autosave
-// ============================================================
-
 let editorPaket = null;
 let editorDirty = false;
 let activeImageTarget = null;
 let autosaveTimer = null;
 
-// ============ LOAD / OPEN ============
 async function bukaEditor(paketId) {
   const draft = editorCekDraft(paketId);
   if (draft && draft.paket) {
     const menit = Math.floor((Date.now() - draft.savedAt) / 60000);
     const label = menit < 1 ? 'baru saja' : menit + ' menit lalu';
     const r = await Swal.fire({
-      icon: 'question',
-      title: 'Draft ditemukan',
+      icon: 'question', title: 'Draft ditemukan',
       html: 'Ada draft tersimpan <b>' + label + '</b>.<br>Lanjutkan draft, atau muat versi terbaru dari server?',
-      showDenyButton: true,
-      showCancelButton: true,
-      confirmButtonText: 'Lanjutkan draft',
-      denyButtonText: 'Muat dari server',
-      cancelButtonText: 'Batal',
-      confirmButtonColor: '#1e40af',
-      denyButtonColor: '#64748b',
-      cancelButtonColor: '#94a3b8'
+      showDenyButton: true, showCancelButton: true, confirmButtonText: 'Lanjutkan draft', denyButtonText: 'Muat dari server', cancelButtonText: 'Batal',
+      confirmButtonColor: '#1e40af', denyButtonColor: '#64748b', cancelButtonColor: '#94a3b8'
     });
     if (r.isDismissed) return;
     if (r.isConfirmed) {
@@ -35,7 +22,6 @@ async function bukaEditor(paketId) {
       openEditorView();
       return;
     }
-    // user pilih "Muat dari server" — lanjut ke load normal di bawah
     editorClearDraft(paketId);
   }
 
@@ -82,43 +68,29 @@ function updateEditorHeader() {
   if (editorDirty) {
     b.textContent = total + ' soal · belum disimpan';
     b.style.display = 'inline-block';
+    b.className = 'badge badge-warn';
   } else {
     b.textContent = total + ' soal';
     b.style.display = 'inline-block';
     b.className = 'badge badge-info';
     setTimeout(() => { if (!editorDirty) b.style.display = 'none'; }, 2000);
-    return;
   }
-  b.className = 'badge badge-warn';
 }
 
-// ============ DIRTY / AUTOSAVE ============
 function setEditorDirty(v) {
   const wasDirty = editorDirty;
   editorDirty = v;
   updateEditorHeader();
-
-  if (v) {
-    clearTimeout(autosaveTimer);
-    autosaveTimer = setTimeout(editorAutosave, 1500);
-  } else if (wasDirty) {
-    // Baru saja bersih (setelah simpan) — clear draft
-    editorClearDraft();
-  }
+  if (v) { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(editorAutosave, 1500); }
+  else if (wasDirty) editorClearDraft();
 }
 
 function editorAutosave() {
   if (!editorPaket || !editorDirty) return;
   try {
-    localStorage.setItem('tka_editor_draft_' + editorPaket.id, JSON.stringify({
-      paket: editorPaket,
-      savedAt: Date.now()
-    }));
+    localStorage.setItem('tka_editor_draft_' + editorPaket.id, JSON.stringify({ paket: editorPaket, savedAt: Date.now() }));
     const b = document.getElementById('editorDirtyBadge');
-    if (b) {
-      b.textContent = editorPaket.soal.length + ' soal · draft tersimpan';
-      setTimeout(updateEditorHeader, 1500);
-    }
+    if (b) { b.textContent = editorPaket.soal.length + ' soal · draft tersimpan'; setTimeout(updateEditorHeader, 1500); }
   } catch (e) { console.warn('Autosave gagal:', e.message); }
 }
 
@@ -134,24 +106,16 @@ function editorCekDraft(paketId) {
     if (!raw) return null;
     const d = JSON.parse(raw);
     if (!d.paket || !d.savedAt) return null;
-    // Draft lebih dari 24 jam — abaikan
-    if (Date.now() - d.savedAt > 24 * 3600 * 1000) {
-      localStorage.removeItem('tka_editor_draft_' + paketId);
-      return null;
-    }
+    if (Date.now() - d.savedAt > 24 * 3600 * 1000) { localStorage.removeItem('tka_editor_draft_' + paketId); return null; }
     return d;
   } catch (e) { return null; }
 }
 
-// ============ NAVIGASI ============
 function editorKembali() {
   if (editorDirty && !confirm('Ada perubahan belum disimpan. Yakin keluar?')) return;
-  editorPaket = null;
-  editorDirty = false;
-  navigate('paket');
+  editorPaket = null; editorDirty = false; navigate('paket');
 }
 
-// ============ RENDER ============
 function renderEditorSoal() {
   var el = document.getElementById('editorSoalList');
   if (!editorPaket.soal.length) {
@@ -173,13 +137,46 @@ function renderKartuSoal(s, i) {
     html += '<option value="' + o[0] + '"' + (tipe === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
   });
   html += '</select></div>';
-  html += '<div style="margin-bottom:8px"><label class="muted">Teks soal</label><textarea class="form-input" rows="2" oninput="editorUpdateField(' + i + ',\'q\',this.value)">' + escapeHtml(s.q || '') + '</textarea></div>';
+  html += '<div style="margin-bottom:8px"><label class="muted">Teks soal</label>';
+  html += '<div class="math-toolbar" style="margin-bottom:4px;display:flex;gap:4px;">';
+  html += '<button type="button" class="btn btn-secondary btn-sm" onclick="sisipkanPecahan(' + i + ')">a/b</button>';
+  html += '<button type="button" class="btn btn-secondary btn-sm" onclick="sisipkanPangkat(' + i + ')">x²</button>';
+  html += '<button type="button" class="btn btn-secondary btn-sm" onclick="sisipkanAkar(' + i + ')">√</button>';
+  html += '</div>';
+  html += '<textarea id="teks-soal-' + i + '" class="form-input" rows="2" oninput="editorUpdateField(' + i + ',\'q\',this.value)">' + escapeHtml(s.q || '') + '</textarea></div>';
   html += renderGambarField(i, 'img', s.img, 'Gambar soal (opsional)');
   if (tipe === 'bs') html += renderBsEditor(s, i);
   else html += renderOpsiEditor(s, i, tipe);
   html += '<div style="margin-top:12px"><label class="muted">Pembahasan (opsional)</label><textarea class="form-input" rows="2" oninput="editorUpdateField(' + i + ',\'pembahasan\',this.value)">' + escapeHtml(s.pembahasan || '') + '</textarea></div>';
   html += '</div>';
   return html;
+}
+
+function sisipkanPecahan(i) {
+  var el = document.getElementById('teks-soal-' + i);
+  if (!el) return;
+  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value;
+  var math = '$\\frac{a}{b}$';
+  el.value = text.substring(0, start) + math + text.substring(end);
+  editorUpdateField(i, 'q', el.value); el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
+}
+
+function sisipkanPangkat(i) {
+  var el = document.getElementById('teks-soal-' + i);
+  if (!el) return;
+  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value;
+  var math = '$x^{2}$';
+  el.value = text.substring(0, start) + math + text.substring(end);
+  editorUpdateField(i, 'q', el.value); el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
+}
+
+function sisipkanAkar(i) {
+  var el = document.getElementById('teks-soal-' + i);
+  if (!el) return;
+  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value;
+  var math = '$\\sqrt{x}$';
+  el.value = text.substring(0, start) + math + text.substring(end);
+  editorUpdateField(i, 'q', el.value); el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
 }
 
 function renderGambarField(soalIdx, field, namaFile, label) {
@@ -236,111 +233,58 @@ function renderBsEditor(s, i) {
   return html;
 }
 
-// ============ UPDATE FIELDS ============
-function editorUpdateField(i, field, value) {
-  editorPaket.soal[i][field] = value;
-  setEditorDirty(true);
-}
-function editorUpdateOpsi(i, idx, value) {
-  if (!editorPaket.soal[i].options) editorPaket.soal[i].options = ['','','',''];
-  editorPaket.soal[i].options[idx] = value;
-  setEditorDirty(true);
-}
-function editorSetKunciPg(i, idx) {
-  editorPaket.soal[i].key = idx;
-  setEditorDirty(true);
-  renderEditorSoal();
-}
+function editorUpdateField(i, field, value) { editorPaket.soal[i][field] = value; setEditorDirty(true); }
+function editorUpdateOpsi(i, idx, value) { if (!editorPaket.soal[i].options) editorPaket.soal[i].options = ['','','','']; editorPaket.soal[i].options[idx] = value; setEditorDirty(true); }
+function editorSetKunciPg(i, idx) { editorPaket.soal[i].key = idx; setEditorDirty(true); renderEditorSoal(); }
 function editorToggleKunciMcma(i, idx) {
   var s = editorPaket.soal[i];
   if (!Array.isArray(s.key)) s.key = [];
   var pos = s.key.indexOf(idx);
-  if (pos >= 0) s.key.splice(pos, 1);
-  else s.key.push(idx);
+  if (pos >= 0) s.key.splice(pos, 1); else s.key.push(idx);
   s.key.sort(function(a, b) { return a - b; });
-  setEditorDirty(true);
-  renderEditorSoal();
+  setEditorDirty(true); renderEditorSoal();
 }
-function editorUpdatePernyataan(i, idx, value) {
-  editorPaket.soal[i].pernyataan[idx].teks = value;
-  setEditorDirty(true);
-}
-function editorSetBs(i, idx, val) {
-  editorPaket.soal[i].pernyataan[idx].key = val;
-  setEditorDirty(true);
-  renderEditorSoal();
-}
-function editorTambahPernyataan(i) {
-  editorPaket.soal[i].pernyataan.push({ teks: '', key: null });
-  setEditorDirty(true);
-  renderEditorSoal();
-}
+function editorUpdatePernyataan(i, idx, value) { editorPaket.soal[i].pernyataan[idx].teks = value; setEditorDirty(true); }
+function editorSetBs(i, idx, val) { editorPaket.soal[i].pernyataan[idx].key = val; setEditorDirty(true); renderEditorSoal(); }
+function editorTambahPernyataan(i) { editorPaket.soal[i].pernyataan.push({ teks: '', key: null }); setEditorDirty(true); renderEditorSoal(); }
 function editorHapusPernyataan(i, idx) {
   var p = editorPaket.soal[i].pernyataan;
   if (p.length <= 2) { alert('Minimal 2 pernyataan'); return; }
-  p.splice(idx, 1);
-  setEditorDirty(true);
-  renderEditorSoal();
+  p.splice(idx, 1); setEditorDirty(true); renderEditorSoal();
 }
 
 function editorUbahTipe(i, newTipe) {
   var s = editorPaket.soal[i];
   if (s.tipe === newTipe) return;
   s.tipe = newTipe;
-  if (newTipe === 'pg') {
-    if (!s.options) s.options = ['','','',''];
-    if (typeof s.key !== 'number') s.key = 0;
-    delete s.pernyataan;
-  } else if (newTipe === 'mcma') {
-    if (!s.options) s.options = ['','','',''];
-    if (!Array.isArray(s.key)) s.key = [];
-    delete s.pernyataan;
-  } else if (newTipe === 'bs') {
-    if (!Array.isArray(s.pernyataan) || s.pernyataan.length < 2) s.pernyataan = [{ teks: '', key: null }, { teks: '', key: null }];
-    delete s.options; delete s.key; delete s.optionImgs;
-  }
-  setEditorDirty(true);
-  renderEditorSoal();
+  if (newTipe === 'pg') { if (!s.options) s.options = ['','','','']; if (typeof s.key !== 'number') s.key = 0; delete s.pernyataan; }
+  else if (newTipe === 'mcma') { if (!s.options) s.options = ['','','','']; if (!Array.isArray(s.key)) s.key = []; delete s.pernyataan; }
+  else if (newTipe === 'bs') { if (!Array.isArray(s.pernyataan) || s.pernyataan.length < 2) s.pernyataan = [{ teks: '', key: null }, { teks: '', key: null }]; delete s.options; delete s.key; delete s.optionImgs; }
+  setEditorDirty(true); renderEditorSoal();
 }
 
 function editorTambahSoal() {
   var newId = editorPaket.id + '-s' + (editorPaket.soal.length + 1) + '-' + Date.now();
   editorPaket.soal.push({ id: newId, tipe: 'pg', q: '', options: ['','','',''], key: 0 });
-  setEditorDirty(true);
-  renderEditorSoal();
-  setTimeout(() => {
-    var cards = document.querySelectorAll('#editorSoalList .card');
-    if (cards.length) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
+  setEditorDirty(true); renderEditorSoal();
+  setTimeout(function() { var cards = document.querySelectorAll('#editorSoalList .card'); if (cards.length) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
 }
 
 async function editorDuplikatSoal(i) {
   var asli = JSON.parse(JSON.stringify(editorPaket.soal[i]));
   asli.id = editorPaket.id + '-s' + (editorPaket.soal.length + 1) + '-' + Date.now();
   editorPaket.soal.splice(i + 1, 0, asli);
-  setEditorDirty(true);
-  renderEditorSoal();
+  setEditorDirty(true); renderEditorSoal();
 }
 
-async function editorHapusSoal(i) {
-  if (!await swalConfirm('Hapus soal #' + (i + 1) + '?')) return;
-  editorPaket.soal.splice(i, 1);
-  setEditorDirty(true);
-  renderEditorSoal();
-}
+async function editorHapusSoal(i) { if (!await swalConfirm('Hapus soal #' + (i + 1) + '?')) return; editorPaket.soal.splice(i, 1); setEditorDirty(true); renderEditorSoal(); }
 
 function editorHapusGambar(soalIdx, field) {
-  if (field === 'img') {
-    delete editorPaket.soal[soalIdx].img;
-  } else if (field.startsWith('optionImgs.')) {
-    var idx = parseInt(field.split('.')[1]);
-    if (editorPaket.soal[soalIdx].optionImgs) editorPaket.soal[soalIdx].optionImgs[idx] = null;
-  }
-  setEditorDirty(true);
-  renderEditorSoal();
+  if (field === 'img') delete editorPaket.soal[soalIdx].img;
+  else if (field.startsWith('optionImgs.')) { var idx = parseInt(field.split('.')[1]); if (editorPaket.soal[soalIdx].optionImgs) editorPaket.soal[soalIdx].optionImgs[idx] = null; }
+  setEditorDirty(true); renderEditorSoal();
 }
 
-// ============ IMAGE PICKER ============
 async function openImagePicker(soalIdx, field) {
   activeImageTarget = { soalIdx: soalIdx, field: field };
   const targetLabel = field === 'img' ? 'Gambar soal' : 'Opsi ' + ['A','B','C','D'][parseInt(field.split('.')[1])];
@@ -356,10 +300,7 @@ async function renderPickerImages() {
   try {
     var r = await fetch('/api/teacher/gambar');
     var files = await r.json();
-    if (!files.length) {
-      list.innerHTML = '<p class="muted" style="grid-column:1/-1;text-align:center">Belum ada gambar.<br>Klik "Upload Baru" atau paste gambar (Ctrl+V).</p>';
-      return;
-    }
+    if (!files.length) { list.innerHTML = '<p class="muted" style="grid-column:1/-1;text-align:center">Belum ada gambar.<br>Klik "Upload Baru" atau paste gambar (Ctrl+V).</p>'; return; }
     list.innerHTML = files.map(function(f) {
       return '<div class="gambar-item" style="cursor:pointer" onclick="pilihGambar(\'' + f.nama.replace(/'/g, "\\'") + '\')"><img src="' + f.url + '" alt=""><div class="gambar-nama">' + escapeHtml(f.nama) + '</div></div>';
     }).join('');
@@ -370,16 +311,9 @@ function pilihGambar(nama) {
   if (!activeImageTarget) return;
   var t = activeImageTarget;
   var s = editorPaket.soal[t.soalIdx];
-  if (t.field === 'img') {
-    s.img = nama;
-  } else if (t.field.startsWith('optionImgs.')) {
-    var idx = parseInt(t.field.split('.')[1]);
-    if (!s.optionImgs) s.optionImgs = [null, null, null, null];
-    s.optionImgs[idx] = nama;
-  }
-  closeImagePicker();
-  setEditorDirty(true);
-  renderEditorSoal();
+  if (t.field === 'img') { s.img = nama; }
+  else if (t.field.startsWith('optionImgs.')) { var idx = parseInt(t.field.split('.')[1]); if (!s.optionImgs) s.optionImgs = [null, null, null, null]; s.optionImgs[idx] = nama; }
+  closeImagePicker(); setEditorDirty(true); renderEditorSoal();
 }
 
 function hapusGambarDariTarget() {
@@ -387,56 +321,30 @@ function hapusGambarDariTarget() {
   var t = activeImageTarget;
   var s = editorPaket.soal[t.soalIdx];
   if (t.field === 'img') delete s.img;
-  else if (t.field.startsWith('optionImgs.')) {
-    var idx = parseInt(t.field.split('.')[1]);
-    if (s.optionImgs) s.optionImgs[idx] = null;
-  }
-  closeImagePicker();
-  setEditorDirty(true);
-  renderEditorSoal();
+  else if (t.field.startsWith('optionImgs.')) { var idx = parseInt(t.field.split('.')[1]); if (s.optionImgs) s.optionImgs[idx] = null; }
+  closeImagePicker(); setEditorDirty(true); renderEditorSoal();
 }
 
-function closeImagePicker() {
-  document.getElementById('imagePickerModal').style.display = 'none';
-  activeImageTarget = null;
-}
+function closeImagePicker() { document.getElementById('imagePickerModal').style.display = 'none'; activeImageTarget = null; }
 
-// ============ UPLOAD DARI PICKER ============
 async function uploadDariPicker(input) {
   if (!input.files || !input.files.length) return;
-  const file = input.files[0];
-  input.value = '';
-  await uploadFileKeServer(file);
+  const file = input.files[0]; input.value = ''; await uploadFileKeServer(file);
 }
 
 async function uploadFileKeServer(file) {
   const info = document.getElementById('pickerUploadInfo');
   info.textContent = 'Mengupload...';
-  const fd = new FormData();
-  fd.append('files', file);
+  const fd = new FormData(); fd.append('files', file);
   try {
     const r = await fetch('/api/teacher/upload-gambar', { method: 'POST', body: fd });
     const d = await r.json();
     if (!r.ok) { info.textContent = 'Gagal: ' + (d.error || 'tidak diketahui'); return; }
-    if (d.files && d.files.length) {
-      info.textContent = 'Berhasil upload: ' + d.files[0].nama;
-      // otomatis pilih gambar yang baru diupload
-      pilihGambar(d.files[0].nama);
-    }
+    if (d.files && d.files.length) { info.textContent = 'Berhasil upload: ' + d.files[0].nama; pilihGambar(d.files[0].nama); }
   } catch (e) { info.textContent = 'Gagal: ' + e.message; }
 }
 
-// ============ PASTE DARI CLIPBOARD ============
-function pasteGambarManual() {
-  Swal.fire({
-    icon: 'info',
-    title: 'Paste Gambar',
-    html: 'Tekan <b>Ctrl+V</b> (atau Cmd+V di Mac) sekarang.<br><br>' +
-          'Screenshot atau copy gambar dulu, lalu paste. Gambar akan otomatis diupload dan dipilih.',
-    confirmButtonText: 'Mengerti',
-    confirmButtonColor: '#1e40af'
-  });
-}
+function pasteGambarManual() { Swal.fire({ icon: 'info', title: 'Paste Gambar', html: 'Tekan <b>Ctrl+V</b> (atau Cmd+V di Mac) sekarang.<br><br>Screenshot atau copy gambar dulu, lalu paste.', confirmButtonText: 'Mengerti', confirmButtonColor: '#1e40af' }); }
 
 document.addEventListener('paste', async function(e) {
   const picker = document.getElementById('imagePickerModal');
@@ -445,85 +353,49 @@ document.addEventListener('paste', async function(e) {
   if (!items) return;
   for (const item of items) {
     if (item.type && item.type.startsWith('image/')) {
-      e.preventDefault();
-      const file = item.getAsFile();
-      if (file) await uploadFileKeServer(file);
-      return;
+      e.preventDefault(); const file = item.getAsFile(); if (file) await uploadFileKeServer(file); return;
     }
   }
 });
 
-// ============ DRAG & DROP ============
 function initImagePickerDropzone() {
   const list = document.getElementById('imagePickerList');
   if (!list) return;
-
-  ['dragenter', 'dragover'].forEach(function(evt) {
-    list.addEventListener(evt, function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      list.style.background = '#dbeafe';
-      list.style.borderColor = '#1e40af';
-    });
-  });
-
-  ['dragleave', 'drop'].forEach(function(evt) {
-    list.addEventListener(evt, function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      list.style.background = '';
-      list.style.borderColor = '#e2e8f0';
-    });
-  });
-
+  ['dragenter', 'dragover'].forEach(function(evt) { list.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); list.style.background = '#dbeafe'; list.style.borderColor = '#1e40af'; }); });
+  ['dragleave', 'drop'].forEach(function(evt) { list.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); list.style.background = ''; list.style.borderColor = '#e2e8f0'; }); });
   list.addEventListener('drop', async function(e) {
     const files = e.dataTransfer && e.dataTransfer.files;
     if (!files || !files.length) return;
     const file = files[0];
-    if (!file.type.startsWith('image/')) {
-      await swalError('File bukan gambar');
-      return;
-    }
+    if (!file.type.startsWith('image/')) { await swalError('File bukan gambar'); return; }
     await uploadFileKeServer(file);
   });
 }
 
-// ============ SIMPAN ============
 async function editorSimpan() {
   editorPaket.judul = document.getElementById('editorJudul').value.trim();
   editorPaket.mapel = document.getElementById('editorMapel').value.trim();
   editorPaket.durasiMenit = parseInt(document.getElementById('editorDurasi').value) || 15;
   editorPaket.acakMode = document.getElementById('editorAcakMode').value || 'per-tipe';
   if (!editorPaket.judul) { await swalError('Judul wajib diisi'); return; }
-
   swalLoading('Menyimpan...');
   try {
     var r = await fetch('/api/teacher/paket/' + editorPaket.id, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editorPaket)
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editorPaket)
     });
     var d = await r.json();
     Swal.close();
     if (!r.ok) { await swalError(d.error || 'Gagal simpan'); return; }
-    editorDirty = false;
-    editorClearDraft();
-    updateEditorHeader();
+    editorDirty = false; editorClearDraft(); updateEditorHeader();
     await swalSuccess('Paket tersimpan: ' + d.jumlahSoal + ' soal');
     await loadPaket();
   } catch (e) { Swal.close(); await swalError(e.message); }
 }
 
-// ============ PREVIEW ============
 function editorPreview() {
   if (!editorPaket) return;
   var items = editorPaket.soal.map(function(s, i) { return renderPreviewSoal(s, i); }).join('');
-  Swal.fire({
-    title: escapeHtml(editorPaket.judul) + ' — ' + escapeHtml(editorPaket.mapel),
-    html: '<div style="font-size:13px;color:#64748b;margin-bottom:12px">' + editorPaket.soal.length + ' soal / ' + editorPaket.durasiMenit + ' menit (belum disimpan)</div>' + items,
-    width: '850px', showCloseButton: true, showConfirmButton: false,
-    showCancelButton: true, cancelButtonText: 'Tutup', cancelButtonColor: '#64748b'
-  });
+  Swal.fire({ title: escapeHtml(editorPaket.judul) + ' — ' + escapeHtml(editorPaket.mapel), html: '<div style="font-size:13px;color:#64748b;margin-bottom:12px">' + editorPaket.soal.length + ' soal / ' + editorPaket.durasiMenit + ' menit (belum disimpan)</div>' + items, width: '850px', showCloseButton: true, showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Tutup', cancelButtonColor: '#64748b' });
 }
 
 function renderPreviewSoal(s, i) {
@@ -532,9 +404,7 @@ function renderPreviewSoal(s, i) {
   var body = '';
   if (tipe === 'bs') {
     body = '<table style="width:100%;border-collapse:collapse;margin:8px 0;border:1px solid #e2e8f0"><thead><tr style="background:#f1f5f9"><th style="padding:6px;text-align:left;font-size:12px">Pernyataan</th><th style="padding:6px;width:50px;text-align:center;font-size:12px">Kunci</th></tr></thead><tbody>';
-    (s.pernyataan || []).forEach(function(p) {
-      body += '<tr><td style="padding:6px;border-top:1px solid #e2e8f0;font-size:13px">' + escapeHtml(p.teks) + '</td><td style="padding:6px;border-top:1px solid #e2e8f0;text-align:center;font-weight:700">' + (p.key === true ? 'B' : p.key === false ? 'S' : '—') + '</td></tr>';
-    });
+    (s.pernyataan || []).forEach(function(p) { body += '<tr><td style="padding:6px;border-top:1px solid #e2e8f0;font-size:13px">' + escapeHtml(p.teks) + '</td><td style="padding:6px;border-top:1px solid #e2e8f0;text-align:center;font-weight:700">' + (p.key === true ? 'B' : p.key === false ? 'S' : '—') + '</td></tr>'; });
     body += '</tbody></table>';
   } else {
     var kunciArr = tipe === 'mcma' ? (Array.isArray(s.key) ? s.key : []) : [s.key];
@@ -549,33 +419,12 @@ function renderPreviewSoal(s, i) {
   return '<div style="border:1px solid #e2e8f0;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left"><div style="margin-bottom:6px;font-size:13px"><b>' + (i + 1) + '.</b> ' + tipeBadge + ' ' + escapeHtml(s.q || '(kosong)') + '</div>' + imgHtml + body + pemb + '</div>';
 }
 
-// ============ SHORTCUTS & WARNINGS ============
 document.addEventListener('keydown', function(e) {
-  // Ctrl+S / Cmd+S = simpan
   if ((e.ctrlKey || e.metaKey) && e.key === 's') {
     const sec = document.getElementById('section-editor');
-    if (sec && sec.classList.contains('active') && editorPaket) {
-      e.preventDefault();
-      editorSimpan();
-    }
+    if (sec && sec.classList.contains('active') && editorPaket) { e.preventDefault(); editorSimpan(); }
   }
-  // Esc di modal picker = tutup
-  if (e.key === 'Escape') {
-    const m = document.getElementById('imagePickerModal');
-    if (m && m.style.display === 'flex') closeImagePicker();
-  }
+  if (e.key === 'Escape') { const m = document.getElementById('imagePickerModal'); if (m && m.style.display === 'flex') closeImagePicker(); }
 });
-
-window.addEventListener('beforeunload', function(e) {
-  if (editorDirty) {
-    e.preventDefault();
-    e.returnValue = '';
-  }
-});
-
-// ============ INIT ============
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initImagePickerDropzone);
-} else {
-  initImagePickerDropzone();
-}
+window.addEventListener('beforeunload', function(e) { if (editorDirty) { e.preventDefault(); e.returnValue = ''; } });
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initImagePickerDropzone); else initImagePickerDropzone();

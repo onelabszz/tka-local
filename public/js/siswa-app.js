@@ -1,5 +1,5 @@
 // ============================================================
-// siswa-app.js — v18.2 (PWA Ready)
+// siswa-app.js — v18.6 (PWA + Rumus + Zoom Gambar)
 // ============================================================
 
 // ===== PWA INSTALL LOGIC =====
@@ -50,6 +50,35 @@ var student = { siswaId: null };
 var deadline = 0, serverOffset = 0, timerHandle = null, submitting = false;
 var syncTimer = null;
 var syncInterval = null;
+
+// ============ MATH RENDER (KaTeX) ============
+function renderMath() {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });
+  }
+}
+
+// ============ LIGHTBOX (Zoom Gambar) ============
+function bukaLightbox(src) {
+  var img = document.getElementById('lightboxImg');
+  var lb = document.getElementById('imageLightbox');
+  if (img && lb) {
+    img.src = src;
+    lb.classList.add('show');
+  }
+}
+function tutupLightbox(e) {
+  var lb = document.getElementById('imageLightbox');
+  if (!e || e.target.tagName !== 'IMG' || e.target.classList.contains('lightbox-close')) {
+    if (lb) lb.classList.remove('show');
+  }
+}
 
 // ============ ANTI-CHEAT ============
 function laporkan(tipe) {
@@ -236,12 +265,16 @@ function renderQuestion() {
   var html = '<div class="question-card">';
   html += '<div class="q-badge">Soal ' + (currentQ + 1) + ' dari ' + questions.length + '</div>';
   html += '<h2 class="q-text">' + escapeHtml(q.q) + '</h2>';
-  if (q.img) html += '<img class="q-image" src="/gambar/' + encodeURIComponent(q.img) + '" alt="">';
+  if (q.img) html += '<img class="q-image" src="/gambar/' + encodeURIComponent(q.img) + '" onclick="bukaLightbox(this.src)" alt="">';
+  
   if (q.tipe === 'pg') html += renderPg(q, saved);
   else if (q.tipe === 'mcma') html += renderMcma(q, saved);
   else if (q.tipe === 'bs') html += renderBs(q, saved);
+  
   html += '</div>';
   document.getElementById('questionContainer').innerHTML = html;
+  renderMath();
+  
   document.getElementById('prevBtn').disabled = currentQ === 0;
   document.getElementById('nextBtn').disabled = currentQ === questions.length - 1;
   updateRaguButton();
@@ -254,7 +287,7 @@ function renderPg(q, saved) {
   for (var idx = 0; idx < q.options.length; idx++) {
     var letter = String.fromCharCode(65 + idx);
     var cls = 'option' + (saved === idx ? ' selected' : '');
-    var optImg = (q.optionImgs && q.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(q.optionImgs[idx]) + '" alt="">' : '';
+    var optImg = (q.optionImgs && q.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(q.optionImgs[idx]) + '" onclick="event.stopPropagation(); bukaLightbox(this.src)" alt="">' : '';
     html += '<button type="button" class="' + cls + '" onclick="selectPg(' + idx + ')"><span class="option-letter">' + letter + '</span><span class="option-text">' + escapeHtml(q.options[idx] || '') + optImg + '</span><span class="option-check">✓</span></button>';
   }
   return html + '</div>';
@@ -267,7 +300,7 @@ function renderMcma(q, saved) {
     var letter = String.fromCharCode(65 + idx);
     var checked = arr.indexOf(idx) >= 0;
     var cls = 'option' + (checked ? ' selected' : '');
-    var optImg = (q.optionImgs && q.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(q.optionImgs[idx]) + '" alt="">' : '';
+    var optImg = (q.optionImgs && q.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(q.optionImgs[idx]) + '" onclick="event.stopPropagation(); bukaLightbox(this.src)" alt="">' : '';
     html += '<button type="button" class="' + cls + '" onclick="toggleMcma(' + idx + ')"><span class="option-letter">' + (checked ? '✓' : letter) + '</span><span class="option-text">' + escapeHtml(q.options[idx] || '') + optImg + '</span></button>';
   }
   return html + '</div>';
@@ -565,6 +598,7 @@ async function bukaPembahasan() {
       list.innerHTML = '<div class="review-item" style="background:#fef3c7;color:#92400e;border-left:3px solid #b45309">Pembahasan belum dirilis oleh guru.</div>';
     } else {
       list.innerHTML = data.items.map(renderReviewItem).join('');
+      renderMath();
     }
     document.getElementById('doneView').classList.add('hidden');
     document.getElementById('reviewView').classList.remove('hidden');
@@ -577,7 +611,7 @@ function renderReviewItem(it) {
   else if (it.sebagian) badge = '<span class="review-badge sebagian">SEBAGIAN (' + it.skor + ')</span>';
   else badge = '<span class="review-badge salah">SALAH</span>';
   var html = '<div class="review-item"><div class="review-q"><div class="review-q-text">' + it.nomor + '. ' + escapeHtml(it.q) + '</div>' + badge + '</div>';
-  if (it.img) html += '<img class="q-image" src="/gambar/' + encodeURIComponent(it.img) + '" alt="">';
+  if (it.img) html += '<img class="q-image" src="/gambar/' + encodeURIComponent(it.img) + '" onclick="bukaLightbox(this.src)" alt="">';
   if (it.tipe === 'pg') {
     for (var idx = 0; idx < it.options.length; idx++) {
       var isK = (idx === it.correctIdx);
@@ -585,7 +619,7 @@ function renderReviewItem(it) {
       var cls = 'review-opt';
       if (isK) cls += ' kunci';
       if (isJ) cls += ' pilihan';
-      var oi = (it.optionImgs && it.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(it.optionImgs[idx]) + '" alt="">' : '';
+      var oi = (it.optionImgs && it.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(it.optionImgs[idx]) + '" onclick="event.stopPropagation(); bukaLightbox(this.src)" alt="">' : '';
       html += '<div class="' + cls + '">' + String.fromCharCode(65 + idx) + '. ' + escapeHtml(it.options[idx] || '') + (isK ? ' (kunci)' : '') + (isJ && !isK ? ' (jawabanmu)' : '') + oi + '</div>';
     }
   } else if (it.tipe === 'mcma') {

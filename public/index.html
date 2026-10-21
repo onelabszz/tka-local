@@ -8,7 +8,10 @@
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1e40af">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="stylesheet" href="/katex/katex.min.css">
 <link rel="stylesheet" href="/css/siswa.css">
+<script defer src="/katex/katex.min.js"></script>
+<script defer src="/katex/contrib/auto-render.min.js"></script>
 </head>
 <body>
 
@@ -148,5 +151,10 @@
 </div>
 
 <script src="/js/siswa-app.js"></script>
+<!-- LIGHTBOX ZOOM GAMBAR -->
+<div id="imageLightbox" class="lightbox" onclick="tutupLightbox(event)">
+  <span class="lightbox-close">&times;</span>
+  <img id="lightboxImg" src="" alt="Zoom Gambar">
+</div>
 </body>
 </html>
