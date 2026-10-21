@@ -150,10 +150,10 @@
 
       <div class="card">
         <h3 class="card-title">Import dari CSV</h3>
-        <p class="muted" style="margin-top:0">
-          Kolom: <code style="background:var(--g100);padding:2px 6px;border-radius:3px">no,tipe,soal,img,opsi_a,...,kunci,pernyataan_1,kunci_1,...,pembahasan</code>.
-          Tipe: <b>pg</b> / <b>mcma</b> / <b>bs</b>.
-        </p>
+        <div class="callout" style="margin-bottom:12px; font-size:13px; background:#eff6ff; border-left:4px solid #1e40af; padding:10px 14px; border-radius:4px">
+          <b>Format CSV Baru (Lebih Mudah):</b> Hanya ada 14 kolom. 
+          Untuk soal <b>Benar/Salah (BS)</b>, cukup isi kolom <code>opsi_a</code> s.d <code>opsi_d</code> dengan 4 pernyataan, dan isi kolom <code>kunci</code> dengan <code>B,S,B,S</code>.
+        </div>
         <div class="form-row">
           <input id="impPaketId" class="form-input" placeholder="ID paket (kosongkan = otomatis dari judul)" oninput="previewSlug()">
           <input id="impJudul" class="form-input" placeholder="Judul paket" oninput="previewSlug()">

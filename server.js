@@ -455,10 +455,12 @@ const KUNCI_MAP = { 'a': 0, 'b': 1, 'c': 2, 'd': 3, '0': 0, '1': 1, '2': 2, '3':
 function csvToPaket(csv, meta) {
   const rows = parseCSV(csv);
   if (rows.length < 2) throw new Error('CSV harus punya header + minimal 1 soal');
+
   const header = rows[0].map(h => h.trim().toLowerCase());
   const idx = {};
-  const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pernyataan_1','kunci_1','pernyataan_2','kunci_2','pernyataan_3','kunci_3','pernyataan_4','kunci_4','pernyataan_5','kunci_5','pembahasan'];
+  const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
   COLS.forEach(k => { idx[k] = header.indexOf(k); });
+
   if (idx.soal < 0) throw new Error('Header wajib hilang: soal');
 
   const soal = [];
@@ -470,51 +472,57 @@ function csvToPaket(csv, meta) {
 
     let tipe = (get('tipe') || 'pg').toLowerCase();
     if (!TIPE_SOAL.includes(tipe)) tipe = 'pg';
-    const item = { id: meta.paketId + '-s' + (soal.length + 1), tipe, q: teks };
+
+    const item = {
+      id: meta.paketId + '-s' + (soal.length + 1),
+      tipe,
+      q: teks,
+    };
     const img = get('img');
     if (img) item.img = img;
 
-    if (tipe === 'pg' || tipe === 'mcma') {
+    if (tipe === 'bs') {
+      const pernyataan = [];
+      const kunciRaw = get('kunci').toUpperCase().replace(/[^BS]/g, '');
+      ['a', 'b', 'c', 'd'].forEach((col, i) => {
+        const p = get('opsi_' + col);
+        if (p) pernyataan.push({ teks: p, key: kunciRaw[i] === 'B' });
+      });
+      if (pernyataan.length < 2) throw new Error('Baris ' + (r+1) + ': BS butuh minimal 2 pernyataan');
+      item.pernyataan = pernyataan;
+    } else {
       const optTexts = [get('opsi_a'), get('opsi_b'), get('opsi_c'), get('opsi_d')];
       const optImgs = [get('opsi_a_img'), get('opsi_b_img'), get('opsi_c_img'), get('opsi_d_img')];
       let last = -1;
       for (let i = 0; i < 4; i++) if (optTexts[i] || optImgs[i]) last = i;
       if (last < 1) throw new Error('Baris ' + (r+1) + ': minimal 2 opsi');
+
       item.options = optTexts.slice(0, last + 1);
       if (optImgs.slice(0, last + 1).some(x => x)) item.optionImgs = optImgs.slice(0, last + 1);
 
       const kunciRaw = get('kunci').toLowerCase().trim();
       if (tipe === 'pg') {
         const k = KUNCI_MAP[kunciRaw];
-        if (k == null || k > last) throw new Error('Baris ' + (r+1) + ': kunci tidak valid (dapat: "' + kunciRaw + '")');
+        if (k == null || k > last) throw new Error('Baris ' + (r+1) + ': kunci tidak valid');
         item.key = k;
       } else {
         const letters = kunciRaw.replace(/[,\s;|]+/g, '').split('').filter(x => x);
         const keys = letters.map(l => {
           const k = KUNCI_MAP[l];
-          if (k == null || k > last) throw new Error('Baris ' + (r+1) + ': kunci MCMA tidak valid: "' + l + '" (dapat: "' + kunciRaw + '")');
+          if (k == null || k > last) throw new Error('Baris ' + (r+1) + ': kunci MCMA tidak valid');
           return k;
         }).sort((a, b) => a - b);
-        if (keys.length < 2) throw new Error('Baris ' + (r+1) + ': MCMA butuh minimal 2 kunci (dapat: "' + kunciRaw + '")');
+        if (keys.length < 2) throw new Error('Baris ' + (r+1) + ': MCMA butuh minimal 2 kunci');
         item.key = keys;
       }
-    } else if (tipe === 'bs') {
-      const pernyataan = [];
-      for (let i = 1; i <= 5; i++) {
-        const p = get('pernyataan_' + i);
-        const k = get('kunci_' + i).toUpperCase();
-        if (!p) continue;
-        if (!['B','S'].includes(k)) throw new Error('Baris ' + (r+1) + ': kunci_' + i + ' harus B atau S (dapat: "' + k + '"). Periksa apakah ada koma di teks yang belum diapit tanda kutip.');
-        pernyataan.push({ teks: p, key: k === 'B' });
-      }
-      if (pernyataan.length < 2) throw new Error('Baris ' + (r+1) + ': BS butuh minimal 2 pernyataan (dapat: ' + pernyataan.length + ')');
-      item.pernyataan = pernyataan;
     }
 
     const pemb = get('pembahasan');
     if (pemb) item.pembahasan = pemb;
+
     soal.push(item);
   }
+
   if (soal.length === 0) throw new Error('Tidak ada soal valid');
   return {
     id: meta.paketId,
@@ -524,24 +532,6 @@ function csvToPaket(csv, meta) {
     acakMode: 'per-tipe',
     soal
   };
-}
-
-function csvToSiswa(csv) {
-  const rows = parseCSV(csv);
-  if (rows.length < 2) throw new Error('CSV harus punya header + minimal 1 siswa');
-  const header = rows[0].map(h => h.trim().toLowerCase());
-  const idx = { nis: header.indexOf('nis'), nama: header.indexOf('nama'), kelas: header.indexOf('kelas') };
-  if (idx.nama < 0) throw new Error('Header wajib hilang: nama');
-  const list = [];
-  for (let r = 1; r < rows.length; r++) {
-    const row = rows[r];
-    const get = (k) => idx[k] >= 0 ? (row[idx[k]] || '').trim() : '';
-    const nama = get('nama');
-    if (!nama) continue;
-    list.push({ nis: get('nis'), nama, kelas: get('kelas') });
-  }
-  if (list.length === 0) throw new Error('Tidak ada siswa valid');
-  return list;
 }
 
 // ============================================================
@@ -739,14 +729,14 @@ app.post('/api/teacher/hapus-paket', (req, res) => {
 
 app.get('/api/teacher/template-csv', (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Hanya guru');
-  const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pernyataan_1','kunci_1','pernyataan_2','kunci_2','pernyataan_3','kunci_3','pernyataan_4','kunci_4','pernyataan_5','kunci_5','pembahasan'];
+  const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
   function esc(s) { s = String(s == null ? '' : s); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
   function row(obj) { return COLS.map(c => esc(obj[c] != null ? obj[c] : '')).join(','); }
   const header = COLS.join(',') + '\n';
   const body = [
-    row({ no: 1, tipe: 'pg', soal: 'Contoh PG: ibu kota Indonesia adalah', opsi_a: 'Bandung', opsi_b: 'Jakarta', opsi_c: 'Surabaya', opsi_d: 'Medan', kunci: 'b', pembahasan: 'Jakarta adalah ibu kota NKRI' }),
-    row({ no: 2, tipe: 'mcma', soal: 'Contoh MCMA: manakah yang termasuk bilangan prima?', opsi_a: '2', opsi_b: '4', opsi_c: '5', opsi_d: '9', kunci: 'ac', pembahasan: '2 dan 5 adalah bilangan prima' }),
-    row({ no: 3, tipe: 'bs', soal: 'Contoh BS: tentukan Benar atau Salah pernyataan berikut', pernyataan_1: 'Jakarta adalah ibu kota NKRI', kunci_1: 'B', pernyataan_2: '2 + 2 = 5', kunci_2: 'S', pernyataan_3: 'Air membeku pada 0 derajat Celsius', kunci_3: 'B', pembahasan: 'Perhatikan setiap pernyataan' }),
+    row({ no: 1, tipe: 'pg', soal: 'Contoh PG: Ibu kota Indonesia adalah', opsi_a: 'Bandung', opsi_b: 'Jakarta', opsi_c: 'Surabaya', opsi_d: 'Medan', kunci: 'B', pembahasan: 'Jakarta adalah ibu kota NKRI' }),
+    row({ no: 2, tipe: 'mcma', soal: 'Contoh MCMA: Manakah yang termasuk bilangan prima?', opsi_a: '2', opsi_b: '4', opsi_c: '5', opsi_d: '9', kunci: 'A,C', pembahasan: '2 dan 5 adalah bilangan prima' }),
+    row({ no: 3, tipe: 'bs', soal: 'Contoh BS: Tentukan B/S pernyataan berikut', opsi_a: 'Jakarta ibu kota RI', opsi_b: 'Bumi itu datar', opsi_c: '2 + 2 = 4', opsi_d: 'Matahari terbit dari barat', kunci: 'B,S,B,S', pembahasan: 'Perhatikan fakta sains dan geografi' }),
   ].join('\n') + '\n';
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="template-soal.csv"');
