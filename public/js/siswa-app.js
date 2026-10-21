@@ -80,6 +80,33 @@ function tutupLightbox(e) {
   }
 }
 
+// ============ FULLSCREEN LOCK (KIOSK) ============
+function masukLayarPenuh() {
+  var el = document.documentElement;
+  if (el.requestFullscreen) {
+    el.requestFullscreen().catch(function(e){ console.warn('Fullscreen gagal:', e); });
+  } else if (el.webkitRequestFullscreen) {
+    el.webkitRequestFullscreen();
+  } else if (el.msRequestFullscreen) {
+    el.msRequestFullscreen();
+  }
+  var warning = document.getElementById('fullscreenWarning');
+  if (warning) warning.classList.add('hidden');
+}
+
+document.addEventListener('fullscreenchange', function() {
+  if (!document.fullscreenElement && !document.webkitIsFullScreen) {
+    if (examMode === 'ujian' && !submitting) {
+      laporkan('tab_blur'); // Catat sebagai pelanggaran
+      var warning = document.getElementById('fullscreenWarning');
+      if (warning) warning.classList.remove('hidden');
+    }
+  } else {
+    var warning = document.getElementById('fullscreenWarning');
+    if (warning) warning.classList.add('hidden');
+  }
+});
+
 // ============ ANTI-CHEAT ============
 function laporkan(tipe) {
   if (examMode !== 'ujian' || !student.siswaId) return;
@@ -162,6 +189,7 @@ async function join(ev) {
     localStorage.setItem('tka_nama', name);
     localStorage.setItem('tka_kelas', kelas);
     examMode = 'ujian';
+    masukLayarPenuh();
     document.getElementById('examBadge').textContent = 'TKA';
     data.nama = name; data.kelas = kelas;
     resumeExam(data);
@@ -245,6 +273,7 @@ function resumeExam(data) {
   document.getElementById('latihanView').classList.add('hidden');
   document.getElementById('examView').classList.remove('hidden');
   document.body.classList.add('exam-active');
+  if (examMode === 'ujian') masukLayarPenuh();
   loadLocalDraft();
   renderQuestion();
   startTimer();

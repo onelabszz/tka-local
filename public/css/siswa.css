@@ -236,3 +236,25 @@ button { font-family: inherit; cursor: pointer; border: none; }
   cursor: pointer;
 }
 .katex { font-size: 1.1em; }
+
+/* ============ FULLSCREEN WARNING (KIOSK) ============ */
+.fullscreen-warning {
+  position: fixed; inset: 0; z-index: 99999;
+  background: rgba(185, 28, 28, 0.95);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  backdrop-filter: blur(4px);
+}
+.fullscreen-warning.hidden { display: none !important; }
+.fullscreen-box {
+  background: white; padding: 32px; border-radius: 12px;
+  max-width: 480px; width: 100%; text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  animation: shake 0.4s;
+}
+.fullscreen-box h2 { margin: 0 0 12px; color: #b91c1c; font-size: 22px; }
+.fullscreen-box p { margin: 0 0 8px; color: #1f2937; font-size: 16px; line-height: 1.5; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
