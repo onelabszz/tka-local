@@ -429,8 +429,10 @@ function computeAnalisis(sesiId) {
 // ============================================================
 function parseCSV(text) {
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  // Abaikan baris "sep=;" atau "sep=," jika ada
+  text = text.replace(/^sep=[;,][ \t]*\r?\n/i, '');
   const firstLine = (text.split(/\r?\n/)[0] || '');
-  const sep = (firstLine.includes(';') && !firstLine.includes(',')) ? ';' : ',';
+  const sep = firstLine.includes(';') ? ';' : ',';
   const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
   const rows = [];
   for (const line of lines) {
@@ -451,8 +453,6 @@ function parseCSV(text) {
   }
   return rows;
 }
-
-const KUNCI_MAP = { 'a': 0, 'b': 1, 'c': 2, 'd': 3, '0': 0, '1': 1, '2': 2, '3': 3 };
 
 function csvToPaket(csv, meta) {
   const rows = parseCSV(csv);
@@ -652,36 +652,35 @@ app.get('/api/teacher/paket/:id/export-csv', (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Hanya guru');
   const paket = PAKET[req.params.id];
   if (!paket) return res.status(404).send('Paket tidak ditemukan');
-  function esc(s) { s = String(s == null ? '' : s); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  function esc(s) { s = String(s == null ? '' : s); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
   function huruf(k) { return ['a','b','c','d'][k] || 'a'; }
-  const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pernyataan_1','kunci_1','pernyataan_2','kunci_2','pernyataan_3','kunci_3','pernyataan_4','kunci_4','pernyataan_5','kunci_5','pembahasan'];
-  function row(obj) { return COLS.map(c => esc(obj[c] != null ? obj[c] : '')).join(','); }
-  const header = COLS.join(',') + '\n';
+  const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
+  function rowArr(arr) { return arr.map(esc).join(';'); }
+  const header = COLS.join(';') + '\n';
   const rows = paket.soal.map((s, i) => {
     const tipe = getTipe(s);
     if (tipe === 'bs') {
       const p = s.pernyataan || [];
-      const obj = { no: i + 1, tipe, soal: s.q, img: s.img || '' };
-      for (let j = 0; j < 5; j++) if (p[j]) { obj['pernyataan_' + (j+1)] = p[j].teks; obj['kunci_' + (j+1)] = p[j].key ? 'B' : 'S'; }
-      obj.pembahasan = s.pembahasan || '';
-      return row(obj);
+      const arr = [i + 1, tipe, s.q || '', s.img || '',
+        p[0] ? p[0].teks : '', '', p[1] ? p[1].teks : '', '',
+        p[2] ? p[2].teks : '', '', p[3] ? p[3].teks : '', '',
+        p.map(x => x.key ? 'B' : 'S').join(','), s.pembahasan || ''];
+      return rowArr(arr);
     }
-    const obj = {
-      no: i + 1, tipe, soal: s.q, img: s.img || '',
-      opsi_a: (s.options && s.options[0]) || '',
-      opsi_b: (s.options && s.options[1]) || '',
-      opsi_c: (s.options && s.options[2]) || '',
-      opsi_d: (s.options && s.options[3]) || '',
-      kunci: tipe === 'mcma' ? (Array.isArray(s.key) ? s.key.map(huruf).join('') : huruf(s.key)) : huruf(s.key),
-      pembahasan: s.pembahasan || '',
-    };
-    if (s.optionImgs) for (let j = 0; j < 4; j++) if (s.optionImgs[j]) obj['opsi_' + ['a','b','c','d'][j] + '_img'] = s.optionImgs[j];
-    return row(obj);
+    const kunci = tipe === 'mcma' ? (Array.isArray(s.key) ? s.key.map(huruf).join(',') : huruf(s.key)) : huruf(s.key);
+    const arr = [i + 1, tipe, s.q || '', s.img || '',
+      (s.options && s.options[0]) || '', (s.optionImgs && s.optionImgs[0]) || '',
+      (s.options && s.options[1]) || '', (s.optionImgs && s.optionImgs[1]) || '',
+      (s.options && s.options[2]) || '', (s.optionImgs && s.optionImgs[2]) || '',
+      (s.options && s.options[3]) || '', (s.optionImgs && s.optionImgs[3]) || '',
+      kunci, s.pembahasan || ''];
+    return rowArr(arr);
   }).join('\n');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename="${paket.id}.csv"`);
-  res.send('\uFEFF' + header + rows + '\n');
+  res.setHeader('Content-Disposition', 'attachment; filename="' + paket.id + '.csv"');
+  res.send('\uFEFFsep=;\n' + header + rows + '\n');
 });
+
 
 app.post('/api/teacher/paket/:id/duplikat', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
@@ -732,29 +731,28 @@ app.post('/api/teacher/hapus-paket', (req, res) => {
 app.get('/api/teacher/template-csv', (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Hanya guru');
   const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
-  function esc(s) { s = String(s == null ? '' : s); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
-  function row(obj) { return COLS.map(c => esc(obj[c] != null ? obj[c] : '')).join(','); }
-  const header = COLS.join(',') + '\n';
+  function esc(s) { s = String(s == null ? '' : s); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  function row(arr) { return arr.map(esc).join(';'); }
+  const header = COLS.join(';') + '\n';
   const body = [
-    row({ no: 1, tipe: 'pg', soal: 'Contoh PG: Ibu kota Indonesia adalah', opsi_a: 'Bandung', opsi_b: 'Jakarta', opsi_c: 'Surabaya', opsi_d: 'Medan', kunci: 'B', pembahasan: 'Jakarta adalah ibu kota NKRI' }),
-    row({ no: 2, tipe: 'mcma', soal: 'Contoh MCMA: Manakah yang termasuk bilangan prima?', opsi_a: '2', opsi_b: '4', opsi_c: '5', opsi_d: '9', kunci: 'A,C', pembahasan: '2 dan 5 adalah bilangan prima' }),
-    row({ no: 3, tipe: 'bs', soal: 'Contoh BS: Tentukan B/S pernyataan berikut', opsi_a: 'Jakarta ibu kota RI', opsi_b: 'Bumi itu datar', opsi_c: '2 + 2 = 4', opsi_d: 'Matahari terbit dari barat', kunci: 'B,S,B,S', pembahasan: 'Perhatikan fakta sains dan geografi' }),
+    row([1, 'pg', 'Contoh PG: Ibu kota Indonesia adalah', '', 'Bandung', '', 'Jakarta', '', 'Surabaya', '', 'Medan', '', 'B', 'Jakarta adalah ibu kota NKRI']),
+    row([2, 'mcma', 'Contoh MCMA: Manakah yang termasuk bilangan prima?', '', '2', '', '4', '', '5', '', '9', '', 'A,C', '2 dan 5 adalah bilangan prima']),
+    row([3, 'bs', 'Contoh BS: Tentukan B/S pernyataan berikut', '', 'Jakarta ibu kota RI', '', 'Bumi itu datar', '', '2 + 2 = 4', '', 'Matahari terbit dari barat', '', 'B,S,B,S', 'Perhatikan fakta sains']),
   ].join('\n') + '\n';
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="template-soal.csv"');
-  res.send('\uFEFF' + header + body);
+  res.send('\uFEFFsep=;\n' + header + body);
 });
 
-// ============================================================
-// SISWA (impor CSV)
-// ============================================================
+
 app.get('/api/teacher/template-siswa-csv', (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Hanya guru');
-  const csv = 'nis,nama,kelas\n2301,Budi Santoso,XI IPA 1\n2302,Siti Nurhaliza,XI IPA 1\n2303,Ahmad Fauzi,XI IPA 2\n';
+  const csv = 'nisn;nama;kelas\n0012345678;Budi Santoso;VI A\n0012345679;Siti Nurhaliza;VI A\n0012345680;Ahmad Fauzi;VI B\n';
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="template-siswa.csv"');
-  res.send('\uFEFF' + csv);
+  res.send('\uFEFFsep=;\n' + csv);
 });
+
 
 app.post('/api/teacher/import-siswa-csv', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
@@ -909,15 +907,17 @@ app.get('/api/teacher/export', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
   const sesi = db.prepare("SELECT * FROM sesi ORDER BY mulai_at DESC LIMIT 1").get();
   if (!sesi) return res.status(400).send('Belum ada sesi');
-  const rows = db.prepare(`SELECT nama, kelas, skor, total, auto_submit, submit_at FROM siswa_sesi WHERE sesi_id=? ORDER BY submit_at IS NULL, submit_at`).all(sesi.id);
-  const header = 'Nama,Kelas,Skor,Total,AutoSubmit,WaktuSubmit\n';
-  const body = rows.map(r =>
-    `"${r.nama}","${r.kelas||''}",${r.skor ?? ''},${r.total ?? ''},${r.auto_submit ? 'YA' : 'tidak'},"${r.submit_at ? new Date(r.submit_at).toISOString() : ''}"`
-  ).join('\n');
+  const rows = db.prepare('SELECT nama, kelas, skor, total, auto_submit, submit_at FROM siswa_sesi WHERE sesi_id=? ORDER BY submit_at IS NULL, submit_at').all(sesi.id);
+  function esc(s) { s = String(s == null ? '' : s); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  const header = 'Nama;Kelas;Skor;Total;AutoSubmit;WaktuSubmit\n';
+  const body = rows.map(r => {
+    return esc(r.nama) + ';' + esc(r.kelas || '') + ';' + (r.skor != null ? r.skor : '') + ';' + (r.total != null ? r.total : '') + ';' + (r.auto_submit ? 'YA' : 'tidak') + ';' + (r.submit_at ? new Date(r.submit_at).toISOString() : '');
+  }).join('\n');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename="hasil-${sesi.token}.csv"`);
-  res.send(header + body);
+  res.setHeader('Content-Disposition', 'attachment; filename="hasil-' + sesi.token + '.csv"');
+  res.send('\uFEFFsep=;\n' + header + body);
 });
+
 
 app.get('/api/teacher/analisis', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
@@ -933,17 +933,16 @@ app.get('/api/teacher/analisis/export', (req, res) => {
   if (!sesi) return res.status(400).send('Belum ada sesi');
   let d;
   try { d = computeAnalisis(sesi.id); } catch (e) { return res.status(500).send(e.message); }
-  const header = 'No,Tipe,Soal,p-value,Tingkat,D-index,Daya Beda,Benar,Flag\n';
+  function esc(s) { s = String(s == null ? '' : s); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  const header = 'No;Tipe;Soal;p-value;Tingkat;D-index;Daya Beda;Benar;Flag\n';
   const body = d.items.map(it => {
-    const q = it.q.replace(/"/g, '""');
-    return `${it.nomor},${it.tipe},"${q}",${it.pValue.toFixed(3)},${it.levelTingkat},`
-         + `${it.dIndex != null ? it.dIndex.toFixed(3) : ''},${it.levelDB},`
-         + `${it.benar},"${it.flags.join('; ')}"`;
+    return it.nomor + ';' + it.tipe + ';' + esc(it.q) + ';' + it.pValue.toFixed(3) + ';' + it.levelTingkat + ';' + (it.dIndex != null ? it.dIndex.toFixed(3) : '') + ';' + it.levelDB + ';' + it.benar + ';' + esc(it.flags.join(', '));
   }).join('\n');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename="analisis-${sesi.token}.csv"`);
-  res.send(header + body);
+  res.setHeader('Content-Disposition', 'attachment; filename="analisis-' + sesi.token + '.csv"');
+  res.send('\uFEFFsep=;\n' + header + body);
 });
+
 
 app.post('/api/teacher/rilis-pembahasan', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
