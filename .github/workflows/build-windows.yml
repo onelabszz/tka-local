@@ -7,13 +7,17 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Versi (contoh: v17.0)'
+        description: 'Versi (contoh: v18.0)'
         required: true
-        default: 'v17.0'
+        default: 'v18.0'
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: windows-latest
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,21 +29,18 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci || npm install
+        run: npm install
 
-      - name: Verify better-sqlite3 works on Windows
-        run: |
-          node -e "const D = require('better-sqlite3'); const db = new D(':memory:'); db.exec('CREATE TABLE test (id INTEGER)'); db.close(); console.log('OK: better-sqlite3 works on Windows');"
+      - name: Verify better-sqlite3
+        shell: pwsh
+        run: node -e "const D=require('better-sqlite3'); new D(':memory:'); Write-Host 'OK: better-sqlite3 works'"
 
-      - name: Download node.exe portable
+      - name: Download node.exe
         shell: pwsh
         run: |
-          $nodeVersion = 'v20.11.0'
-          $url = "https://nodejs.org/dist/$nodeVersion/win-x64/node.exe"
-          Write-Host "Downloading $url"
-          Invoke-WebRequest -Uri $url -OutFile "node.exe"
+          Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.11.0/win-x64/node.exe" -OutFile "node.exe"
           $size = (Get-Item node.exe).Length / 1MB
-          Write-Host "Downloaded node.exe: $([math]::Round($size, 2)) MB"
+          Write-Host "Downloaded node.exe ($size MB)"
 
       - name: Get version
         id: version
@@ -51,86 +52,90 @@ jobs:
             $ver = "${{ github.ref_name }}"
           }
           echo "value=$ver" >> $env:GITHUB_OUTPUT
-          Write-Host "Version: $ver"
+          Write-Host "Build version: $ver"
 
-      - name: Prepare distribution folder
+      - name: Prepare dist folder
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-
-          # Runtime & core files
-          Copy-Item app.ico dist\
+          
+          # Core files
           Copy-Item node.exe dist\
           Copy-Item server.js dist\
+          Copy-Item guru.html dist\
           Copy-Item package.json dist\
           Copy-Item start.bat dist\
           Copy-Item BACA-SAYA.txt dist\
-
-          # Application code
+          Copy-Item start.sh dist\
+          Copy-Item install.sh dist\
+          
+          # Folders
           Copy-Item -Recurse public dist\public
           Copy-Item -Recurse node_modules dist\node_modules
-
-          # Contoh paket (jika ada)
-          New-Item -ItemType Directory -Force -Path dist\paket | Out-Null
-          New-Item -ItemType Directory -Force -Path dist\paket\gambar | Out-Null
-          if (Test-Path paket\contoh-tka.json) {
-            Copy-Item paket\contoh-tka.json dist\paket\
-          }
-
-          # Folder kosong untuk runtime
+          Copy-Item -Recurse paket dist\paket
+          
+          # Empty folders for runtime
           New-Item -ItemType Directory -Force -Path dist\backups | Out-Null
-
-          Write-Host "=== Struktur dist ==="
+          
+          # Icon & Installer files (if exist)
+          if (Test-Path app.ico) { Copy-Item app.ico dist\ }
+          if (Test-Path installer.iss) { Copy-Item installer.iss .\ }
+          
+          Write-Host "=== Isi folder dist ==="
           Get-ChildItem dist | Format-Table Name, Length -AutoSize
 
-      - name: Create ZIP
+      - name: Create Portable ZIP
         shell: pwsh
         run: |
           $ver = "${{ steps.version.outputs.value }}"
-          $zipName = "tka-local-windows-$ver.zip"
-          Compress-Archive -Path dist\* -DestinationPath $zipName -CompressionLevel Optimal
-          $size = (Get-Item $zipName).Length / 1MB
-          Write-Host "Created $zipName ($([math]::Round($size, 2)) MB)"
-          echo "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
+          $zip = "tka-local-windows-$ver.zip"
+          Compress-Archive -Path dist\* -DestinationPath $zip -CompressionLevel Optimal
+          $size = (Get-Item $zip).Length / 1MB
+          Write-Host "Created $zip ($size MB)"
 
-      - name: Upload artifact (backup)
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build EXE Installer
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.version.outputs.value }}"
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          
+          # Compile installer.iss (passing version parameter)
+          & $iscc installer.iss /DMyAppVersion=$ver
+          
+          # Move output EXE to root folder for artifact upload
+          Move-Item "Output\TKA-Setup-$ver.exe" .\
+          $size = (Get-Item "TKA-Setup-$ver.exe").Length / 1MB
+          Write-Host "Created Installer: TKA-Setup-$ver.exe ($size MB)"
+
+      - name: Upload artifacts (backup)
         uses: actions/upload-artifact@v4
         with:
           name: tka-local-windows
-          path: tka-local-windows-*.zip
+          path: |
+            tka-local-windows-*.zip
+            TKA-Setup-*.exe
           retention-days: 30
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: tka-local-windows-*.zip
+          files: |
+            tka-local-windows-*.zip
+            TKA-Setup-*.exe
           name: TKA Local Host ${{ steps.version.outputs.value }}
           body: |
             ## TKA Local Host ${{ steps.version.outputs.value }}
 
-            Aplikasi ujian lokal untuk sekolah. Berjalan di Windows tanpa instalasi Node.js.
+            Aplikasi ujian lokal untuk sekolah. Berjalan di Windows tanpa instalasi Node.js terpisah.
 
-            ### Cara Pakai
-            1. Download `tka-local-windows-${{ steps.version.outputs.value }}.zip`
-            2. Extract ke folder (misal: `D:\TKA`)
-            3. Double-click `start.bat`
-            4. Ikuti panduan di `BACA-SAYA.txt`
-
-            ### Isi
-            - `node.exe` (Node.js v20.11.0)
-            - `server.js` + `node_modules`
-            - `public/` (UI siswa & guru)
-            - `paket/contoh-tka.json` (paket contoh)
-            - `start.bat` + `BACA-SAYA.txt`
-
-            ### Kebutuhan
-            - Windows 10/11 (64-bit)
-            - RAM minimal 4 GB
-            - Folder dengan izin tulis (bukan `C:\Program Files`)
+            ### Cara Install
+            **Opsi 1 (Installer):** Download `TKA-Setup-${{ steps.version.outputs.value }}.exe`, klik 2x, lalu ikuti wizard instalasi.
+            **Opsi 2 (Portable):** Download ZIP, ekstrak ke folder, lalu klik 2x `start.bat`.
 
             © 2026 Ekwan Nugroho · Wonogiri
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
