@@ -96,7 +96,7 @@ async function importSiswaCSV() {
   } catch (e) { info.textContent = ''; await swalError(e.message); }
 }
 
-function downloadTemplateSiswa() { window.open('/api/teacher/template-siswa-excel', '_blank'); }
+function downloadTemplateSiswa() { window.open('/api/teacher/template-siswa-csv', '_blank'); }
 
 async function hapusSiswa(id, nama) {
   if (!await swalConfirm('Hapus "' + nama + '" dari daftar siswa?', 'Hapus Siswa')) return;

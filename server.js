@@ -729,115 +729,6 @@ app.post('/api/teacher/hapus-paket', (req, res) => {
   res.json({ ok: true });
 });
 
-
-
-app.post('/api/teacher/import-paket-excel', async (req, res) => {
-  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
-  const { paketId, judul, mapel, durasiMenit, base64 } = req.body;
-  if (!paketId || !/^[a-z0-9-]+$/.test(paketId)) return res.status(400).json({ error: 'ID paket tidak valid' });
-  if (!base64) return res.status(400).json({ error: 'File kosong' });
-  
-  const filePath = path.join(PAKET_DIR, paketId + '.json');
-  if (fs.existsSync(filePath)) return res.status(409).json({ error: `Paket "${paketId}" sudah ada` });
-
-  try {
-    const buffer = Buffer.from(base64, 'base64');
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
-    const sheet = workbook.getWorksheet(1);
-    
-    let csv = '';
-    sheet.eachRow((row) => {
-      let rowArr = [];
-      row.eachCell({ includeEmpty: true }, (cell) => {
-        let val = cell.text || '';
-        if (/[",;\n]/.test(val)) {
-          val = '"' + val.replace(/"/g, '""') + '"';
-        }
-        rowArr.push(val);
-      });
-      if (rowArr.length > 0) csv += rowArr.join(',') + '\n';
-    });
-
-    const paket = csvToPaket(csv, {
-      paketId,
-      judul: judul || paketId,
-      mapel: mapel || 'Campuran',
-      durasiMenit: Number(durasiMenit) || 15,
-    });
-    fs.writeFileSync(filePath, JSON.stringify(paket, null, 2), 'utf8');
-    PAKET = loadPaket();
-    res.json({ ok: true, paketId, jumlahSoal: paket.soal.length });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-// v18.5: Endpoint Template Excel
-app.get('/api/teacher/template-excel', async (req, res) => {
-  if (!isLocal(req)) return res.status(403).send('Hanya guru');
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Paket Soal');
-  
-  sheet.columns = [
-    { header: 'no', key: 'no', width: 5 },
-    { header: 'tipe', key: 'tipe', width: 10 },
-    { header: 'soal', key: 'soal', width: 40 },
-    { header: 'img', key: 'img', width: 15 },
-    { header: 'opsi_a', key: 'opsi_a', width: 20 },
-    { header: 'opsi_a_img', key: 'opsi_a_img', width: 15 },
-    { header: 'opsi_b', key: 'opsi_b', width: 20 },
-    { header: 'opsi_b_img', key: 'opsi_b_img', width: 15 },
-    { header: 'opsi_c', key: 'opsi_c', width: 20 },
-    { header: 'opsi_c_img', key: 'opsi_c_img', width: 15 },
-    { header: 'opsi_d', key: 'opsi_d', width: 20 },
-    { header: 'opsi_d_img', key: 'opsi_d_img', width: 15 },
-    { header: 'kunci', key: 'kunci', width: 10 },
-    { header: 'pembahasan', key: 'pembahasan', width: 40 }
-  ];
-
-  sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
-  sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
-
-  const infoRow = sheet.addRow(['', 'pg/mcma/bs', 'Tulis teks soal...', 'nama-file.png', 'Opsi A', '', 'Opsi B', '', 'Opsi C', '', 'Opsi D', '', 'A / AC / B,S', 'Penjelasan jawaban...']);
-  infoRow.font = { italic: true, color: { argb: 'FF64748B' } };
-
-  for (let i = 3; i <= 1000; i++) {
-    sheet.getCell(`B${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: ['"pg,mcma,bs"'] };
-  }
-
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader('Content-Disposition', 'attachment; filename="Template-Paket-Soal.xlsx"');
-  await workbook.xlsx.write(res);
-  res.end();
-});
-
-app.get('/api/teacher/template-siswa-excel', async (req, res) => {
-  if (!isLocal(req)) return res.status(403).send('Hanya guru');
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Data Siswa');
-  
-  sheet.columns = [
-    { header: 'nisn', key: 'nisn', width: 20 },
-    { header: 'nama', key: 'nama', width: 30 },
-    { header: 'kelas', key: 'kelas', width: 20 }
-  ];
-  
-  sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF047857' } };
-  sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
-
-  sheet.getColumn('nisn').numFmt = '@';
-  const infoRow = sheet.addRow(['10 Digit Angka', 'Nama Lengkap', 'Contoh: VI A']);
-  infoRow.font = { italic: true, color: { argb: 'FF64748B' } };
-
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader('Content-Disposition', 'attachment; filename="Template-Data-Siswa.xlsx"');
-  await workbook.xlsx.write(res);
-  res.end();
-});
-
 app.get('/api/teacher/template-csv', (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Hanya guru');
   const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
@@ -865,32 +756,16 @@ app.get('/api/teacher/template-siswa-csv', (req, res) => {
   res.send('\uFEFF' + csv);
 });
 
-app.post('/api/teacher/import-siswa-excel', async (req, res) => {
+app.post('/api/teacher/import-siswa-csv', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
-  const { base64, mode } = req.body;
-  if (!base64) return res.status(400).json({ error: 'File kosong' });
+  const { csv, mode } = req.body;
+  if (!csv || typeof csv !== 'string') return res.status(400).json({ error: 'CSV kosong' });
   try {
-    const buffer = Buffer.from(base64, 'base64');
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
-    const sheet = workbook.getWorksheet(1);
-    
-    const list = [];
-    sheet.eachRow((row, rowNumber) => {
-      if (rowNumber <= 2) return;
-      const nisn = row.getCell(1).text || '';
-      const nama = row.getCell(2).text || '';
-      const kelas = row.getCell(3).text || '';
-      if (nama.trim()) list.push({ nisn, nama, kelas });
-    });
-
-    if (!list.length) throw new Error('Tidak ada data siswa valid di Excel');
+    const list = csvToSiswa(csv);
     if (mode === 'replace') db.prepare("DELETE FROM siswa").run();
-    
     const insert = db.prepare("INSERT INTO siswa (nisn, nama, kelas, created_at) VALUES (?,?,?,?)");
-    const tx = db.transaction(() => { for (const s of list) insert.run(s.nisnn, s.nama, s.kelas, Date.now()); });
+    const tx = db.transaction(() => { for (const s of list) insert.run(s.nisn || '', s.nama, s.kelas || '', Date.now()); });
     tx();
-    
     const total = db.prepare("SELECT COUNT(*) AS n FROM siswa").get().n;
     res.json({ ok: true, ditambahkan: list.length, total });
   } catch (e) { res.status(400).json({ error: e.message }); }

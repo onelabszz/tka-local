@@ -6,7 +6,7 @@
   "soal": [
     {
       "id": "s1",
-      "q": "Hasil dari 2 + 2 adalah...",
+      "q": "Hasil dari 2 + 2 adalah...$\\sqrt{x}$ $x^{2}$ $\\frac{a}{b}$",
       "options": [
         "3",
         "4",
@@ -16,10 +16,9 @@
       "key": 1,
       "pembahasan": "2 + 2 = 4. Jawaban yang benar adalah 4.",
       "tipe": "pg",
-      "img": "image.png",
       "optionImgs": [
         null,
-        "logo.png",
+        null,
         null,
         null
       ]
@@ -142,5 +141,6 @@
       "tipe": "pg"
     }
   ],
-  "latihanMandiri": true
+  "latihanMandiri": false,
+  "acakMode": "per-tipe"
 }

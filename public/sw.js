@@ -22,10 +22,15 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Jangan cache request ke API (jawaban, login, dll)
   if (e.request.url.includes('/api/') || e.request.url.includes('/gambar/')) return;
   
   e.respondWith(
-    caches.match(e.request).then((cached) => cached || fetch(e.request))
+    caches.match(e.request).then((cached) => {
+      return cached || fetch(e.request).catch(() => {
+        // Jika server mati/offline dan file tidak ada di cache, berikan response kosong
+        // agar tidak memunculkan error merah di console
+        return new Response('', { status: 503, statusText: 'Offline' });
+      });
+    })
   );
 });
