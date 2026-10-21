@@ -14,7 +14,6 @@ const { exec } = require('child_process');
 const Database = require('better-sqlite3');
 const multer   = require('multer');
 const archiver = require('archiver');
-const ExcelJS = require('exceljs');
 
 const app = express();
 const PORT = 3000;
