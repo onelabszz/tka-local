@@ -59,6 +59,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path dist | Out-Null
 
           # Runtime & core files
+          Copy-Item app.ico dist\
           Copy-Item node.exe dist\
           Copy-Item server.js dist\
           Copy-Item package.json dist\
