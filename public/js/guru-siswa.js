@@ -21,7 +21,7 @@ async function loadSiswa() {
     tbody.innerHTML = list.map(function(s, i) {
       return '<tr>' +
         '<td>' + (i + 1) + '</td>' +
-        '<td>' + escapeHtml(s.nis || '-') + '</td>' +
+        '<td>' + escapeHtml(s.nisn || '-') + '</td>' +
         '<td><b>' + escapeHtml(s.nama) + '</b></td>' +
         '<td>' + escapeHtml(s.kelas || '-') + '</td>' +
         '<td><button class="btn btn-danger btn-sm" onclick="hapusSiswa(' + s.id + ',\'' + (s.nama || '').replace(/'/g, "\\'") + '\')">Hapus</button></td>' +
@@ -59,6 +59,63 @@ async function toggleWajibSiswa() {
     await swalError(e.message);
     document.getElementById('wajibSiswaToggle').checked = !aktif;
   }
+}
+
+async function refreshKehadiran() {
+  try {
+    const r = await fetch('/api/teacher/live');
+    const d = await r.json();
+    const metrics = document.getElementById('siswaMetrics');
+    if (!d.aktif) {
+      metrics.style.display = 'none';
+      return;
+    }
+    metrics.style.display = 'grid';
+    const totalTerdaftar = d.totalTerdaftar || 0;
+    const belumMasuk = (d.belumMasuk || []).length;
+    const sudahMasuk = Math.max(0, totalTerdaftar - belumMasuk);
+
+    document.getElementById('mTerdaftar').textContent = totalTerdaftar;
+    document.getElementById('mTerdaftarSub').textContent = totalTerdaftar > 0 ? 'siswa' : 'Belum ada data';
+    document.getElementById('mSudahMasuk').textContent = sudahMasuk;
+    document.getElementById('mSudahMasukSub').textContent = totalTerdaftar > 0
+      ? Math.round(sudahMasuk / totalTerdaftar * 100) + '% hadir' : '—';
+    document.getElementById('mBelumMasuk').textContent = belumMasuk;
+    document.getElementById('mBelumMasukSub').textContent = belumMasuk > 0 ? 'belum join' : '—';
+  } catch (e) { console.error(e); }
+}
+
+async function importSiswaCSV() {
+  const file = document.getElementById('csvSiswaFile').files[0];
+  const info = document.getElementById('importSiswaInfo');
+  if (!file) { await swalInfo('Pilih file Excel (.xlsx) dulu'); return; }
+  const mode = document.getElementById('importSiswaMode').value;
+  if (mode === 'replace') {
+    if (!await swalConfirm('Ganti SEMUA data siswa dengan isi file ini? Data lama akan hilang.', 'Konfirmasi Replace')) return;
+  }
+  info.textContent = 'Membaca file Excel...';
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    info.textContent = 'Mengimpor…';
+    try {
+      const r = await fetch('/api/teacher/import-siswa-excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64: base64, mode: mode })
+      });
+      const d = await r.json();
+      if (!r.ok) { info.textContent = ''; await swalError(d.error || 'Gagal import', 'Import Gagal'); return; }
+      info.textContent = 'Berhasil: ' + d.ditambahkan + ' siswa ditambahkan. Total: ' + d.total;
+      document.getElementById('csvSiswaFile').value = '';
+      await swalSuccess(d.ditambahkan + ' siswa diimpor. Total sekarang: ' + d.total + ' siswa.');
+      await loadSiswa(); await loadSiswaPanel();
+    } catch (err) { info.textContent = ''; await swalError(err.message); }
+  };
+  reader.readAsDataURL(file);
+}
+
+}
 }
 
 async function refreshKehadiran() {

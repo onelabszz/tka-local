@@ -114,41 +114,74 @@ async function hapusPaketById(paketId) {
 }
 function downloadTemplate() { window.open('/api/teacher/template-csv', '_blank'); }
 async function importCSV() {
-  var file = document.getElementById('csvFile').files[0];
-  var info = document.getElementById('importInfo');
-  if (!file) { await swalInfo('Pilih file CSV dulu'); return; }
-  var idInput = document.getElementById('impPaketId').value.trim();
-  var judulInput = document.getElementById('impJudul').value.trim();
+  const file = document.getElementById('csvFile').files[0];
+  const info = document.getElementById('importInfo');
+  if (!file) { await swalInfo('Pilih file dulu'); return; }
+
+  let idInput = document.getElementById('impPaketId').value.trim();
+  let judulInput = document.getElementById('impJudul').value.trim();
+
   if (!idInput && !judulInput) {
-    var namaFile = file.name.replace(/\.csv$/i, '');
+    var namaFile = file.name.replace(/\.[^.]+$/, '');
     idInput = namaFile;
     document.getElementById('impPaketId').value = namaFile;
     document.getElementById('impJudul').value = namaFile;
     judulInput = namaFile;
   }
+
   var paketId = slugify(idInput || judulInput);
   if (!paketId) { await swalError('ID kosong. Isi ID atau Judul.'); return; }
-  info.textContent = 'Mengimpor…';
-  var csv = await file.text();
-  var r = await fetch('/api/teacher/import-csv', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      paketId: paketId,
-      judul: judulInput || paketId,
-      mapel: document.getElementById('impMapel').value.trim() || 'Campuran',
-      durasiMenit: parseInt(document.getElementById('impDurasi').value) || 15,
-      csv: csv
-    })
-  });
-  var d = await r.json();
-  if (!r.ok) { info.textContent = ''; await swalError(d.error || 'Gagal import', 'Import Gagal'); return; }
-  info.textContent = 'Berhasil: paket "' + d.paketId + '" (' + d.jumlahSoal + ' soal)';
-  document.getElementById('impPaketId').value = '';
-  document.getElementById('impJudul').value = '';
-  document.getElementById('csvFile').value = '';
-  document.getElementById('impSlugPreview').textContent = 'ID final: (kosong)';
-  await swalSuccess('Paket "' + d.paketId + '" diimpor: ' + d.jumlahSoal + ' soal');
-  await loadPaket();
+
+  var mapel = document.getElementById('impMapel').value.trim() || 'Campuran';
+  var durasiMenit = parseInt(document.getElementById('impDurasi').value) || 15;
+  
+  const isExcel = file.name.endsWith('.xlsx');
+  info.textContent = 'Membaca file...';
+
+  if (isExcel) {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target.result.split(',')[1];
+      info.textContent = 'Mengimpor Excel...';
+      try {
+        const r = await fetch('/api/teacher/import-paket-excel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paketId, judul: judulInput || paketId, mapel, durasiMenit, base64 })
+        });
+        const d = await r.json();
+        if (!r.ok) { info.textContent = ''; await swalError(d.error || 'Gagal import', 'Import Gagal'); return; }
+        info.textContent = 'Berhasil: paket "' + d.paketId + '" (' + d.jumlahSoal + ' soal)';
+        document.getElementById('impPaketId').value = '';
+        document.getElementById('impJudul').value = '';
+        document.getElementById('csvFile').value = '';
+        document.getElementById('impSlugPreview').textContent = 'ID final: (kosong)';
+        await swalSuccess('Paket "' + d.paketId + '" diimpor: ' + d.jumlahSoal + ' soal');
+        await loadPaket();
+      } catch (err) { info.textContent = ''; await swalError(err.message); }
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // Proses CSV Lama
+    const csv = await file.text();
+    info.textContent = 'Mengimpor CSV...';
+    try {
+      const r = await fetch('/api/teacher/import-csv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paketId, judul: judulInput || paketId, mapel, durasiMenit, csv })
+      });
+      const d = await r.json();
+      if (!r.ok) { info.textContent = ''; await swalError(d.error || 'Gagal import', 'Import Gagal'); return; }
+      info.textContent = 'Berhasil: paket "' + d.paketId + '" (' + d.jumlahSoal + ' soal)';
+      document.getElementById('impPaketId').value = '';
+      document.getElementById('impJudul').value = '';
+      document.getElementById('csvFile').value = '';
+      document.getElementById('impSlugPreview').textContent = 'ID final: (kosong)';
+      await swalSuccess('Paket "' + d.paketId + '" diimpor: ' + d.jumlahSoal + ' soal');
+      await loadPaket();
+    } catch (err) { info.textContent = ''; await swalError(err.message); }
+  }
 }
 
 async function toggleLatihan(paketId, aktifSekarang) {

@@ -161,9 +161,9 @@
           <input id="impDurasi" class="form-input" type="number" value="15" placeholder="Durasi (menit)">
         </div>
         <p id="impSlugPreview" class="muted" style="margin-top:0;margin-bottom:10px">ID final: (kosong)</p>
-        <input type="file" id="csvFile" accept=".csv,text/csv" style="padding:10px;border:2px dashed var(--g200);border-radius:5px;width:100%;margin-bottom:10px">
+        <input type="file" id="csvFile" accept=".xlsx,.csv" style="padding:10px;border:2px dashed var(--g200);border-radius:5px;width:100%;margin-bottom:10px">
         <button class="btn btn-primary" onclick="importCSV()">Import</button>
-        <button class="btn btn-secondary" onclick="downloadTemplate()">Unduh Template</button>
+        <button class="btn btn-secondary" onclick="window.open('/api/teacher/template-excel','_blank')">Unduh Template</button>
         <p id="importInfo" class="muted"></p>
       </div>
 
@@ -287,17 +287,17 @@
       <div class="card">
         <h3 class="card-title">Import dari CSV</h3>
         <p class="muted" style="margin-top:0">
-          Format: <code style="background:var(--g100);padding:2px 6px;border-radius:3px">nis,nama,kelas</code> — nis dan kelas opsional
+          Format: <code style="background:var(--g100);padding:2px 6px;border-radius:3px">nisn,nama,kelas</code> — unduh template Excel di bawah untuk hasil terbaik.
         </p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-          <input type="file" id="csvSiswaFile" accept=".csv,text/csv" style="padding:10px;border:2px dashed var(--g200);border-radius:5px;flex:1;min-width:200px">
+          <input type="file" id="csvSiswaFile" accept=".xlsx,.csv" style="padding:10px;border:2px dashed var(--g200);border-radius:5px;flex:1;min-width:200px">
           <select id="importSiswaMode" class="form-input" style="max-width:220px">
             <option value="append">Tambah (append)</option>
             <option value="replace">Ganti semua (replace)</option>
           </select>
         </div>
         <button class="btn btn-primary" onclick="importSiswaCSV()">Import</button>
-        <button class="btn btn-secondary" onclick="downloadTemplateSiswa()">Unduh Template</button>
+        <button class="btn btn-secondary" onclick="window.open('/api/teacher/template-siswa-excel','_blank')">Unduh Template</button>
         <p id="importSiswaInfo" class="muted"></p>
       </div>
 
@@ -314,7 +314,7 @@
         <div style="overflow-x:auto">
           <table>
             <thead>
-              <tr><th>#</th><th>NIS</th><th>Nama</th><th>Kelas</th><th></th></tr>
+              <tr><th>#</th><th>NISN</th><th>Nama</th><th>Kelas</th><th></th></tr>
             </thead>
             <tbody id="siswaTable"><tr><td colspan="5" class="muted" style="text-align:center;padding:36px">Belum ada siswa</td></tr></tbody>
           </table>
