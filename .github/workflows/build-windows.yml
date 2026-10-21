@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Versi (contoh: v18.0)'
+        description: 'Versi (contoh: v18.1)'
         required: true
-        default: 'v18.0'
+        default: 'v18.1'
 
 permissions:
   contents: write
@@ -33,7 +33,8 @@ jobs:
 
       - name: Verify better-sqlite3
         shell: pwsh
-        run: node -e "const D=require('better-sqlite3'); new D(':memory:'); Write-Host 'OK: better-sqlite3 works'"
+        run: |
+          node -e "const D=require('better-sqlite3'); new D(':memory:'); console.log('OK');"
 
       - name: Download node.exe
         shell: pwsh
@@ -59,7 +60,6 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           
-          # Core files
           Copy-Item node.exe dist\
           Copy-Item server.js dist\
           Copy-Item guru.html dist\
@@ -69,17 +69,13 @@ jobs:
           Copy-Item start.sh dist\
           Copy-Item install.sh dist\
           
-          # Folders
           Copy-Item -Recurse public dist\public
           Copy-Item -Recurse node_modules dist\node_modules
           Copy-Item -Recurse paket dist\paket
           
-          # Empty folders for runtime
           New-Item -ItemType Directory -Force -Path dist\backups | Out-Null
           
-          # Icon & Installer files (if exist)
           if (Test-Path app.ico) { Copy-Item app.ico dist\ }
-          if (Test-Path installer.iss) { Copy-Item installer.iss .\ }
           
           Write-Host "=== Isi folder dist ==="
           Get-ChildItem dist | Format-Table Name, Length -AutoSize
@@ -102,10 +98,8 @@ jobs:
           $ver = "${{ steps.version.outputs.value }}"
           $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
           
-          # Compile installer.iss (passing version parameter)
           & $iscc installer.iss /DMyAppVersion=$ver
           
-          # Move output EXE to root folder for artifact upload
           Move-Item "Output\TKA-Setup-$ver.exe" .\
           $size = (Get-Item "TKA-Setup-$ver.exe").Length / 1MB
           Write-Host "Created Installer: TKA-Setup-$ver.exe ($size MB)"
