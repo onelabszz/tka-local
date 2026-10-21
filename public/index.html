@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="theme-color" content="#1e40af">
 <title>Try Out TKA</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1e40af">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link rel="stylesheet" href="/css/siswa.css">
 </head>
 <body>
@@ -25,9 +27,18 @@
       <button type="submit" class="btn btn-primary" id="joinBtn">Mulai Ujian</button>
       <p id="err" class="err-msg"></p>
       <p id="resuming" class="hidden" style="text-align:center;color:var(--g500);margin-top:12px;font-size:13px;">Memuat sesi sebelumnya…</p>
+      
       <div style="text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid var(--g200)">
         <a href="#" onclick="event.preventDefault();bukaLatihanMode()" style="color:var(--primary);font-weight:600;font-size:14px;text-decoration:none">🎓 Mode Latihan Mandiri →</a>
+        
+        <!-- TOMBOL INSTALL PWA -->
+        <div id="pwaInstallWrap" style="display:none; margin-top:12px;">
+          <button type="button" id="pwaInstallBtn" class="btn btn-secondary" style="width:100%; padding:10px; border-radius:8px;">
+            📥 Install Aplikasi ke Layar Utama
+          </button>
+        </div>
       </div>
+      
       <p class="copyright">© 2026 Ekwan Nugroho · Wonogiri</p>
     </form>
   </div>

@@ -1,7 +1,38 @@
 // ============================================================
-// siswa-app.js — v16 split
-// Login, exam, latihan, autosave offline, submit, review
+// siswa-app.js — v18.2 (PWA Ready)
 // ============================================================
+
+// ===== PWA INSTALL LOGIC =====
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const wrap = document.getElementById('pwaInstallWrap');
+  if (wrap) wrap.style.display = 'block';
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('pwaInstallBtn');
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        const wrap = document.getElementById('pwaInstallWrap');
+        if (wrap) wrap.style.display = 'none';
+      }
+      deferredPrompt = null;
+    });
+  }
+
+  // Daftarkan Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch((err) => console.log('SW Gagal:', err));
+  }
+});
+// =============================
 
 // ============ STATE ============
 var LS_ID = 'tka_siswaId';
