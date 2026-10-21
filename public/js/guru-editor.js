@@ -123,6 +123,25 @@ function renderEditorSoal() {
     return;
   }
   el.innerHTML = editorPaket.soal.map(renderKartuSoal).join('');
+  setTimeout(function() {
+    editorPaket.soal.forEach(function(s, i) {
+      renderLivePreview('preview-soal-' + i, s.q);
+      if (s.options) {
+        s.options.forEach(function(opt, idx) { renderLivePreview('preview-opsi-' + i + '-' + idx, opt); });
+      }
+    });
+  }, 100);
+}
+
+function renderLivePreview(id, text) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (!text || !text.trim()) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = escapeHtml(text);
+  if (window.renderMathInElement) {
+    renderMathInElement(el, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
+  }
 }
 
 function renderKartuSoal(s, i) {
@@ -143,7 +162,8 @@ function renderKartuSoal(s, i) {
   html += '<button type="button" class="btn btn-secondary btn-sm" onclick="sisipkanPangkat(' + i + ')">x²</button>';
   html += '<button type="button" class="btn btn-secondary btn-sm" onclick="sisipkanAkar(' + i + ')">√</button>';
   html += '</div>';
-  html += '<textarea id="teks-soal-' + i + '" class="form-input" rows="2" oninput="editorUpdateField(' + i + ',\'q\',this.value)">' + escapeHtml(s.q || '') + '</textarea></div>';
+  html += '<textarea id="teks-soal-' + i + '" class="form-input" rows="2" oninput="editorUpdateField(' + i + ',\'q\',this.value)">' + escapeHtml(s.q || '') + '</textarea>';
+  html += '<div id="preview-soal-' + i + '" class="math-preview" style="display:none;"></div></div>';
   html += renderGambarField(i, 'img', s.img, 'Gambar soal (opsional)');
   if (tipe === 'bs') html += renderBsEditor(s, i);
   else html += renderOpsiEditor(s, i, tipe);
@@ -153,30 +173,22 @@ function renderKartuSoal(s, i) {
 }
 
 function sisipkanPecahan(i) {
-  var el = document.getElementById('teks-soal-' + i);
-  if (!el) return;
-  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value;
-  var math = '$\\frac{a}{b}$';
-  el.value = text.substring(0, start) + math + text.substring(end);
-  editorUpdateField(i, 'q', el.value); el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
+  var el = document.getElementById('teks-soal-' + i); if (!el) return;
+  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value; var math = '$\\frac{a}{b}$';
+  el.value = text.substring(0, start) + math + text.substring(end); editorUpdateField(i, 'q', el.value);
+  el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
 }
-
 function sisipkanPangkat(i) {
-  var el = document.getElementById('teks-soal-' + i);
-  if (!el) return;
-  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value;
-  var math = '$x^{2}$';
-  el.value = text.substring(0, start) + math + text.substring(end);
-  editorUpdateField(i, 'q', el.value); el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
+  var el = document.getElementById('teks-soal-' + i); if (!el) return;
+  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value; var math = '$x^{2}$';
+  el.value = text.substring(0, start) + math + text.substring(end); editorUpdateField(i, 'q', el.value);
+  el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
 }
-
 function sisipkanAkar(i) {
-  var el = document.getElementById('teks-soal-' + i);
-  if (!el) return;
-  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value;
-  var math = '$\\sqrt{x}$';
-  el.value = text.substring(0, start) + math + text.substring(end);
-  editorUpdateField(i, 'q', el.value); el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
+  var el = document.getElementById('teks-soal-' + i); if (!el) return;
+  var start = el.selectionStart; var end = el.selectionEnd; var text = el.value; var math = '$\\sqrt{x}$';
+  el.value = text.substring(0, start) + math + text.substring(end); editorUpdateField(i, 'q', el.value);
+  el.focus(); el.selectionStart = el.selectionEnd = start + math.length;
 }
 
 function renderGambarField(soalIdx, field, namaFile, label) {
@@ -204,6 +216,7 @@ function renderOpsiEditor(s, i, tipe) {
     html += '<div style="display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:start;margin:6px 0;padding:8px;border:1.5px solid ' + (isK ? '#86efac' : '#e2e8f0') + ';border-radius:6px;background:' + (isK ? '#f0fdf4' : '#f8fafc') + '">';
     html += '<div style="font-weight:700;padding-top:8px">' + letters[idx] + '</div>';
     html += '<div><input class="form-input" value="' + escapeHtml(opt) + '" placeholder="Teks opsi ' + letters[idx] + '" oninput="editorUpdateOpsi(' + i + ',' + idx + ',this.value)">';
+    html += '<div id="preview-opsi-' + i + '-' + idx + '" class="math-preview" style="display:none;"></div>';
     if (optImg) {
       html += '<div style="margin-top:6px;display:flex;gap:6px;align-items:center"><img src="/gambar/' + encodeURIComponent(optImg) + '" style="max-height:36px;border-radius:3px"><span class="muted" style="font-size:11px">' + escapeHtml(optImg) + '</span><button class="btn btn-danger btn-sm" onclick="editorHapusGambar(' + i + ',\'optionImgs.' + idx + '\')">×</button></div>';
     }
@@ -233,16 +246,22 @@ function renderBsEditor(s, i) {
   return html;
 }
 
-function editorUpdateField(i, field, value) { editorPaket.soal[i][field] = value; setEditorDirty(true); }
-function editorUpdateOpsi(i, idx, value) { if (!editorPaket.soal[i].options) editorPaket.soal[i].options = ['','','','']; editorPaket.soal[i].options[idx] = value; setEditorDirty(true); }
+function editorUpdateField(i, field, value) { 
+  editorPaket.soal[i][field] = value; 
+  setEditorDirty(true); 
+  if (field === 'q') renderLivePreview('preview-soal-' + i, value);
+}
+function editorUpdateOpsi(i, idx, value) { 
+  if (!editorPaket.soal[i].options) editorPaket.soal[i].options = ['','','','']; 
+  editorPaket.soal[i].options[idx] = value; 
+  setEditorDirty(true); 
+  renderLivePreview('preview-opsi-' + i + '-' + idx, value);
+}
 function editorSetKunciPg(i, idx) { editorPaket.soal[i].key = idx; setEditorDirty(true); renderEditorSoal(); }
 function editorToggleKunciMcma(i, idx) {
-  var s = editorPaket.soal[i];
-  if (!Array.isArray(s.key)) s.key = [];
-  var pos = s.key.indexOf(idx);
-  if (pos >= 0) s.key.splice(pos, 1); else s.key.push(idx);
-  s.key.sort(function(a, b) { return a - b; });
-  setEditorDirty(true); renderEditorSoal();
+  var s = editorPaket.soal[i]; if (!Array.isArray(s.key)) s.key = [];
+  var pos = s.key.indexOf(idx); if (pos >= 0) s.key.splice(pos, 1); else s.key.push(idx);
+  s.key.sort(function(a, b) { return a - b; }); setEditorDirty(true); renderEditorSoal();
 }
 function editorUpdatePernyataan(i, idx, value) { editorPaket.soal[i].pernyataan[idx].teks = value; setEditorDirty(true); }
 function editorSetBs(i, idx, val) { editorPaket.soal[i].pernyataan[idx].key = val; setEditorDirty(true); renderEditorSoal(); }
@@ -395,7 +414,21 @@ async function editorSimpan() {
 function editorPreview() {
   if (!editorPaket) return;
   var items = editorPaket.soal.map(function(s, i) { return renderPreviewSoal(s, i); }).join('');
-  Swal.fire({ title: escapeHtml(editorPaket.judul) + ' — ' + escapeHtml(editorPaket.mapel), html: '<div style="font-size:13px;color:#64748b;margin-bottom:12px">' + editorPaket.soal.length + ' soal / ' + editorPaket.durasiMenit + ' menit (belum disimpan)</div>' + items, width: '850px', showCloseButton: true, showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Tutup', cancelButtonColor: '#64748b' });
+  Swal.fire({ 
+    title: escapeHtml(editorPaket.judul) + ' — ' + escapeHtml(editorPaket.mapel), 
+    html: '<div style="font-size:13px;color:#64748b;margin-bottom:12px">' + editorPaket.soal.length + ' soal / ' + editorPaket.durasiMenit + ' menit (belum disimpan)</div>' + items, 
+    width: '850px', 
+    showCloseButton: true, 
+    showConfirmButton: false, 
+    showCancelButton: true, 
+    cancelButtonText: 'Tutup', 
+    cancelButtonColor: '#64748b',
+    didOpen: function() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.querySelector('.swal2-html-container'), { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
+      }
+    }
+  });
 }
 
 function renderPreviewSoal(s, i) {

@@ -273,3 +273,17 @@ details[open] summary::before { transform: rotate(90deg); }
 .modal .gambar-item img {
   max-height: 80px; object-fit: contain;
 }
+
+/* Live Preview Rumus Matematika */
+.math-preview {
+  min-height: 24px;
+  padding: 8px;
+  margin-top: 4px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #334155;
+}
+.math-preview:empty { display: none; }
+.katex { font-size: 1.1em; }
