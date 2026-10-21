@@ -83,6 +83,16 @@ CREATE TABLE IF NOT EXISTS settings (
 `);
 
 try { db.exec("ALTER TABLE siswa_sesi ADD COLUMN auto_submit INTEGER DEFAULT 0"); } catch {}
+db.exec(`
+CREATE TABLE IF NOT EXISTS sekolah (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  nama TEXT DEFAULT '',
+  alamat TEXT DEFAULT '',
+  kepsek TEXT DEFAULT '',
+  nip TEXT DEFAULT ''
+);
+INSERT OR IGNORE INTO sekolah (id) VALUES (1);
+`);
 try { db.exec("ALTER TABLE siswa_sesi ADD COLUMN ragu_json TEXT"); } catch {}
 try { db.exec("ALTER TABLE sesi ADD COLUMN rilis_pembahasan INTEGER DEFAULT 0"); } catch {}
 try { db.exec("ALTER TABLE jawaban ADD COLUMN jawaban_json TEXT"); } catch {}
@@ -1252,6 +1262,61 @@ app.post('/api/teacher/toggle-latihan', (req, res) => {
   fs.writeFileSync(filePath, JSON.stringify(paket, null, 2), 'utf8');
   PAKET = loadPaket();
   res.json({ ok: true, latihanMandiri: paket.latihanMandiri });
+});
+
+
+// ============================================================
+// ADMINISTRASI CETAK (v18.12)
+// ============================================================
+app.get('/api/teacher/sekolah', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const data = db.prepare("SELECT * FROM sekolah WHERE id=1").get();
+  res.json(data || { nama: '', alamat: '', kepsek: '', nip: '' });
+});
+
+app.post('/api/teacher/sekolah', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const { nama, alamat, kepsek, nip } = req.body;
+  db.prepare("UPDATE sekolah SET nama=?, alamat=?, kepsek=?, nip=? WHERE id=1")
+    .run(nama || '', alamat || '', kepsek || '', nip || '');
+  res.json({ ok: true });
+});
+
+app.get('/api/teacher/admin-data', async (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const paketId = req.query.paketId;
+  const paket = PAKET[paketId];
+  if (!paket) return res.status(404).json({ error: 'Paket tidak ditemukan' });
+  const siswa = db.prepare("SELECT id, nisn, nama, kelas FROM siswa ORDER BY kelas, nama").all();
+  const sekolah = db.prepare("SELECT * FROM sekolah WHERE id=1").get();
+  const sesi = db.prepare("SELECT * FROM sesi WHERE paket_id=? ORDER BY mulai_at DESC LIMIT 1").get(paketId);
+  
+  let qrUrl = null;
+  let kehadiran = { total: siswa.length, hadir: 0, tidakHadir: siswa.length };
+  
+  if (sesi) {
+    try {
+      const url = 'http://' + SERVER_IP + ':' + PORT + '/?t=' + sesi.token;
+      qrUrl = await qrLib.toDataURL(url, { width: 250, margin: 1, errorCorrectionLevel: 'M' });
+    } catch (e) {}
+    
+    // Hitung kehadiran dari tabel siswa_sesi
+    const hadirCount = db.prepare("SELECT COUNT(*) AS n FROM siswa_sesi WHERE sesi_id=?").get(sesi.id).n;
+    kehadiran.hadir = hadirCount;
+    kehadiran.tidakHadir = Math.max(0, siswa.length - hadirCount);
+  }
+  
+  res.json({
+    paket: { id: paket.id, judul: paket.judul, mapel: paket.mapel, durasi: paket.durasiMenit },
+    siswa, sekolah, kehadiran,
+    sesi: sesi ? { token: sesi.token, mulaiAt: sesi.mulai_at, qrUrl } : null,
+    serverUrl: 'http://' + SERVER_IP + ':' + PORT
+  });
+});
+
+app.get('/administrasi', (req, res) => {
+  if (!isLocal(req)) return res.status(403).send('Akses hanya dari laptop guru');
+  res.sendFile(path.join(__dirname, 'public', 'administrasi.html'));
 });
 
 // ============================================================

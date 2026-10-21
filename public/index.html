@@ -10,7 +10,17 @@
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link rel="stylesheet" href="/katex/katex.min.css">
 <link rel="stylesheet" href="/css/siswa.css">
-<script defer src="/katex/katex.min.js"></script>
+<script defer src="/katex/katex.min.js">
+// Auto-fill token dari QR Code (jika ada parameter ?t=)
+if (window.location.search) {
+  const params = new URLSearchParams(window.location.search);
+  const t = params.get('t');
+  if (t) {
+    const tokenEl = document.getElementById('token');
+    if (tokenEl) tokenEl.value = t.toUpperCase();
+  }
+}
+</script>
 <script defer src="/katex/contrib/auto-render.min.js"></script>
 </head>
 <body>

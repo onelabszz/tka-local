@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cetak Administrasi TKA</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+* { box-sizing: border-box; }
+body { font-family: 'Times New Roman', Georgia, serif; background: #f1f5f9; margin: 0; color: #000; font-size: 14px; }
+.toolbar { background: #1e40af; color: white; padding: 12px 24px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.toolbar h1 { margin: 0; font-size: 18px; }
+.toolbar-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.toolbar select, .toolbar input { padding: 8px 12px; border: none; border-radius: 4px; font-size: 14px; font-family: Arial; }
+.toolbar button { padding: 8px 16px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; font-family: Arial; }
+.toolbar button:hover { background: #047857; }
+.tabs { display: flex; gap: 4px; background: white; padding: 8px 24px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap; }
+.tab { padding: 10px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: 600; font-size: 14px; font-family: Arial; color: #475569; }
+.tab:hover { background: #eff6ff; }
+.tab.active { background: #1e40af; color: white; border-color: #1e40af; }
+.content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.panel { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: none; }
+.panel.active { display: block; }
+.panel h2 { margin-top: 0; color: #1e40af; font-size: 16px; font-family: Arial; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-row input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; font-family: Arial; width: 100%; }
+.form-row input:focus { outline: none; border-color: #1e40af; box-shadow: 0 0 0 3px #dbeafe; }
+.preview-area { background: #e2e8f0; padding: 24px; border-radius: 8px; overflow-x: auto; }
+.doc { background: white; padding: 10mm; max-width: 210mm; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.doc-header { display: flex; align-items: center; gap: 16px; border-bottom: 3px double #000; padding-bottom: 8px; margin-bottom: 16px; }
+.doc-header-text { flex: 1; text-align: center; }
+.doc-header-text h1 { margin: 0; font-size: 18px; text-transform: uppercase; }
+.doc-header-text p { margin: 2px 0; font-size: 12px; }
+.doc-title { text-align: center; margin-bottom: 16px; }
+.doc-title h2 { margin: 0; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+.doc-title p { margin: 4px 0 0; font-size: 12px; }
+
+/* KARTU PESERTA */
+.kartu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+.kartu { border: 2px solid #000; padding: 4mm; height: 128mm; page-break-inside: avoid; display: flex; flex-direction: column; justify-content: space-between; }
+.kartu-header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 4px; }
+.kartu-header h3 { margin: 0; font-size: 11px; text-transform: uppercase; }
+.kartu-header p { margin: 2px 0 0; font-size: 9px; }
+.kartu-title { text-align: center; background: #000; color: #fff; padding: 2px; font-size: 10px; font-weight: bold; letter-spacing: 1px; margin: 4px 0; }
+.kartu-body { display: flex; gap: 4mm; }
+.kartu-photo { width: 25mm; height: 30mm; border: 1px solid #000; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 9px; text-align: center; }
+.kartu-info { flex: 1; font-size: 11px; }
+.kartu-info-row { display: grid; grid-template-columns: 18mm 1fr; gap: 2mm; margin-bottom: 2px; }
+.kartu-info-row b { font-weight: bold; }
+.kartu-info-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kartu-footer { display: flex; justify-content: space-between; align-items: flex-end; }
+.kartu-qr { text-align: center; font-size: 8px; }
+.kartu-qr img { width: 30mm; height: 30mm; }
+.kartu-ttd { text-align: center; font-size: 10px; }
+.kartu-ttd img { height: 20mm; }
+.kartu-ttd p { margin: 0; }
+
+/* TABEL UMUM */
+table.data { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.data th, table.data td { border: 1px solid #000; padding: 6px; }
+table.data th { background: #e5e7eb; text-align: center; font-weight: bold; }
+table.data td.center { text-align: center; }
+table.data td.ttd { height: 20mm; }
+.signature-block { display: flex; justify-content: space-between; margin-top: 24px; font-size: 12px; }
+.signature-block > div { text-align: center; width: 40%; }
+.signature-block .space { height: 25mm; }
+
+/* BERITA ACARA */
+.ba-text { font-size: 13px; line-height: 1.8; text-align: justify; }
+.ba-text table { margin: 12px 0 12px 24px; font-size: 13px; }
+.ba-text table td { padding: 4px 8px; vertical-align: top; }
+.ba-text table td:first-child { width: 180px; }
+
+/* LABEL KURSI */
+.label-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; }
+.label-kursi { border: 3px solid #000; padding: 4mm; height: 60mm; text-align: center; page-break-inside: avoid; display: flex; flex-direction: column; justify-content: center; }
+.label-kursi .no { font-size: 36pt; font-weight: bold; margin: 0; line-height: 1; }
+.label-kursi .no-label { font-size: 10pt; margin-bottom: 4mm; }
+.label-kursi .nisn { font-size: 12pt; font-family: monospace; margin: 2px 0; }
+.label-kursi .nama { font-size: 11pt; font-weight: bold; margin: 2px 0; }
+.label-kursi .kelas { font-size: 10pt; margin: 2px 0; }
+
+/* TATA TERTIB */
+.tt-list { font-size: 13px; line-height: 1.8; }
+.tt-list ol { padding-left: 20px; }
+.tt-list ol li { margin-bottom: 6px; text-align: justify; }
+
+@media print {
+  body { background: white; font-size: 11pt; }
+  .toolbar, .tabs { display: none !important; }
+  .content { padding: 0; max-width: 100%; }
+  .panel { padding: 0; margin: 0; border: none; border-radius: 0; box-shadow: none; background: transparent; display: none; }
+  .panel.active { display: block; }
+  .panel h2 { display: none; }
+  .preview-area { background: white; padding: 0; }
+  .doc { box-shadow: none; padding: 0; max-width: 100%; }
+  @page { size: A4 portrait; margin: 10mm; }
+  .page-break { page-break-after: always; }
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>🖨️ Cetak Administrasi TKA</h1>
+  <div class="toolbar-controls">
+    <select id="pilihPaket">
+      <option value="">-- Pilih Paket --</option>
+    </select>
+    <input type="date" id="tanggalUjian" title="Tanggal ujian">
+    <input type="text" id="ruangUjian" placeholder="Ruang" value="Ruang 1" style="width:100px">
+    <button onclick="cetak()">🖨️ Cetak</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('kartu')">📇 Kartu Peserta</div>
+  <div class="tab" onclick="switchTab('daftar')">📋 Daftar Hadir</div>
+  <div class="tab" onclick="switchTab('berita')">📝 Berita Acara</div>
+  <div class="tab" onclick="switchTab('label')">🪑 Label Kursi</div>
+  <div class="tab" onclick="switchTab('tatib')">📜 Tata Tertib</div>
+  <div class="tab" onclick="switchTab('pengaturan')">⚙️ Pengaturan</div>
+</div>
+
+<div class="content">
+  <div id="panel-pengaturan" class="panel">
+    <h2>Data Sekolah (untuk Header Dokumen)</h2>
+    <div class="form-row"><input id="setNama" placeholder="Nama Sekolah"></div>
+    <div class="form-row"><input id="setAlamat" placeholder="Alamat Sekolah"></div>
+    <div class="form-row">
+      <input id="setKepsek" placeholder="Nama Kepala Sekolah">
+      <input id="setNip" placeholder="NIP Kepala Sekolah">
+    </div>
+    <button onclick="simpanSekolah()" style="padding:10px 20px;background:#1e40af;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:600">Simpan Pengaturan</button>
+    <p id="infoSekolah" style="color:#059669;margin-top:8px"></p>
+  </div>
+
+  <div id="panel-kartu" class="panel active">
+    <h2>Kartu Peserta Ujian</h2>
+    <div class="preview-area"><div id="previewKartu" class="doc"><p style="text-align:center;color:#64748b">Pilih paket dan pastikan data siswa sudah diimport.</p></div></div>
+  </div>
+
+  <div id="panel-daftar" class="panel">
+    <h2>Daftar Hadir Peserta</h2>
+    <div class="preview-area"><div id="previewDaftar" class="doc"><p style="text-align:center;color:#64748b">Pilih paket dan pastikan data siswa sudah diimport.</p></div></div>
+  </div>
+
+  <div id="panel-berita" class="panel">
+    <h2>Berita Acara Pelaksanaan</h2>
+    <div class="preview-area"><div id="previewBerita" class="doc"><p style="text-align:center;color:#64748b">Pilih paket dan pastikan data siswa sudah diimport.</p></div></div>
+  </div>
+
+  <div id="panel-label" class="panel">
+    <h2>Label Kursi Peserta</h2>
+    <div class="preview-area"><div id="previewLabel" class="doc"><p style="text-align:center;color:#64748b">Pilih paket dan pastikan data siswa sudah diimport.</p></div></div>
+  </div>
+
+  <div id="panel-tatib" class="panel">
+    <h2>Tata Tertib Peserta</h2>
+    <div class="preview-area"><div id="previewTatib" class="doc"><p style="text-align:center;color:#64748b">Pilih paket terlebih dahulu.</p></div></div>
+  </div>
+</div>
+
+<script>
+var currentData = null;
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  event.target.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'pengaturan') loadSekolah();
+}
+
+function cetak() { window.print(); }
+
+async function loadPaketList() {
+  const r = await fetch('/api/teacher/paket');
+  const paket = await r.json();
+  const sel = document.getElementById('pilihPaket');
+  sel.innerHTML = '<option value="">-- Pilih Paket --</option>' + paket.map(function(p) {
+    return '<option value="' + p.id + '">' + p.judul + ' (' + p.mapel + ')</option>';
+  }).join('');
+}
+
+async function loadSekolah() {
+  const r = await fetch('/api/teacher/sekolah');
+  const d = await r.json();
+  document.getElementById('setNama').value = d.nama || '';
+  document.getElementById('setAlamat').value = d.alamat || '';
+  document.getElementById('setKepsek').value = d.kepsek || '';
+  document.getElementById('setNip').value = d.nip || '';
+}
+
+async function simpanSekolah() {
+  const body = {
+    nama: document.getElementById('setNama').value,
+    alamat: document.getElementById('setAlamat').value,
+    kepsek: document.getElementById('setKepsek').value,
+    nip: document.getElementById('setNip').value
+  };
+  const r = await fetch('/api/teacher/sekolah', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (r.ok) {
+    document.getElementById('infoSekolah').textContent = '✅ Pengaturan berhasil disimpan.';
+    setTimeout(function() { document.getElementById('infoSekolah').textContent = ''; }, 3000);
+  }
+}
+
+async function loadAdminData() {
+  const paketId = document.getElementById('pilihPaket').value;
+  if (!paketId) return;
+  const r = await fetch('/api/teacher/admin-data?paketId=' + encodeURIComponent(paketId));
+  if (!r.ok) { alert('Paket tidak ditemukan'); return; }
+  currentData = await r.json();
+  renderKartu();
+  renderDaftar();
+  renderBerita();
+  renderLabel();
+  renderTatib();
+}
+
+function formatTanggal(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+function renderKartu() {
+  const el = document.getElementById('previewKartu');
+  if (!currentData || !currentData.siswa.length) {
+    el.innerHTML = '<p style="text-align:center;color:#64748b">Belum ada data siswa. Import data siswa terlebih dahulu.</p>';
+    return;
+  }
+  const d = currentData;
+  const sekolah = d.sekolah || {};
+  const ruang = document.getElementById('ruangUjian').value || 'Ruang 1';
+  const tanggal = document.getElementById('tanggalUjian').value;
+  
+  let cards = '';
+  d.siswa.forEach(function(s, idx) {
+    const kursi = String(idx + 1).padStart(2, '0');
+    const qrImg = d.sesi && d.sesi.qrUrl ? '<img src="' + d.sesi.qrUrl + '" alt="QR">' : '<div style="width:30mm;height:30mm;border:1px dashed #000;display:flex;align-items:center;justify-content:center;font-size:8px">QR<br>belum<br>aktif</div>';
+    cards += '<div class="kartu">' +
+      '<div class="kartu-header">' +
+        '<h3>' + escapeHtml(sekolah.nama || 'NAMA SEKOLAH') + '</h3>' +
+        '<p>' + escapeHtml(sekolah.alamat || 'Alamat Sekolah') + '</p>' +
+      '</div>' +
+      '<div class="kartu-title">KARTU PESERTA TKA</div>' +
+      '<div class="kartu-body">' +
+        '<div class="kartu-photo">Foto<br>3×4</div>' +
+        '<div class="kartu-info">' +
+          '<div class="kartu-info-row"><b>NISN</b><span>: ' + escapeHtml(s.nisn || '-') + '</span></div>' +
+          '<div class="kartu-info-row"><b>Nama</b><span>: ' + escapeHtml(s.nama) + '</span></div>' +
+          '<div class="kartu-info-row"><b>Kelas</b><span>: ' + escapeHtml(s.kelas || '-') + '</span></div>' +
+          '<div class="kartu-info-row"><b>Mapel</b><span>: ' + escapeHtml(d.paket.mapel) + '</span></div>' +
+          '<div class="kartu-info-row"><b>Tanggal</b><span>: ' + formatTanggal(tanggal) + '</span></div>' +
+          '<div class="kartu-info-row"><b>' + escapeHtml(ruang) + '</b><span>: Kursi ' + kursi + '</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="kartu-footer">' +
+        '<div class="kartu-qr">' + qrImg + '<div>Scan untuk login</div></div>' +
+        '<div class="kartu-ttd">' +
+          '<p>Kepala Sekolah</p>' +
+          '<div class="space"></div>' +
+          '<p><u>' + escapeHtml(sekolah.kepsek || '................') + '</u></p>' +
+          '<p style="font-size:9px">NIP. ' + escapeHtml(sekolah.nip || '................') + '</p>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+  
+  el.innerHTML = '<div class="kartu-grid">' + cards + '</div>';
+}
+
+function renderDaftar() {
+  const el = document.getElementById('previewDaftar');
+  if (!currentData || !currentData.siswa.length) {
+    el.innerHTML = '<p style="text-align:center;color:#64748b">Belum ada data siswa.</p>';
+    return;
+  }
+  const d = currentData;
+  const sekolah = d.sekolah || {};
+  const tanggal = document.getElementById('tanggalUjian').value;
+  const ruang = document.getElementById('ruangUjian').value || 'Ruang 1';
+  
+  let rows = '';
+  d.siswa.forEach(function(s, idx) {
+    rows += '<tr>' +
+      '<td class="center">' + (idx + 1) + '</td>' +
+      '<td class="center">' + escapeHtml(s.nisn || '-') + '</td>' +
+      '<td>' + escapeHtml(s.nama) + '</td>' +
+      '<td class="center">' + escapeHtml(s.kelas || '-') + '</td>' +
+      '<td class="ttd"></td>' +
+      '<td></td>' +
+    '</tr>';
+  });
+  
+  el.innerHTML = 
+    '<div class="doc-header">' +
+      '<div class="doc-header-text">' +
+        '<h1>' + escapeHtml(sekolah.nama || 'NAMA SEKOLAH') + '</h1>' +
+        '<p>' + escapeHtml(sekolah.alamat || '') + '</p>' +
+      '</div>' +
+    '</div>' +
+    '<div class="doc-title">' +
+      '<h2>DAFTAR HADIR PESERTA TKA</h2>' +
+      '<p>Mata Pelajaran: ' + escapeHtml(d.paket.mapel) + ' | Tanggal: ' + formatTanggal(tanggal) + ' | ' + escapeHtml(ruang) + '</p>' +
+    '</div>' +
+    '<table class="data">' +
+      '<thead><tr><th width="40">No</th><th width="100">NISN</th><th>Nama Peserta</th><th width="60">Kelas</th><th width="150">Tanda Tangan</th><th width="80">Ket.</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+    '</table>' +
+    '<p style="margin-top:12px;font-size:12px">Jumlah Peserta: <b>' + d.siswa.length + '</b> orang</p>' +
+    '<div class="signature-block">' +
+      '<div>' +
+        '<p>Pengawas Ruang,</p>' +
+        '<div class="space"></div>' +
+        '<p><u>................................</u></p>' +
+        '<p>NIP. ................................</p>' +
+      '</div>' +
+      '<div>' +
+        '<p>' + escapeHtml(ruang || 'Ruang 1') + ', ' + formatTanggal(tanggal) + '</p>' +
+        '<p>Kepala Sekolah,</p>' +
+        '<div class="space"></div>' +
+        '<p><u>' + escapeHtml(sekolah.kepsek || '................') + '</u></p>' +
+        '<p>NIP. ' + escapeHtml(sekolah.nip || '................') + '</p>' +
+      '</div>' +
+    '</div>';
+}
+
+function renderBerita() {
+  const el = document.getElementById('previewBerita');
+  if (!currentData) {
+    el.innerHTML = '<p style="text-align:center;color:#64748b">Pilih paket terlebih dahulu.</p>';
+    return;
+  }
+  const d = currentData;
+  const sekolah = d.sekolah || {};
+  const tanggal = document.getElementById('tanggalUjian').value;
+  const ruang = document.getElementById('ruangUjian').value || 'Ruang 1';
+  const hadir = d.kehadiran ? d.kehadiran.hadir : 0;
+  const tidakHadir = d.kehadiran ? d.kehadiran.tidakHadir : 0;
+  const total = d.kehadiran ? d.kehadiran.total : d.siswa.length;
+  
+  el.innerHTML = 
+    '<div class="doc-header">' +
+      '<div class="doc-header-text">' +
+        '<h1>' + escapeHtml(sekolah.nama || 'NAMA SEKOLAH') + '</h1>' +
+        '<p>' + escapeHtml(sekolah.alamat || '') + '</p>' +
+      '</div>' +
+    '</div>' +
+    '<div class="doc-title">' +
+      '<h2>BERITA ACARA PELAKSANAAN</h2>' +
+      '<p>TKA (Tes Kemampuan Akademik)</p>' +
+    '</div>' +
+    '<div class="ba-text">' +
+      '<p>Pada hari ini, <b>' + getHari(tanggal) + '</b> tanggal <b>' + formatTanggal(tanggal) + '</b>, telah dilaksanakan TKA untuk mata pelajaran <b>' + escapeHtml(d.paket.mapel) + '</b> di <b>' + escapeHtml(ruang) + '</b>, dengan rincian sebagai berikut:</p>' +
+      '<table>' +
+        '<tr><td>Jumlah peserta terdaftar</td><td>: <b>' + total + ' siswa</b></td></tr>' +
+        '<tr><td>Jumlah peserta hadir</td><td>: <b>' + hadir + ' siswa</b></td></tr>' +
+        '<tr><td>Jumlah peserta tidak hadir</td><td>: <b>' + tidakHadir + ' siswa</b></td></tr>' +
+        '<tr><td>Kejadian khusus</td><td>: ........................................................................</td></tr>' +
+      '</table>' +
+      '<p>Demikian berita acara ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.</p>' +
+    '</div>' +
+    '<div class="signature-block">' +
+      '<div>' +
+        '<p>Pengawas Ruang,</p>' +
+        '<div class="space"></div>' +
+        '<p><u>................................</u></p>' +
+        '<p>NIP. ................................</p>' +
+      '</div>' +
+      '<div>' +
+        '<p>' + escapeHtml(ruang || 'Ruang 1') + ', ' + formatTanggal(tanggal) + '</p>' +
+        '<p>Kepala Sekolah,</p>' +
+        '<div class="space"></div>' +
+        '<p><u>' + escapeHtml(sekolah.kepsek || '................') + '</u></p>' +
+        '<p>NIP. ' + escapeHtml(sekolah.nip || '................') + '</p>' +
+      '</div>' +
+    '</div>';
+}
+
+function getHari(dateStr) {
+  if (!dateStr) return '...';
+  const d = new Date(dateStr);
+  const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  return hari[d.getDay()];
+}
+
+function renderLabel() {
+  const el = document.getElementById('previewLabel');
+  if (!currentData || !currentData.siswa.length) {
+    el.innerHTML = '<p style="text-align:center;color:#64748b">Belum ada data siswa.</p>';
+    return;
+  }
+  const d = currentData;
+  let labels = '';
+  d.siswa.forEach(function(s, idx) {
+    const kursi = String(idx + 1).padStart(2, '0');
+    labels += '<div class="label-kursi">' +
+      '<div class="no-label">KURSI</div>' +
+      '<div class="no">' + kursi + '</div>' +
+      '<div class="nisn">' + escapeHtml(s.nisn || '-') + '</div>' +
+      '<div class="nama">' + escapeHtml(s.nama) + '</div>' +
+      '<div class="kelas">' + escapeHtml(s.kelas || '-') + '</div>' +
+    '</div>';
+  });
+  el.innerHTML = '<div class="label-grid">' + labels + '</div>';
+}
+
+function renderTatib() {
+  const el = document.getElementById('previewTatib');
+  if (!currentData) {
+    el.innerHTML = '<p style="text-align:center;color:#64748b">Pilih paket terlebih dahulu.</p>';
+    return;
+  }
+  const d = currentData;
+  const sekolah = d.sekolah || {};
+  const tanggal = document.getElementById('tanggalUjian').value;
+  
+  el.innerHTML = 
+    '<div class="doc-header">' +
+      '<div class="doc-header-text">' +
+        '<h1>' + escapeHtml(sekolah.nama || 'NAMA SEKOLAH') + '</h1>' +
+        '<p>' + escapeHtml(sekolah.alamat || '') + '</p>' +
+      '</div>' +
+    '</div>' +
+    '<div class="doc-title">' +
+      '<h2>TATA TERTIB PESERTA TKA</h2>' +
+      '<p>Tahun Pelajaran 2025/2026</p>' +
+    '</div>' +
+    '<div class="tt-list">' +
+      '<ol>' +
+        '<li>Peserta wajib hadir 15 menit sebelum ujian dimulai.</li>' +
+        '<li>Peserta wajib membawa Kartu Peserta dan alat tulis.</li>' +
+        '<li>Peserta dilarang membawa HP/alat komunikasi lain ke dalam ruangan (kecuali untuk mengakses aplikasi TKA).</li>' +
+        '<li>Peserta dilarang bekerja sama, menyontek, atau meminta jawaban kepada peserta lain.</li>' +
+        '<li>Peserta wajib menjaga ketenangan dan ketertiban selama ujian berlangsung.</li>' +
+        '<li>Peserta tidak diperkenankan meninggalkan ruangan tanpa izin pengawas.</li>' +
+        '<li>Peserta yang melanggar tata tertib akan dikenakan sanksi sesuai ketentuan sekolah.</li>' +
+        '<li>Peserta wajib mengumpulkan jawaban sebelum waktu ujian berakhir.</li>' +
+        '<li>Setelah waktu habis, peserta wajib berhenti mengerjakan dan meninggalkan ruangan.</li>' +
+        '<li>Hal-hal lain yang belum diatur akan ditetapkan kemudian oleh panitia.</li>' +
+      '</ol>' +
+    '</div>' +
+    '<div class="signature-block" style="margin-top:40px">' +
+      '<div></div>' +
+      '<div>' +
+        '<p>' + formatTanggal(tanggal) + '</p>' +
+        '<p>Kepala Sekolah,</p>' +
+        '<div class="space"></div>' +
+        '<p><u>' + escapeHtml(sekolah.kepsek || '................') + '</u></p>' +
+        '<p>NIP. ' + escapeHtml(sekolah.nip || '................') + '</p>' +
+      '</div>' +
+    '</div>';
+}
+
+document.getElementById('pilihPaket').addEventListener('change', loadAdminData);
+document.getElementById('tanggalUjian').addEventListener('change', function() {
+  if (currentData) { renderKartu(); renderDaftar(); renderBerita(); renderLabel(); renderTatib(); }
+});
+document.getElementById('ruangUjian').addEventListener('input', function() {
+  if (currentData) { renderKartu(); renderDaftar(); renderBerita(); renderLabel(); renderTatib(); }
+});
+
+loadPaketList();
+loadSekolah();
+document.getElementById('tanggalUjian').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
