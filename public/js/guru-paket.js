@@ -1,3 +1,233 @@
+
+// ============================================================
+// IMPORT JSON MODAL (v2)
+// ============================================================
+let parsedJSONCache = null;
+let currentTabImport = 'paste';
+
+function bukaModalImportJSON() {
+  document.getElementById('jsonPasteArea').value = '';
+  document.getElementById('jsonFileInput').value = '';
+  document.getElementById('fileNameDisplay').textContent = '';
+  document.getElementById('pasteError').textContent = '';
+  document.getElementById('uploadError').textContent = '';
+  document.getElementById('jsonPreview').style.display = 'none';
+  document.getElementById('btnProsesImport').disabled = true;
+  parsedJSONCache = null;
+  switchTabImport('paste');
+  var modal = document.getElementById('modalImportJSON');
+  modal.classList.remove('hidden');  // ← hapus class hidden
+  modal.style.display = 'flex';
+}
+
+function tutupModalImportJSON() {
+  var modal = document.getElementById('modalImportJSON');
+  modal.style.display = 'none';
+  // Jangan tambahkan class 'hidden' kembali untuk menghindari konflik CSS
+}
+
+function switchTabImport(tab) {
+  currentTabImport = tab;
+  const tabPaste = document.getElementById('tabPaste');
+  const tabUpload = document.getElementById('tabUpload');
+  const panePaste = document.getElementById('panePaste');
+  const paneUpload = document.getElementById('paneUpload');
+  if (tab === 'paste') {
+    tabPaste.style.background = 'white';
+    tabPaste.style.color = '#1e40af';
+    tabPaste.style.borderBottomColor = '#1e40af';
+    tabUpload.style.background = '#f8fafc';
+    tabUpload.style.color = '#64748b';
+    tabUpload.style.borderBottomColor = 'transparent';
+    panePaste.style.display = 'block';
+    paneUpload.style.display = 'none';
+  } else {
+    tabUpload.style.background = 'white';
+    tabUpload.style.color = '#1e40af';
+    tabUpload.style.borderBottomColor = '#1e40af';
+    tabPaste.style.background = '#f8fafc';
+    tabPaste.style.color = '#64748b';
+    tabPaste.style.borderBottomColor = 'transparent';
+    paneUpload.style.display = 'block';
+    panePaste.style.display = 'none';
+  }
+}
+
+function validateJSONRealtime(text) {
+  const errorEl = document.getElementById('pasteError');
+  const previewEl = document.getElementById('jsonPreview');
+  const btn = document.getElementById('btnProsesImport');
+  
+  if (!text.trim()) {
+    errorEl.textContent = '';
+    previewEl.style.display = 'none';
+    btn.disabled = true;
+    parsedJSONCache = null;
+    return;
+  }
+  
+  try {
+    const parsed = JSON.parse(text);
+    errorEl.textContent = '';
+    // Validate schema
+    const err = validateSchema(parsed);
+    if (err) {
+      errorEl.textContent = '⚠️ ' + err;
+      previewEl.style.display = 'none';
+      btn.disabled = true;
+      parsedJSONCache = null;
+      return;
+    }
+    parsedJSONCache = parsed;
+    showPreview(parsed);
+    btn.disabled = false;
+  } catch (e) {
+    errorEl.textContent = '❌ JSON tidak valid: ' + e.message;
+    previewEl.style.display = 'none';
+    btn.disabled = true;
+    parsedJSONCache = null;
+  }
+}
+
+function validateSchema(paket) {
+  if (!paket || typeof paket !== 'object') return 'File bukan JSON object';
+  if (!paket.id || !/^[a-z0-9-]+$/.test(paket.id)) return 'Field "id" wajib huruf kecil, angka, minus';
+  if (!paket.judul || !paket.judul.trim()) return 'Field "judul" wajib diisi';
+  if (!paket.mapel || !paket.mapel.trim()) return 'Field "mapel" wajib diisi';
+  if (!Number.isFinite(paket.durasiMenit) || paket.durasiMenit <= 0) return 'Field "durasiMenit" wajib angka positif';
+  if (!Array.isArray(paket.soal) || paket.soal.length === 0) return 'Field "soal" wajib array minimal 1 soal';
+  for (let i = 0; i < paket.soal.length; i++) {
+    const s = paket.soal[i];
+    const no = i + 1;
+    if (!s.id) return 'Soal #' + no + ': id wajib';
+    const tipe = (s.tipe || '').toLowerCase();
+    if (!['pg','mcma','bs'].includes(tipe)) return 'Soal #' + no + ': tipe harus pg/mcma/bs';
+    if (!s.q || !s.q.trim()) return 'Soal #' + no + ': q wajib diisi';
+    if (tipe === 'pg' || tipe === 'mcma') {
+      if (!Array.isArray(s.options) || s.options.length < 2) return 'Soal #' + no + ': options minimal 2';
+      if (tipe === 'pg' && !Number.isInteger(s.key)) return 'Soal #' + no + ': key PG harus angka';
+      if (tipe === 'mcma' && (!Array.isArray(s.key) || s.key.length < 2)) return 'Soal #' + no + ': key MCMA minimal 2';
+    }
+    if (tipe === 'bs' && (!Array.isArray(s.pernyataan) || s.pernyataan.length < 2)) {
+      return 'Soal #' + no + ': pernyataan minimal 2';
+    }
+  }
+  return null;
+}
+
+function showPreview(paket) {
+  const previewEl = document.getElementById('jsonPreview');
+  const content = document.getElementById('jsonPreviewContent');
+  const tipeCount = { pg: 0, mcma: 0, bs: 0 };
+  paket.soal.forEach(s => { tipeCount[s.tipe.toLowerCase()]++; });
+  content.innerHTML = 
+    '<div><b>ID:</b> ' + paket.id + '</div>' +
+    '<div><b>Judul:</b> ' + paket.judul + '</div>' +
+    '<div><b>Mapel:</b> ' + paket.mapel + '</div>' +
+    '<div><b>Durasi:</b> ' + paket.durasiMenit + ' menit</div>' +
+    '<div><b>Total Soal:</b> ' + paket.soal.length + ' (' +
+      (tipeCount.pg ? tipeCount.pg + ' PG, ' : '') +
+      (tipeCount.mcma ? tipeCount.mcma + ' MCMA, ' : '') +
+      (tipeCount.bs ? tipeCount.bs + ' BS' : '') + ')</div>';
+  previewEl.style.display = 'block';
+}
+
+function handleFileSelect(input) {
+  const file = input.files[0];
+  const errorEl = document.getElementById('uploadError');
+  const fileNameEl = document.getElementById('fileNameDisplay');
+  const previewEl = document.getElementById('jsonPreview');
+  const btn = document.getElementById('btnProsesImport');
+  
+  if (!file) return;
+  fileNameEl.textContent = '📄 ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+  errorEl.textContent = '';
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const err = validateSchema(parsed);
+      if (err) {
+        errorEl.textContent = '⚠️ ' + err;
+        previewEl.style.display = 'none';
+        btn.disabled = true;
+        parsedJSONCache = null;
+        return;
+      }
+      parsedJSONCache = parsed;
+      showPreview(parsed);
+      btn.disabled = false;
+    } catch (err) {
+      errorEl.textContent = '❌ ' + err.message;
+      previewEl.style.display = 'none';
+      btn.disabled = true;
+      parsedJSONCache = null;
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function prosesImportJSON() {
+  if (!parsedJSONCache) return;
+  const btn = document.getElementById('btnProsesImport');
+  btn.disabled = true;
+  btn.textContent = 'Memproses...';
+  try {
+    const r = await fetch('/api/teacher/import-json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json: JSON.stringify(parsedJSONCache) })
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      await swalError(d.error || 'Gagal import');
+      btn.disabled = false;
+      btn.textContent = '📥 Proses Import';
+      return;
+    }
+    await swalSuccess('Paket "' + d.paketId + '" berhasil diimpor: ' + d.jumlahSoal + ' soal');
+    await loadPaket();
+    tutupModalImportJSON();
+  } catch (e) {
+    await swalError(e.message);
+    btn.disabled = false;
+    btn.textContent = '📥 Proses Import';
+  }
+}
+
+// Drag & drop setup
+document.addEventListener('DOMContentLoaded', function() {
+  const dz = document.getElementById('dropZone');
+  if (!dz) return;
+  ['dragenter', 'dragover'].forEach(evt => {
+    dz.addEventListener(evt, function(e) {
+      e.preventDefault(); e.stopPropagation();
+      dz.style.background = '#dbeafe';
+      dz.style.borderColor = '#1e40af';
+    });
+  });
+  ['dragleave', 'drop'].forEach(evt => {
+    dz.addEventListener(evt, function(e) {
+      e.preventDefault(); e.stopPropagation();
+      dz.style.background = '#f8fafc';
+      dz.style.borderColor = '#cbd5e1';
+    });
+  });
+  dz.addEventListener('drop', function(e) {
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      document.getElementById('jsonFileInput').files = files;
+      handleFileSelect(document.getElementById('jsonFileInput'));
+    }
+  });
+});
+
+
+
+
+
+
 function previewSlug() {
   var slug = slugify(document.getElementById('impPaketId').value || document.getElementById('impJudul').value);
   document.getElementById('impSlugPreview').textContent = 'ID final: ' + (slug || '(kosong)');

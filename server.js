@@ -1319,8 +1319,137 @@ app.get('/administrasi', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'administrasi.html'));
 });
 
+
+// ============================================================
+// VALIDASI JSON DARI TKA STUDIO (v18.14)
+// ============================================================
+function validasiPaketJSON(paket) {
+  const errors = [];
+  if (!paket || typeof paket !== 'object') {
+    throw new Error('File JSON tidak valid (bukan object)');
+  }
+  if (!paket.id || !/^[a-z0-9-]+$/.test(paket.id)) {
+    errors.push('Field "id" wajib huruf kecil, angka, minus (contoh: matematika-pecahan-2026)');
+  }
+  if (!paket.judul || !paket.judul.trim()) {
+    errors.push('Field "judul" wajib diisi');
+  }
+  if (!paket.mapel || !paket.mapel.trim()) {
+    errors.push('Field "mapel" wajib diisi');
+  }
+  if (!Number.isFinite(paket.durasiMenit) || paket.durasiMenit <= 0) {
+    errors.push('Field "durasiMenit" wajib angka positif');
+  }
+  if (!Array.isArray(paket.soal) || paket.soal.length === 0) {
+    errors.push('Field "soal" wajib array minimal 1 soal');
+  }
+  if (errors.length) throw new Error(errors.join('\n'));
+
+  const seenIds = new Set();
+  paket.soal.forEach((s, i) => {
+    const no = i + 1;
+    if (!s.id) throw new Error('Soal #' + no + ': field "id" wajib diisi');
+    if (seenIds.has(s.id)) throw new Error('Soal #' + no + ': id "' + s.id + '" duplikat');
+    seenIds.add(s.id);
+    const tipe = (s.tipe || '').toLowerCase();
+    if (!['pg','mcma','bs'].includes(tipe)) {
+      throw new Error('Soal #' + no + ': tipe harus pg/mcma/bs');
+    }
+    if (!s.q || !s.q.trim()) throw new Error('Soal #' + no + ': field "q" (pertanyaan) wajib diisi');
+
+    if (tipe === 'pg' || tipe === 'mcma') {
+      if (!Array.isArray(s.options) || s.options.length < 2 || s.options.length > 4) {
+        throw new Error('Soal #' + no + ': options harus 2-4 item');
+      }
+      if (tipe === 'pg') {
+        if (!Number.isInteger(s.key) || s.key < 0 || s.key >= s.options.length) {
+          throw new Error('Soal #' + no + ': key PG harus integer 0-' + (s.options.length-1));
+        }
+      } else {
+        if (!Array.isArray(s.key) || s.key.length < 2) {
+          throw new Error('Soal #' + no + ': key MCMA harus array minimal 2 item');
+        }
+        s.key.forEach(k => {
+          if (!Number.isInteger(k) || k < 0 || k >= s.options.length) {
+            throw new Error('Soal #' + no + ': ada key MCMA di luar jangkauan opsi');
+          }
+        });
+      }
+    } else if (tipe === 'bs') {
+      if (!Array.isArray(s.pernyataan) || s.pernyataan.length < 2 || s.pernyataan.length > 5) {
+        throw new Error('Soal #' + no + ': pernyataan harus 2-5 item');
+      }
+      s.pernyataan.forEach((p, j) => {
+        if (!p.teks || !p.teks.trim()) {
+          throw new Error('Soal #' + no + ': pernyataan #' + (j+1) + ' kosong');
+        }
+        if (typeof p.key !== 'boolean') {
+          throw new Error('Soal #' + no + ': key pernyataan #' + (j+1) + ' harus true/false');
+        }
+      });
+    }
+  });
+
+  return true;
+}
+
+// ============================================================
+// ENDPOINT IMPORT JSON DARI TKA STUDIO
+// ============================================================
+app.post('/api/teacher/import-json', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const { json } = req.body;
+  if (!json || typeof json !== 'string') {
+    return res.status(400).json({ error: 'Field "json" kosong atau bukan string' });
+  }
+  let paket;
+  try {
+    paket = JSON.parse(json);
+  } catch (e) {
+    return res.status(400).json({ error: 'JSON tidak valid: ' + e.message });
+  }
+  try {
+    validasiPaketJSON(paket);
+  } catch (e) {
+    return res.status(400).json({ error: e.message });
+  }
+  if (PAKET[paket.id]) {
+    return res.status(409).json({ error: 'Paket "' + paket.id + '" sudah ada. Ganti id atau hapus paket lama.' });
+  }
+  const finalPaket = {
+    version: '1.0',
+    id: paket.id,
+    judul: paket.judul.trim(),
+    mapel: paket.mapel.trim(),
+    durasiMenit: paket.durasiMenit,
+    acakMode: paket.acakMode || 'per-tipe',
+    latihanMandiri: paket.latihanMandiri === true,
+    soal: paket.soal.map(s => {
+      const item = { id: s.id, tipe: s.tipe.toLowerCase(), q: s.q.trim() };
+      if (s.img) item.img = s.img;
+      if (s.options) item.options = s.options.map(o => String(o));
+      if (s.optionImgs) item.optionImgs = s.optionImgs;
+      if (s.tipe.toLowerCase() === 'pg' || s.tipe.toLowerCase() === 'mcma') item.key = s.key;
+      if (s.pernyataan) item.pernyataan = s.pernyataan;
+      if (s.pembahasan) item.pembahasan = s.pembahasan;
+      return item;
+    })
+  };
+  const filePath = path.join(PAKET_DIR, finalPaket.id + '.json');
+  fs.writeFileSync(filePath, JSON.stringify(finalPaket, null, 2), 'utf8');
+  PAKET = loadPaket();
+  res.json({ ok: true, paketId: finalPaket.id, jumlahSoal: finalPaket.soal.length });
+});
+
+// Route redirect ke TKA Studio
+app.get('/studio', (req, res) => {
+  res.redirect(301, 'https://onelabszz.github.io/tka-studio');
+});
+
 // ============================================================
 // ENDPOINT SISWA
+// ============================================================
+
 // ============================================================
 app.post('/api/student/join', (req, res) => {
   const { token, nama, kelas } = req.body;

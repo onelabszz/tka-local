@@ -32,6 +32,7 @@
       <button class="nav-item" data-section="bantuan" onclick="navigate('bantuan')"><span class="nav-icon">&#10067;</span><span>Bantuan</span></button>
       <a class="nav-item" href="/administrasi" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#128196;</span><span>Cetak Administrasi</span></a>
       <a class="nav-item" href="/panduan" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#128214;</span><span>Panduan Lengkap</span></a>
+      <a class="nav-item" href="/studio" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#129302;</span><span>Buat Soal AI (Studio)</span></a>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-status" id="globalStatus">Tidak Aktif</div>
@@ -168,6 +169,7 @@
         <input type="file" id="csvFile" accept=".csv,text/csv" style="padding:10px;border:2px dashed var(--g200);border-radius:5px;width:100%;margin-bottom:10px">
         <button class="btn btn-primary" onclick="importCSV()">Import</button>
         <button class="btn btn-secondary" onclick="downloadTemplate()">Unduh Template</button>
+          <button class="btn btn-success" onclick="bukaModalImportJSON()">📥 Import JSON (dari Studio)</button>
         <p id="importInfo" class="muted"></p>
       </div>
 
@@ -463,5 +465,76 @@
 <script src="/js/guru-editor.js"></script>
 <script src="/js/guru-siswa.js"></script>
 <script src="/js/guru-main.js"></script>
+
+
+
+
+<!-- MODAL IMPORT JSON DARI STUDIO (v2) -->
+<div id="modalImportJSON" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:16px">
+  <div style="background:white;border-radius:10px;padding:0;max-width:720px;width:100%;max-height:90vh;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden">
+    
+    <!-- Header -->
+    <div style="padding:20px 24px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h3 style="margin:0;font-size:18px">Import Bank Soal dari TKA Studio</h3>
+        <p style="margin:4px 0 0;font-size:13px;color:#64748b">Paste JSON atau upload file <code style="background:#f1f5f9;padding:2px 6px;border-radius:3px">.json</code></p>
+      </div>
+      <button class="btn btn-secondary" onclick="tutupModalImportJSON()">Tutup</button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:1px solid #e2e8f0;background:#f8fafc">
+      <button id="tabPaste" onclick="switchTabImport('paste')" style="flex:1;padding:14px;background:white;border:none;border-bottom:2px solid #1e40af;cursor:pointer;font-weight:600;font-size:14px;color:#1e40af">
+        📋 Paste JSON
+      </button>
+      <button id="tabUpload" onclick="switchTabImport('upload')" style="flex:1;padding:14px;background:#f8fafc;border:none;border-bottom:2px solid transparent;cursor:pointer;font-weight:600;font-size:14px;color:#64748b">
+        📁 Upload File
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:20px 24px;overflow-y:auto;flex:1">
+
+      <!-- Tab Paste -->
+      <div id="panePaste">
+        <label style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:8px">
+          Paste JSON di sini:
+        </label>
+        <textarea id="jsonPasteArea" placeholder='{&#10;  "version": "1.0",&#10;  "id": "matematika-pecahan-2026",&#10;  "judul": "...",&#10;  "soal": [...]&#10;}' style="width:100%;height:280px;padding:12px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:'Courier New',monospace;font-size:12px;resize:vertical" oninput="validateJSONRealtime(this.value)"></textarea>
+        <div id="pasteError" style="margin-top:8px;font-size:13px;color:#dc2626;min-height:20px"></div>
+      </div>
+
+      <!-- Tab Upload -->
+      <div id="paneUpload" style="display:none">
+        <label style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:8px">
+          Pilih file atau seret ke area di bawah:
+        </label>
+        <div id="dropZone" style="border:2px dashed #cbd5e1;border-radius:8px;padding:40px 20px;text-align:center;background:#f8fafc;transition:all .2s;cursor:pointer" onclick="document.getElementById('jsonFileInput').click()">
+          <div style="font-size:42px;margin-bottom:8px">📁</div>
+          <div style="font-weight:600;color:#334155;margin-bottom:4px">Klik untuk pilih file</div>
+          <div style="font-size:13px;color:#64748b">atau seret file .json ke sini</div>
+          <input type="file" id="jsonFileInput" accept=".json,application/json" style="display:none" onchange="handleFileSelect(this)">
+        </div>
+        <p id="fileNameDisplay" style="margin-top:12px;text-align:center;font-size:13px;color:#64748b"></p>
+        <div id="uploadError" style="margin-top:8px;font-size:13px;color:#dc2626;min-height:20px"></div>
+      </div>
+
+      <!-- Preview -->
+      <div id="jsonPreview" style="display:none;margin-top:20px;padding:16px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px">
+        <div style="font-weight:700;color:#166534;margin-bottom:8px">✅ JSON Valid</div>
+        <div id="jsonPreviewContent" style="font-size:13px;color:#166534;line-height:1.6"></div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:16px 24px;border-top:1px solid #e2e8f0;background:#f8fafc;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="tutupModalImportJSON()">Batal</button>
+      <button id="btnProsesImport" class="btn btn-success" onclick="prosesImportJSON()" disabled>📥 Proses Import</button>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
