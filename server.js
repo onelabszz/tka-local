@@ -74,53 +74,47 @@ CREATE TABLE IF NOT EXISTS siswa (
   nisn TEXT,
   nama TEXT NOT NULL,
   kelas TEXT,
+  aktif INTEGER DEFAULT 1,
   created_at INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT
 );
-`);
-
-try { db.exec("ALTER TABLE siswa_sesi ADD COLUMN auto_submit INTEGER DEFAULT 0"); } catch {}
-db.exec(`
 CREATE TABLE IF NOT EXISTS sekolah (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   nama TEXT DEFAULT '',
+  npsn TEXT DEFAULT '',
   alamat TEXT DEFAULT '',
   kepsek TEXT DEFAULT '',
-  nip TEXT DEFAULT ''
+  nip TEXT DEFAULT '',
+  tahun_ajaran TEXT DEFAULT '',
+  logo TEXT DEFAULT '',
+  telepon TEXT DEFAULT '',
+  email TEXT DEFAULT '',
+  website TEXT DEFAULT '',
+  setup_done INTEGER DEFAULT 0,
+  nama_kegiatan TEXT DEFAULT 'Tryout TKA Mandiri'
 );
 INSERT OR IGNORE INTO sekolah (id) VALUES (1);
 `);
-try { db.exec("ALTER TABLE siswa_sesi ADD COLUMN ragu_json TEXT"); } catch {}
+
+// Migrasi kolom (dijalankan TERPISAH dari db.exec utama)
+try { db.exec("ALTER TABLE siswa_sesi ADD COLUMN auto_submit INTEGER DEFAULT 0"); } catch {}
 try { db.exec("ALTER TABLE sesi ADD COLUMN rilis_pembahasan INTEGER DEFAULT 0"); } catch {}
 try { db.exec("ALTER TABLE jawaban ADD COLUMN jawaban_json TEXT"); } catch {}
 try { db.exec("UPDATE jawaban SET jawaban_json = CAST(pilihan AS TEXT) WHERE jawaban_json IS NULL AND pilihan IS NOT NULL"); } catch {}
 try { db.exec("ALTER TABLE siswa RENAME COLUMN nis TO nisn"); } catch {}
 try { db.exec("ALTER TABLE siswa ADD COLUMN nisn TEXT"); } catch {}
-// v15: tabel latihan mandiri
-db.exec(`
-CREATE TABLE IF NOT EXISTS latihan_sesi (
-  id TEXT PRIMARY KEY,
-  paket_id TEXT NOT NULL,
-  nama TEXT NOT NULL,
-  kelas TEXT,
-  mulai_at INTEGER NOT NULL,
-  deadline INTEGER NOT NULL,
-  submit_at INTEGER,
-  skor REAL,
-  total INTEGER,
-  layout TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS latihan_jawaban (
-  latihan_id TEXT NOT NULL,
-  soal_id TEXT NOT NULL,
-  jawaban_json TEXT,
-  saved_at INTEGER NOT NULL,
-  PRIMARY KEY (latihan_id, soal_id)
-);
-`);
+try { db.exec("ALTER TABLE siswa ADD COLUMN aktif INTEGER DEFAULT 1"); } catch {}
+try { db.exec("ALTER TABLE sekolah ADD COLUMN npsn TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE sekolah ADD COLUMN tahun_ajaran TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE sekolah ADD COLUMN logo TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE sekolah ADD COLUMN telepon TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE sekolah ADD COLUMN email TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE sekolah ADD COLUMN website TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE sekolah ADD COLUMN setup_done INTEGER DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE sekolah ADD COLUMN nama_kegiatan TEXT DEFAULT 'Tryout TKA Mandiri'"); } catch {}
 
 function getSetting(key, def) {
   const row = db.prepare("SELECT value FROM settings WHERE key=?").get(key);
@@ -139,6 +133,10 @@ if (!fs.existsSync(PAKET_DIR)) fs.mkdirSync(PAKET_DIR);
 
 const GAMBAR_DIR = path.join(PAKET_DIR, 'gambar');
 if (!fs.existsSync(GAMBAR_DIR)) fs.mkdirSync(GAMBAR_DIR);
+
+// Folder aset sekolah (logo, dll) — TERPISAH dari paket/gambar/
+const SEKOLAH_DIR = path.join(__dirname, 'sekolah');
+if (!fs.existsSync(SEKOLAH_DIR)) fs.mkdirSync(SEKOLAH_DIR);
 
 const EXTS_GAMBAR = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
 
@@ -160,6 +158,19 @@ const uploadGambar = multer({
   fileFilter: (req, file, cb) => {
     cb(null, EXTS_GAMBAR.includes(path.extname(file.originalname).toLowerCase()));
   },
+});
+
+const uploadLogo = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, SEKOLAH_DIR),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      const allowed = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
+      if (!allowed.includes(ext)) return cb(new Error('Format tidak didukung (gunakan PNG/JPG)'));
+      cb(null, 'logo-sekolah' + ext);
+    },
+  }),
+  limits: { fileSize: 500 * 1024 },
 });
 
 function resolveGambar(nama) {
@@ -186,6 +197,20 @@ function loadPaket() {
   return map;
 }
 let PAKET = loadPaket();
+
+// Migrasi logo lama: dari paket/gambar/ ke sekolah/
+(function migrateOldLogo() {
+  try {
+    const data = db.prepare("SELECT logo FROM sekolah WHERE id=1").get();
+    if (!data || !data.logo) return;
+    const oldPath = path.join(GAMBAR_DIR, data.logo);
+    const newPath = path.join(SEKOLAH_DIR, data.logo);
+    if (fs.existsSync(oldPath) && !fs.existsSync(newPath)) {
+      fs.copyFileSync(oldPath, newPath);
+      console.log('✓ Migrasi logo startup:', data.logo, '→ sekolah/');
+    }
+  } catch (e) { /* ignore */ }
+})();
 
 // ============================================================
 // Helper umum
@@ -629,7 +654,16 @@ app.get('/favicon.ico', (req, res) => {
 // ============================================================
 app.get('/guru', (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Akses hanya dari laptop guru');
+  const sekolah = db.prepare("SELECT setup_done FROM sekolah WHERE id=1").get();
+  if (sekolah && sekolah.setup_done === 0) {
+    return res.redirect('/setup');
+  }
   res.sendFile(path.join(__dirname, 'guru.html'));
+});
+
+app.get('/setup', (req, res) => {
+  if (!isLocal(req)) return res.status(403).send('Akses hanya dari laptop guru');
+  res.sendFile(path.join(__dirname, 'public', 'setup.html'));
 });
 app.get('/panduan', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panduan.html'));
@@ -637,18 +671,45 @@ app.get('/panduan', (req, res) => {
 
 app.get('/api/teacher/paket', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
-  res.json(Object.values(PAKET).map(p => ({
-    id: p.id, judul: p.judul, mapel: p.mapel,
-    jumlahSoal: p.soal.length, durasiMenit: p.durasiMenit,
-    latihanMandiri: p.latihanMandiri === true,
-    acakMode: p.acakMode || 'per-tipe'
-  })));
+  const list = Object.values(PAKET).map(p => {
+    const filePath = path.join(PAKET_DIR, p.id + '.json');
+    let created_at = null;
+    try { created_at = fs.statSync(filePath).mtimeMs; } catch (e) {}
+    return {
+      id: p.id, judul: p.judul, mapel: p.mapel,
+      jumlahSoal: p.soal.length, durasiMenit: p.durasiMenit,
+      latihanMandiri: p.latihanMandiri === true,
+      acakMode: p.acakMode || 'per-tipe',
+      created_at
+    };
+  });
+  res.json(list);
 });
 
 app.post('/api/teacher/reload', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
   PAKET = loadPaket();
   res.json({ ok: true, jumlahPaket: Object.keys(PAKET).length });
+});
+
+app.post('/api/teacher/paket/create', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const { id, judul, mapel, durasiMenit } = req.body;
+  if (!id || !/^[a-z0-9-]+$/.test(id)) return res.status(400).json({ error: 'ID paket tidak valid' });
+  if (PAKET[id]) return res.status(409).json({ error: 'Paket "' + id + '" sudah ada' });
+  const paket = {
+    version: '1.0',
+    id,
+    judul: judul || id,
+    mapel: mapel || 'Campuran',
+    durasiMenit: Number(durasiMenit) || 15,
+    acakMode: 'per-tipe',
+    soal: []
+  };
+  const filePath = path.join(PAKET_DIR, id + '.json');
+  fs.writeFileSync(filePath, JSON.stringify(paket, null, 2), 'utf8');
+  PAKET = loadPaket();
+  res.json({ ok: true, paketId: id });
 });
 
 app.get('/api/teacher/paket/:id/preview', (req, res) => {
@@ -781,8 +842,32 @@ app.post('/api/teacher/import-siswa-csv', (req, res) => {
 
 app.get('/api/teacher/siswa', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
-  const list = db.prepare("SELECT id, nisn, nama, kelas FROM siswa ORDER BY kelas, nama").all();
+  const list = db.prepare("SELECT id, nisn, nama, kelas, aktif FROM siswa ORDER BY kelas, nama").all();
   res.json(list);
+});
+
+app.post('/api/teacher/siswa/save', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const { id, nisn, nama, kelas } = req.body;
+  if (!nama || !nama.trim()) return res.status(400).json({ error: 'Nama wajib diisi' });
+  try {
+    if (id) {
+      db.prepare("UPDATE siswa SET nisn=?, nama=?, kelas=? WHERE id=?")
+        .run(nisn || '', nama.trim(), kelas || '', id);
+      res.json({ ok: true, id: id });
+    } else {
+      const result = db.prepare("INSERT INTO siswa (nisn, nama, kelas, aktif, created_at) VALUES (?,?,?,?,?)")
+        .run(nisn || '', nama.trim(), kelas || '', 1, Date.now());
+      res.json({ ok: true, id: result.lastInsertRowid });
+    }
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/teacher/toggle-siswa-aktif', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const { id, aktif } = req.body;
+  db.prepare("UPDATE siswa SET aktif=? WHERE id=?").run(aktif ? 1 : 0, id);
+  res.json({ ok: true });
 });
 
 app.post('/api/teacher/hapus-siswa', (req, res) => {
@@ -811,8 +896,32 @@ app.post('/api/teacher/toggle-wajib-siswa', (req, res) => {
   res.json({ ok: true, wajibSiswaTerdaftar: !!aktif });
 });
 
+app.get('/api/teacher/template-siswa-csv', (req, res) => {
+  if (!isLocal(req)) return res.status(403).send('Hanya guru');
+  const csv = 'nisn;nama;kelas\n0012345678;Budi Santoso;VI A\n0012345679;Siti Nurhaliza;VI A\n0012345680;Ahmad Fauzi;VI B\n';
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="template-siswa.csv"');
+  res.send('\uFEFFsep=;\n' + csv);
+});
+
+app.post('/api/teacher/import-siswa-csv', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const { csv, mode } = req.body;
+  if (!csv || typeof csv !== 'string') return res.status(400).json({ error: 'CSV kosong' });
+  try {
+    const list = csvToSiswa(csv);
+    if (mode === 'replace') db.prepare("DELETE FROM siswa").run();
+    const insert = db.prepare("INSERT INTO siswa (nisn, nama, kelas, aktif, created_at) VALUES (?,?,?,?,?)");
+    const tx = db.transaction(() => { for (const s of list) insert.run(s.nisn || '', s.nama, s.kelas || '', 1, Date.now()); });
+    tx();
+    const total = db.prepare("SELECT COUNT(*) AS n FROM siswa").get().n;
+    res.json({ ok: true, ditambahkan: list.length, total });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+
 // ============================================================
-// GAMBAR
+// RESTORED ROUTES (v18.31)
 // ============================================================
 app.post('/api/teacher/upload-gambar', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
@@ -841,9 +950,6 @@ app.post('/api/teacher/hapus-gambar', (req, res) => {
   res.json({ ok: true });
 });
 
-// ============================================================
-// UJIAN
-// ============================================================
 app.post('/api/teacher/start', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
   const paket = PAKET[req.body.paketId];
@@ -895,11 +1001,7 @@ app.get('/api/teacher/live', (req, res) => {
       mulaiAt: sesi.mulai_at, deadline: sesi.mulai_at + sesi.durasi_menit * 60000,
       totalSoal: paket?.soal.length || 0,
     },
-    siswa,
-    wajibTerdaftar: wajib,
-    totalTerdaftar,
-    daftarSiswa,
-    belumMasuk,
+    siswa, wajibTerdaftar: wajib, totalTerdaftar, daftarSiswa, belumMasuk,
   });
 });
 
@@ -999,6 +1101,55 @@ app.get('/api/teacher/qr', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ============================================================
+// RESET APLIKASI (FACTORY RESET)
+// ============================================================
+app.post('/api/teacher/reset-system', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  try {
+    // 1. Backup dulu sebelum dihapus
+    autoBackup();
+    
+    // 2. Tutup koneksi database
+    db.close();
+    
+    // 3. Hapus file database
+    const dbPath = path.join(__dirname, 'tka.db');
+    const walPath = dbPath + '-wal';
+    const shmPath = dbPath + '-shm';
+    if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+    if (fs.existsSync(walPath)) fs.unlinkSync(walPath);
+    if (fs.existsSync(shmPath)) fs.unlinkSync(shmPath);
+    
+    // 4. Hapus isi folder paket, gambar, dan sekolah
+    function clearFolder(dir) {
+      if (fs.existsSync(dir)) {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+          const fp = path.join(dir, file);
+          if (fs.lstatSync(fp).isFile()) fs.unlinkSync(fp);
+        }
+      }
+    }
+    clearFolder(PAKET_DIR);
+    clearFolder(GAMBAR_DIR);
+    const SEKOLAH_DIR = path.join(__dirname, 'sekolah');
+    if (fs.existsSync(SEKOLAH_DIR)) clearFolder(SEKOLAH_DIR);
+    
+    res.json({ ok: true, message: 'Reset berhasil. Server akan berhenti.' });
+    
+    // 5. Matikan server agar bisa dijalankan ulang dengan database kosong
+    setTimeout(() => {
+      console.log('\n[RESET] Aplikasi telah di-reset ke pengaturan pabrik. Server berhenti.\n');
+      process.exit(0);
+    }, 1500);
+    
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post('/api/teacher/shutdown', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
   res.json({ ok: true });
@@ -1011,7 +1162,7 @@ function validasiPaket(paket) {
   if (!paket || typeof paket !== 'object') throw new Error('Data paket kosong');
   if (!paket.id || !/^[a-z0-9-]+$/.test(paket.id)) throw new Error('ID paket tidak valid');
   if (!paket.judul || !paket.judul.trim()) throw new Error('Judul wajib diisi');
-  if (!Array.isArray(paket.soal) || paket.soal.length === 0) throw new Error('Minimal 1 soal');
+  if (!Array.isArray(paket.soal)) throw new Error('Field soal harus array');
   if (paket.acakMode && ['full','per-tipe','none'].indexOf(paket.acakMode) < 0) {
     throw new Error('acakMode harus salah satu: full, per-tipe, none');
   }
@@ -1271,15 +1422,60 @@ app.post('/api/teacher/toggle-latihan', (req, res) => {
 app.get('/api/teacher/sekolah', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
   const data = db.prepare("SELECT * FROM sekolah WHERE id=1").get();
-  res.json(data || { nama: '', alamat: '', kepsek: '', nip: '' });
+  res.json(data || {});
 });
 
 app.post('/api/teacher/sekolah', (req, res) => {
   if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
-  const { nama, alamat, kepsek, nip } = req.body;
-  db.prepare("UPDATE sekolah SET nama=?, alamat=?, kepsek=?, nip=? WHERE id=1")
-    .run(nama || '', alamat || '', kepsek || '', nip || '');
+  const { nama, npsn, alamat, kepsek, nip, tahun_ajaran, telepon, email, website, nama_kegiatan } = req.body;
+  const setupDone = (nama && npsn) ? 1 : 2;
+  db.prepare(`UPDATE sekolah SET nama=?, npsn=?, alamat=?, kepsek=?, nip=?, tahun_ajaran=?, telepon=?, email=?, website=?, nama_kegiatan=?, setup_done=? WHERE id=1`)
+    .run(nama || '', npsn || '', alamat || '', kepsek || '', nip || '', tahun_ajaran || '', telepon || '', email || '', website || '', nama_kegiatan || 'Tryout TKA Mandiri', setupDone);
+  res.json({ ok: true, setup_done: setupDone });
+});
+
+// ============================================================
+// SETUP WIZARD & PROFIL SEKOLAH (v18.16)
+// ============================================================
+app.get('/api/teacher/setup-status', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  const data = db.prepare("SELECT setup_done FROM sekolah WHERE id=1").get();
+  res.json({ setup_done: data ? data.setup_done : 0 });
+});
+
+app.post('/api/teacher/skip-setup', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  db.prepare("UPDATE sekolah SET setup_done=2 WHERE id=1").run();
   res.json({ ok: true });
+});
+
+app.post('/api/teacher/upload-logo', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Hanya guru' });
+  uploadLogo.single('logo')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: 'File tidak ada' });
+    db.prepare("UPDATE sekolah SET logo=? WHERE id=1").run(req.file.filename);
+    res.json({ ok: true, filename: req.file.filename });
+  });
+});
+
+app.get('/logo-sekolah', (req, res) => {
+  const data = db.prepare("SELECT logo FROM sekolah WHERE id=1").get();
+  if (!data || !data.logo) return res.status(404).send('Belum ada logo');
+  let fp = path.join(SEKOLAH_DIR, data.logo);
+  if (!fs.existsSync(fp)) {
+    const oldPath = path.join(GAMBAR_DIR, data.logo);
+    if (fs.existsSync(oldPath)) {
+      try {
+        fs.copyFileSync(oldPath, path.join(SEKOLAH_DIR, data.logo));
+        fp = path.join(SEKOLAH_DIR, data.logo);
+        console.log('Migrasi logo:', data.logo, '→ sekolah/');
+      } catch (e) { fp = oldPath; }
+    } else {
+      return res.status(404).send('File logo tidak ditemukan');
+    }
+  }
+  res.sendFile(fp);
 });
 
 app.get('/api/teacher/admin-data', async (req, res) => {
@@ -1319,6 +1515,29 @@ app.get('/administrasi', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'administrasi.html'));
 });
 
+
+
+function csvToSiswa(csv) {
+  const rows = parseCSV(csv);
+  if (rows.length < 2) throw new Error('CSV harus punya header + minimal 1 siswa');
+  const header = rows[0].map(h => h.trim().toLowerCase());
+  const idx = {
+    nisn: header.indexOf('nisn') >= 0 ? header.indexOf('nisn') : header.indexOf('nis'),
+    nama: header.indexOf('nama'),
+    kelas: header.indexOf('kelas')
+  };
+  if (idx.nama < 0) throw new Error('Header wajib hilang: nama');
+  const list = [];
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    const get = (k) => idx[k] >= 0 ? (row[idx[k]] || '').trim() : '';
+    const nama = get('nama');
+    if (!nama) continue;
+    list.push({ nisn: get('nisn'), nama, kelas: get('kelas') });
+  }
+  if (list.length === 0) throw new Error('Tidak ada siswa valid');
+  return list;
+}
 
 // ============================================================
 // VALIDASI JSON DARI TKA STUDIO (v18.14)
@@ -1465,6 +1684,9 @@ app.post('/api/student/join', (req, res) => {
     const found = db.prepare("SELECT * FROM siswa WHERE LOWER(TRIM(nama)) = LOWER(TRIM(?))").get(nama);
     if (!found) {
       return res.status(403).json({ error: 'Nama tidak terdaftar. Hubungi guru untuk mendaftarkan nama Anda.' });
+    }
+    if (found.aktif === 0) {
+      return res.status(403).json({ error: 'Akun Anda dinonaktifkan dari ujian ini. Hubungi pengawas.' });
     }
   }
 

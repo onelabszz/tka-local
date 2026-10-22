@@ -119,21 +119,10 @@ table.data td.ttd { height: 20mm; }
   <div class="tab" onclick="switchTab('berita')">📝 Berita Acara</div>
   <div class="tab" onclick="switchTab('label')">🪑 Label Kursi</div>
   <div class="tab" onclick="switchTab('tatib')">📜 Tata Tertib</div>
-  <div class="tab" onclick="switchTab('pengaturan')">⚙️ Pengaturan</div>
-</div>
+  </div>
 
 <div class="content">
-  <div id="panel-pengaturan" class="panel">
-    <h2>Data Sekolah (untuk Header Dokumen)</h2>
-    <div class="form-row"><input id="setNama" placeholder="Nama Sekolah"></div>
-    <div class="form-row"><input id="setAlamat" placeholder="Alamat Sekolah"></div>
-    <div class="form-row">
-      <input id="setKepsek" placeholder="Nama Kepala Sekolah">
-      <input id="setNip" placeholder="NIP Kepala Sekolah">
-    </div>
-    <button onclick="simpanSekolah()" style="padding:10px 20px;background:#1e40af;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:600">Simpan Pengaturan</button>
-    <p id="infoSekolah" style="color:#059669;margin-top:8px"></p>
-  </div>
+  
 
   <div id="panel-kartu" class="panel active">
     <h2>Kartu Peserta Ujian</h2>
@@ -251,7 +240,8 @@ function renderKartu() {
         '<h3>' + escapeHtml(sekolah.nama || 'NAMA SEKOLAH') + '</h3>' +
         '<p>' + escapeHtml(sekolah.alamat || 'Alamat Sekolah') + '</p>' +
       '</div>' +
-      '<div class="kartu-title">KARTU PESERTA TKA</div>' +
+      '<div style="text-align:center;background:#000;color:#fff;padding:3px;font-size:10px;font-weight:bold;letter-spacing:1px;margin:4px 0 0;">KARTU PESERTA</div>' +
+      '<div style="text-align:center;background:#4b5563;color:#fff;padding:2px;font-size:8px;font-weight:bold;letter-spacing:.3px;line-height:1.2;margin:0 0 4px;">' + (sekolah.nama_kegiatan || 'Tryout TKA Mandiri').toUpperCase() + '</div>' +
       '<div class="kartu-body">' +
         '<div class="kartu-photo">Foto<br>3×4</div>' +
         '<div class="kartu-info">' +
@@ -309,7 +299,7 @@ function renderDaftar() {
       '</div>' +
     '</div>' +
     '<div class="doc-title">' +
-      '<h2>DAFTAR HADIR PESERTA TKA</h2>' +
+      '<h2>DAFTAR HADIR PESERTA ' + (sekolah.nama_kegiatan || 'Tryout TKA Mandiri').toUpperCase() + '</h2>' +
       '<p>Mata Pelajaran: ' + escapeHtml(d.paket.mapel) + ' | Tanggal: ' + formatTanggal(tanggal) + ' | ' + escapeHtml(ruang) + '</p>' +
     '</div>' +
     '<table class="data">' +
@@ -357,10 +347,10 @@ function renderBerita() {
     '</div>' +
     '<div class="doc-title">' +
       '<h2>BERITA ACARA PELAKSANAAN</h2>' +
-      '<p>TKA (Tes Kemampuan Akademik)</p>' +
+      '<p>' + (sekolah.nama_kegiatan || 'Tryout TKA Mandiri') + '</p>' +
     '</div>' +
     '<div class="ba-text">' +
-      '<p>Pada hari ini, <b>' + getHari(tanggal) + '</b> tanggal <b>' + formatTanggal(tanggal) + '</b>, telah dilaksanakan TKA untuk mata pelajaran <b>' + escapeHtml(d.paket.mapel) + '</b> di <b>' + escapeHtml(ruang) + '</b>, dengan rincian sebagai berikut:</p>' +
+      '<p>Pada hari ini, <b>' + getHari(tanggal) + '</b> tanggal <b>' + formatTanggal(tanggal) + '</b>, telah dilaksanakan ' + (sekolah.nama_kegiatan || 'Tryout TKA Mandiri') + ' untuk mata pelajaran <b>' + escapeHtml(d.paket.mapel) + '</b> di <b>' + escapeHtml(ruang) + '</b>, dengan rincian sebagai berikut:</p>' +
       '<table>' +
         '<tr><td>Jumlah peserta terdaftar</td><td>: <b>' + total + ' siswa</b></td></tr>' +
         '<tr><td>Jumlah peserta hadir</td><td>: <b>' + hadir + ' siswa</b></td></tr>' +
@@ -432,8 +422,8 @@ function renderTatib() {
       '</div>' +
     '</div>' +
     '<div class="doc-title">' +
-      '<h2>TATA TERTIB PESERTA TKA</h2>' +
-      '<p>Tahun Pelajaran 2025/2026</p>' +
+      '<h2>TATA TERTIB PESERTA ' + (sekolah.nama_kegiatan || 'Tryout TKA Mandiri').toUpperCase() + '</h2>' +
+      '<p>Tahun Pelajaran ' + (sekolah.tahun_ajaran || '2025/2026') + '</p>' +
     '</div>' +
     '<div class="tt-list">' +
       '<ol>' +
@@ -470,7 +460,6 @@ document.getElementById('ruangUjian').addEventListener('input', function() {
 });
 
 loadPaketList();
-loadSekolah();
 document.getElementById('tanggalUjian').value = new Date().toISOString().split('T')[0];
 </script>
 </body>

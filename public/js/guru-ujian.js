@@ -9,8 +9,12 @@ async function startExam() {
   var d = await r.json();
   if (!r.ok) { await swalError(d.error); return; }
   document.getElementById('token').textContent = d.token;
-  document.getElementById('token').classList.remove('token-empty');
+  document.getElementById('token').classList.remove('empty');
   await swalSuccess('Ujian dimulai. Token: ' + d.token);
+  var dashBadge = document.getElementById('dashStatusBadge');
+  var dashText = document.getElementById('dashStatusText');
+  if (dashBadge) dashBadge.classList.add('active');
+  if (dashText) dashText.textContent = 'Ujian Berlangsung';
   refreshLive();
   navigate('dashboard');
 }
@@ -28,9 +32,18 @@ async function refreshLive() {
   var sesiInfo = document.getElementById('sesiInfo');
   var cdEl = document.getElementById('countdown');
   var sidebarToken = document.getElementById('sidebarToken');
+  var dashBadge = document.getElementById('dashStatusBadge');
+  var dashText = document.getElementById('dashStatusText');
+  if (d.aktif) {
+    if (dashBadge) dashBadge.classList.add('active');
+    if (dashText) dashText.textContent = 'Ujian Berlangsung';
+  } else {
+    if (dashBadge) dashBadge.classList.remove('active');
+    if (dashText) dashText.textContent = 'Ujian Belum Aktif';
+  }
   if (!d.aktif) {
     status.textContent = 'Tidak Aktif'; status.className = 'sidebar-status';
-    tokenEl.textContent = '— — — —'; tokenEl.classList.add('token-empty');
+    tokenEl.textContent = '— — — —'; tokenEl.classList.add('empty');
     sesiInfo.textContent = 'Belum ada sesi aktif'; cdEl.textContent = '';
     sidebarToken.textContent = ''; sidebarToken.classList.remove('show');
     document.getElementById('rows').innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:36px">Belum ada peserta</td></tr>';
@@ -42,7 +55,7 @@ async function refreshLive() {
     return;
   }
   status.textContent = 'Berlangsung'; status.className = 'sidebar-status on';
-  tokenEl.textContent = d.sesi.token; tokenEl.classList.remove('token-empty');
+  tokenEl.textContent = d.sesi.token; tokenEl.classList.remove('empty');
   sesiInfo.textContent = d.sesi.paketJudul + ' • ' + d.sesi.totalSoal + ' soal • ' + d.sesi.durasiMenit + ' menit';
   sidebarToken.textContent = d.sesi.token; sidebarToken.classList.add('show');
   var remain = d.sesi.deadline - Date.now();

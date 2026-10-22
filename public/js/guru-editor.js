@@ -1,3 +1,36 @@
+function batalEdit() {
+  if (editorDirty) {
+    if (!confirm('Buang semua perubahan yang belum disimpan?\n\nPerubahan akan hilang permanen.')) return;
+  }
+  editorPaket = null;
+  editorDirty = false;
+  editorClearDraft();
+  navigate('paket');
+}
+
+async function simpanDraft() {
+  if (!editorPaket) return;
+  try {
+    editorPaket.judul = (document.getElementById('editorJudul') || {}).value || '';
+    editorPaket.mapel = (document.getElementById('editorMapel') || {}).value || '';
+    editorPaket.durasiMenit = parseInt((document.getElementById('editorDurasi') || {}).value) || 15;
+    editorPaket.acakMode = (document.getElementById('editorAcakMode') || {}).value || 'per-tipe';
+    localStorage.setItem('tka_editor_draft_' + editorPaket.id, JSON.stringify({
+      paket: editorPaket,
+      savedAt: Date.now()
+    }));
+    editorDirty = false;
+    updateEditorHeader();
+    await swalSuccess('Draft tersimpan di browser.\n\nBuka paket ini lagi nanti untuk melanjutkan.');
+    setTimeout(function() {
+      editorPaket = null;
+      navigate('paket');
+    }, 600);
+  } catch (e) {
+    await swalError('Gagal simpan draft: ' + e.message);
+  }
+}
+
 let editorPaket = null;
 let editorDirty = false;
 let activeImageTarget = null;
@@ -62,18 +95,22 @@ function openEditorView() {
 }
 
 function updateEditorHeader() {
-  const b = document.getElementById('editorDirtyBadge');
-  if (!b) return;
-  const total = editorPaket.soal.length;
-  if (editorDirty) {
-    b.textContent = total + ' soal · belum disimpan';
-    b.style.display = 'inline-block';
-    b.className = 'badge badge-warn';
-  } else {
-    b.textContent = total + ' soal';
-    b.style.display = 'inline-block';
-    b.className = 'badge badge-info';
-    setTimeout(() => { if (!editorDirty) b.style.display = 'none'; }, 2000);
+  const totalBadge = document.getElementById('editorTotalBadge');
+  const dirtyBadge = document.getElementById('editorDirtyBadge');
+  
+  if (totalBadge && editorPaket) {
+    totalBadge.textContent = editorPaket.soal.length + ' soal';
+    totalBadge.style.display = 'inline-block';
+  }
+  
+  if (dirtyBadge) {
+    if (editorDirty) {
+      dirtyBadge.style.display = 'inline-block';
+      dirtyBadge.className = 'badge badge-warn';
+      dirtyBadge.textContent = 'Belum disimpan';
+    } else {
+      dirtyBadge.style.display = 'none';
+    }
   }
 }
 
@@ -118,13 +155,32 @@ function editorKembali() {
 
 function renderEditorSoal() {
   var el = document.getElementById('editorSoalList');
+  if (!el) return;
   if (!editorPaket.soal.length) {
-    el.innerHTML = '<div class="card"><p class="muted">Belum ada soal. Klik "Tambah Soal".</p></div>';
+    el.innerHTML = '<div class="card"><p class="muted">Belum ada soal. Klik "+ Tambah Soal".</p></div>';
     return;
   }
-  el.innerHTML = editorPaket.soal.map(renderKartuSoal).join('');
+  
+  var filterEl = document.getElementById('editorFilterType');
+  var filter = filterEl ? filterEl.value : 'all';
+  
+  var html = '';
+  var renderedCount = 0;
+  editorPaket.soal.forEach(function(s, i) {
+    if (filter !== 'all' && s.tipe !== filter) return;
+    html += renderKartuSoal(s, i);
+    renderedCount++;
+  });
+  
+  if (renderedCount === 0) {
+    el.innerHTML = '<div class="card"><p class="muted">Tidak ada soal dengan tipe ini.</p></div>';
+    return;
+  }
+  
+  el.innerHTML = html;
   setTimeout(function() {
     editorPaket.soal.forEach(function(s, i) {
+      if (filter !== 'all' && s.tipe !== filter) return;
       renderLivePreview('preview-soal-' + i, s.q);
       if (s.options) {
         s.options.forEach(function(opt, idx) { renderLivePreview('preview-opsi-' + i + '-' + idx, opt); });
@@ -296,7 +352,30 @@ async function editorDuplikatSoal(i) {
   setEditorDirty(true); renderEditorSoal();
 }
 
-async function editorHapusSoal(i) { if (!await swalConfirm('Hapus soal #' + (i + 1) + '?')) return; editorPaket.soal.splice(i, 1); setEditorDirty(true); renderEditorSoal(); }
+async function editorHapusSoal(i) {
+  if (!await swalConfirm('Hapus soal #' + (i + 1) + '?')) return;
+  var deletedSoal = JSON.parse(JSON.stringify(editorPaket.soal[i]));
+  editorPaket.soal.splice(i, 1);
+  setEditorDirty(true);
+  renderEditorSoal();
+  
+  var r = await Swal.fire({
+    icon: 'info',
+    title: 'Soal Dihapus',
+    text: 'Soal #' + (i + 1) + ' telah dihapus.',
+    showCancelButton: true,
+    confirmButtonText: 'Urungkan (Undo)',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#059669',
+    cancelButtonColor: '#64748b'
+  });
+  if (r.isConfirmed) {
+    editorPaket.soal.splice(i, 0, deletedSoal);
+    setEditorDirty(true);
+    renderEditorSoal();
+    swalSuccess('Soal dikembalikan');
+  }
+}
 
 function editorHapusGambar(soalIdx, field) {
   if (field === 'img') delete editorPaket.soal[soalIdx].img;
@@ -308,7 +387,7 @@ async function openImagePicker(soalIdx, field) {
   activeImageTarget = { soalIdx: soalIdx, field: field };
   const targetLabel = field === 'img' ? 'Gambar soal' : 'Opsi ' + ['A','B','C','D'][parseInt(field.split('.')[1])];
   document.getElementById('imagePickerTarget').textContent = 'Untuk: Soal #' + (soalIdx + 1) + ' — ' + targetLabel;
-  document.getElementById('imagePickerModal').style.display = 'flex';
+  var m = document.getElementById('imagePickerModal'); if (m) { m.classList.remove('hidden'); m.style.display = 'flex'; }
   document.getElementById('pickerUploadInfo').textContent = '';
   await renderPickerImages();
 }
@@ -344,7 +423,7 @@ function hapusGambarDariTarget() {
   closeImagePicker(); setEditorDirty(true); renderEditorSoal();
 }
 
-function closeImagePicker() { document.getElementById('imagePickerModal').style.display = 'none'; activeImageTarget = null; }
+function closeImagePicker() { var m = document.getElementById('imagePickerModal'); if (m) { m.style.display = 'none'; m.classList.add('hidden'); } activeImageTarget = null; }
 
 async function uploadDariPicker(input) {
   if (!input.files || !input.files.length) return;
@@ -408,11 +487,14 @@ async function editorSimpan() {
     editorDirty = false; editorClearDraft(); updateEditorHeader();
     await swalSuccess('Paket tersimpan: ' + d.jumlahSoal + ' soal');
     await loadPaket();
+    editorDirty = false;
+    navigate('paket');
   } catch (e) { Swal.close(); await swalError(e.message); }
 }
 
 function editorPreview() {
   if (!editorPaket) return;
+  if (!editorPaket.soal.length) { swalInfo('Paket ini belum memiliki soal. Tambahkan soal terlebih dahulu.'); return; }
   var items = editorPaket.soal.map(function(s, i) { return renderPreviewSoal(s, i); }).join('');
   Swal.fire({ 
     title: escapeHtml(editorPaket.judul) + ' — ' + escapeHtml(editorPaket.mapel), 

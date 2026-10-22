@@ -629,6 +629,178 @@ a { color: inherit; text-decoration: none; }
 .download-note { font-size: 14px; opacity: .75; }
 .download-note a { color: var(--amber-400); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
+
+/* ============ CHANGELOG ============ */
+.changelog-timeline {
+  max-width: 760px;
+  margin: 0 auto;
+  position: relative;
+  padding-left: 32px;
+}
+.changelog-timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--primary), var(--amber-400), transparent);
+  opacity: .3;
+}
+.changelog-item {
+  position: relative;
+  margin-bottom: 24px;
+  background: white;
+  border: 1px solid var(--g200);
+  border-radius: 14px;
+  transition: all .3s;
+  overflow: hidden;
+}
+.changelog-item:hover {
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px rgba(30,64,175,.08);
+}
+.changelog-item::before {
+  content: '';
+  position: absolute;
+  left: -26px;
+  top: 26px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid var(--primary);
+  box-shadow: 0 0 0 4px white;
+}
+.changelog-item.latest::before {
+  background: var(--amber-400);
+  border-color: var(--amber-500);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 4px white; }
+  50% { box-shadow: 0 0 0 8px rgba(251,191,36,.2); }
+}
+.changelog-header {
+  padding: 20px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  user-select: none;
+}
+.changelog-version {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.changelog-tag {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+.changelog-item.latest .changelog-tag {
+  background: linear-gradient(135deg, var(--amber-500), var(--amber-400));
+}
+.changelog-date {
+  color: var(--g500);
+  font-size: 13px;
+}
+.changelog-badge-new {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.changelog-toggle {
+  color: var(--g400);
+  font-size: 20px;
+  font-weight: 300;
+  transition: transform .3s;
+  flex-shrink: 0;
+}
+.changelog-item.open .changelog-toggle {
+  transform: rotate(45deg);
+}
+.changelog-body {
+  display: none;
+  padding: 0 24px 24px;
+  color: var(--g600);
+  font-size: 14.5px;
+  line-height: 1.75;
+  border-top: 1px solid var(--g100);
+  padding-top: 20px;
+  margin-top: -1px;
+}
+.changelog-item.open .changelog-body {
+  display: block;
+}
+.changelog-body h4 {
+  color: var(--g900);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+}
+.changelog-body h4:first-child {
+  margin-top: 0;
+}
+.changelog-body ul, .changelog-body ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+.changelog-body li {
+  margin: 4px 0;
+}
+.changelog-body code {
+  background: var(--g100);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  color: var(--primary-dark);
+}
+.changelog-body a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: underline;
+}
+.changelog-more {
+  text-align: center;
+  margin-top: 32px;
+}
+.changelog-more button {
+  background: white;
+  border: 1.5px solid var(--g300);
+  color: var(--g700);
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+}
+.changelog-more button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.changelog-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--g500);
+  font-size: 14px;
+}
+
 /* ============ FAQ ============ */
 .faq { max-width: 760px; margin: 0 auto; }
 .faq details { 
@@ -726,6 +898,7 @@ a { color: inherit; text-decoration: none; }
       <a href="#fitur">Fitur</a>
       <a href="#cara">Cara Pakai</a>
       <a href="#faq">FAQ</a>
+      <a href="#changelog">Changelog</a>
       <a href="#download" class="btn-nav-primary">Download</a>
     </div>
   </div>
@@ -1042,6 +1215,22 @@ a { color: inherit; text-decoration: none; }
   </div>
 </section>
 
+
+<section class="section section-alt" id="changelog">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Yang Baru di TKA Local Host</h2>
+      <p>Changelog otomatis — setiap versi terbaru muncul di sini tanpa perlu refresh manual.</p>
+    </div>
+    <div class="changelog-timeline" id="changelogTimeline">
+      <div class="changelog-empty">Memuat riwayat versi...</div>
+    </div>
+    <div class="changelog-more" id="changelogMore" style="display:none">
+      <button onclick="loadAllChangelog()">Lihat Semua Versi</button>
+    </div>
+  </div>
+</section>
+
 <section class="section" id="faq">
   <div class="container">
     <div class="section-head reveal">
@@ -1168,7 +1357,123 @@ async function loadLatestRelease() {
   }
 }
 
+
+// ============ CHANGELOG ============
+let allReleases = [];
+let showingAllReleases = false;
+
+function markdownToHtml(md) {
+  if (!md) return '';
+  let html = md;
+  // Headers
+  html = html.replace(/^### (.*$)/gm, '<h4>$1</h4>');
+  html = html.replace(/^## (.*$)/gm, '<h4>$1</h4>');
+  html = html.replace(/^# (.*$)/gm, '<h4>$1</h4>');
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Lists
+  const lines = html.split('\n');
+  let inList = false;
+  const result = [];
+  for (let line of lines) {
+    const m = line.match(/^[\*\-] (.+)$/);
+    if (m) {
+      if (!inList) { result.push('<ul>'); inList = true; }
+      result.push('<li>' + m[1] + '</li>');
+    } else {
+      if (inList) { result.push('</ul>'); inList = false; }
+      if (line.trim()) result.push('<p>' + line + '</p>');
+    }
+  }
+  if (inList) result.push('</ul>');
+  return result.join('');
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function renderChangelog(releases, limit) {
+  const timeline = document.getElementById('changelogTimeline');
+  const more = document.getElementById('changelogMore');
+  if (!releases.length) {
+    timeline.innerHTML = '<div class="changelog-empty">Belum ada versi rilis.</div>';
+    return;
+  }
+  const list = showingAllReleases ? releases : releases.slice(0, limit);
+  timeline.innerHTML = list.map((rel, idx) => {
+    const isLatest = idx === 0 && !showingAllReleases;
+    const notes = rel.body ? markdownToHtml(rel.body) : '<p>Tidak ada catatan rilis.</p>';
+    return `
+      <div class="changelog-item ${isLatest ? 'latest' : ''} ${idx === 0 ? 'open' : ''}" onclick="toggleChangelog(this)">
+        <div class="changelog-header">
+          <div class="changelog-version">
+            <span class="changelog-tag">${rel.tag_name}</span>
+            ${isLatest ? '<span class="changelog-badge-new">Terbaru</span>' : ''}
+            <span class="changelog-date">${formatDate(rel.published_at)}</span>
+          </div>
+          <span class="changelog-toggle">+</span>
+        </div>
+        <div class="changelog-body">${notes}</div>
+      </div>
+    `;
+  }).join('');
+
+  if (releases.length > limit && !showingAllReleases) {
+    more.style.display = 'block';
+  } else {
+    more.style.display = 'none';
+  }
+}
+
+function toggleChangelog(el) {
+  el.classList.toggle('open');
+}
+
+async function loadChangelog() {
+  const cacheKey = 'tka_changelog_cache';
+  const cacheTimeKey = 'tka_changelog_time';
+  const cacheTime = localStorage.getItem(cacheTimeKey);
+  const cached = localStorage.getItem(cacheKey);
+
+  // Cache 1 jam
+  if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 3600000) {
+    try {
+      allReleases = JSON.parse(cached);
+      renderChangelog(allReleases, 3);
+      return;
+    } catch (e) {}
+  }
+
+  try {
+    const r = await fetch('https://api.github.com/repos/onelabszz/tka-local/releases?per_page=20');
+    if (!r.ok) throw new Error('API tidak tersedia');
+    allReleases = await r.json();
+    localStorage.setItem(cacheKey, JSON.stringify(allReleases));
+    localStorage.setItem(cacheTimeKey, Date.now().toString());
+    renderChangelog(allReleases, 3);
+  } catch (e) {
+    document.getElementById('changelogTimeline').innerHTML = 
+      '<div class="changelog-empty">Changelog sementara tidak bisa dimuat. <a href="https://github.com/onelabszz/tka-local/releases" target="_blank" style="color:#1e40af">Lihat di GitHub →</a></div>';
+  }
+}
+
+function loadAllChangelog() {
+  showingAllReleases = true;
+  renderChangelog(allReleases, allReleases.length);
+}
+
+
 loadLatestRelease();
+loadChangelog();
 </script>
 </body>
 </html>

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup Awal — TKA Local Host</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  background: #f8fafc; color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ========= SPLIT LAYOUT ========= */
+.setup-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+/* ========= LEFT PANEL (Brand) ========= */
+.brand-panel {
+  width: 46%;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #1e40af 100%);
+  color: white;
+  padding: 48px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative orbs */
+.brand-panel::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(59,130,246,.3) 0%, transparent 65%);
+  border-radius: 50%;
+  top: -250px; right: -200px;
+  filter: blur(50px);
+  pointer-events: none;
+}
+.brand-panel::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(251,191,36,.1) 0%, transparent 65%);
+  border-radius: 50%;
+  bottom: -200px; left: -100px;
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+/* Decorative grid */
+.brand-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at 30% 20%, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at 30% 20%, black 30%, transparent 80%);
+  pointer-events: none;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+.brand-logo-mark {
+  width: 44px; height: 44px;
+  background: white;
+  color: #1e40af;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 14px;
+  letter-spacing: -.5px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+.brand-logo-text {
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -.02em;
+}
+.brand-logo-sub {
+  font-size: 12px;
+  opacity: .7;
+  margin-top: 1px;
+}
+
+.brand-content {
+  position: relative;
+  z-index: 1;
+  max-width: 440px;
+}
+
+.brand-eyebrow {
+  display: inline-block;
+  background: rgba(251,191,36,.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251,191,36,.3);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  margin-bottom: 24px;
+}
+
+.brand-title {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  margin-bottom: 16px;
+}
+.brand-title em {
+  font-style: normal;
+  color: #fbbf24;
+}
+
+.brand-desc {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: rgba(255,255,255,.7);
+  margin-bottom: 32px;
+}
+
+.brand-features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.brand-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14.5px;
+  color: rgba(255,255,255,.85);
+}
+.brand-feature-icon {
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.brand-footer {
+  position: relative;
+  z-index: 1;
+  font-size: 12.5px;
+  color: rgba(255,255,255,.5);
+  line-height: 1.6;
+}
+.brand-footer strong {
+  color: rgba(255,255,255,.75);
+  font-weight: 600;
+}
+
+/* ========= RIGHT PANEL (Form) ========= */
+.form-panel {
+  flex: 1;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  overflow-y: auto;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+.form-header {
+  margin-bottom: 40px;
+}
+
+.form-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.step-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #1e40af;
+}
+.step-dot.pending { background: #cbd5e1; }
+.step-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 4px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.form-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #0f172a;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.form-subtitle {
+  font-size: 14.5px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* Form fields */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+.form-field label .req {
+  color: #dc2626;
+  font-weight: 700;
+}
+.form-field label .hint {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #0f172a;
+  background: white;
+  transition: all .15s;
+}
+.form-field input::placeholder {
+  color: #94a3b8;
+}
+.form-field input:hover {
+  border-color: #94a3b8;
+}
+.form-field input:focus {
+  outline: none;
+  border-color: #1e40af;
+  box-shadow: 0 0 0 4px rgba(30,64,175,.1);
+}
+
+.form-field input.npsn-input {
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  letter-spacing: 2px;
+  font-size: 16px;
+}
+
+.field-help {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Info note */
+.form-note {
+  background: #eff6ff;
+  border-left: 3px solid #1e40af;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #1e3a8a;
+  line-height: 1.6;
+  margin-top: 24px;
+}
+.form-note b { font-weight: 700; }
+
+/* Actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+.btn {
+  padding: 13px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-primary {
+  background: #1e40af;
+  color: white;
+  flex: 1;
+  box-shadow: 0 4px 12px rgba(30,64,175,.25);
+}
+.btn-primary:hover:not(:disabled) {
+  background: #1e3a8a;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(30,64,175,.3);
+}
+.btn-primary:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn-secondary {
+  background: white;
+  color: #64748b;
+  border: 1.5px solid #cbd5e1;
+}
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+.err-msg {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 12px;
+  text-align: center;
+  min-height: 20px;
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 900px) {
+  body { overflow: auto; }
+  .setup-wrapper { flex-direction: column; height: auto; min-height: 100vh; }
+  .brand-panel { width: 100%; padding: 32px 24px; min-height: auto; }
+  .brand-title { font-size: 28px; }
+  .brand-content { margin: 24px 0; }
+  .brand-features { display: none; }
+  .form-panel { padding: 32px 24px; }
+  .form-title { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="setup-wrapper">
+
+  <!-- LEFT: Brand Panel -->
+  <div class="brand-panel">
+    <div class="brand-grid"></div>
+
+    <div class="brand-logo">
+      <div class="brand-logo-mark">TKA</div>
+      <div>
+        <div class="brand-logo-text">TKA Local Host</div>
+        <div class="brand-logo-sub">Platform Ujian Offline</div>
+      </div>
+    </div>
+
+    <div class="brand-content">
+      <div class="brand-eyebrow">✨ Setup Awal</div>
+      <h1 class="brand-title">
+        Selamat datang di<br>
+        <em>TKA Local Host</em>.
+      </h1>
+      <p class="brand-desc">
+        Platform ujian offline yang berjalan sepenuhnya di laptop Anda. 
+        Data soal, siswa, dan hasil ujian — semua milik sekolah Anda.
+      </p>
+      <div class="brand-features">
+        <div class="brand-feature">
+          <div class="brand-feature-icon">🔌</div>
+          <span>Berjalan tanpa internet, 100% offline</span>
+        </div>
+        <div class="brand-feature">
+          <div class="brand-feature-icon">🔓</div>
+          <span>Data milik sekolah, tidak dikirim ke mana pun</span>
+        </div>
+        <div class="brand-feature">
+          <div class="brand-feature-icon">💾</div>
+          <span>Gratis selamanya, tanpa biaya bulanan</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-footer">
+      <strong>© 2026 Ekwan Nugroho</strong> · Wonogiri<br>
+      Dibuat untuk pendidikan Indonesia
+    </div>
+  </div>
+
+  <!-- RIGHT: Form Panel -->
+  <div class="form-panel">
+    <div class="form-container">
+      <div class="form-header">
+        <div class="form-step">
+          <span class="step-dot"></span>
+          <span class="step-dot pending"></span>
+          <span class="step-label">Langkah 1 dari 2</span>
+        </div>
+        <h2 class="form-title">Identitas Sekolah</h2>
+        <p class="form-subtitle">
+          Data ini akan muncul di header dokumen cetak seperti kartu peserta dan berita acara.
+        </p>
+      </div>
+
+      <form class="form" onsubmit="simpanSetup(event)" autocomplete="off">
+        <div class="form-field">
+          <label for="field-nama">
+            Nama Sekolah <span class="req">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="field-nama" 
+            name="ts_nama_sekolah"
+            placeholder="Contoh: SD Negeri 1 Wonogiri"
+            autocomplete="off"
+            autocapitalize="words"
+            spellcheck="false"
+            required>
+        </div>
+
+        <div class="form-field">
+          <label for="field-npsn">
+            NPSN <span class="req">*</span>
+            <span class="hint">8 digit angka</span>
+          </label>
+          <input 
+            type="text" 
+            id="field-npsn" 
+            name="ts_npsn_sekolah"
+            class="npsn-input"
+            placeholder="20312345"
+            maxlength="8"
+            inputmode="numeric"
+            pattern="[0-9]{8}"
+            autocomplete="off"
+            spellcheck="false"
+            required>
+          <div class="field-help">Nomor Pokok Sekolah Nasional (Dapodik)</div>
+        </div>
+
+        <div class="form-note">
+          ℹ <b>Informasi lain seperti alamat, kepala sekolah, NIP, dan logo</b> 
+          bisa Anda lengkapi nanti di menu <b>Profil Sekolah</b> setelah masuk ke dashboard.
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="lewatiSetup()">
+            Lewati dulu
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnSimpan" disabled>
+            Simpan & Lanjutkan →
+          </button>
+        </div>
+        <p class="err-msg" id="errMsg"></p>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var fieldNama = document.getElementById('field-nama');
+var fieldNpsn = document.getElementById('field-npsn');
+var btnSimpan = document.getElementById('btnSimpan');
+var errMsg = document.getElementById('errMsg');
+
+// Blur semua field setelah load, biar tidak ada fokus
+setTimeout(function() {
+  if (document.activeElement) document.activeElement.blur();
+}, 100);
+
+// Validasi real-time
+function validateForm() {
+  var nama = fieldNama.value.trim();
+  var npsn = fieldNpsn.value.trim();
+  var validNama = nama.length >= 3;
+  var validNpsn = /^\d{8}$/.test(npsn);
+  btnSimpan.disabled = !(validNama && validNpsn);
+  if (errMsg.textContent) errMsg.textContent = '';
+}
+
+fieldNama.addEventListener('input', validateForm);
+fieldNpsn.addEventListener('input', function() {
+  // Strip non-digit
+  var val = fieldNpsn.value.replace(/\D/g, '').slice(0, 8);
+  if (fieldNpsn.value !== val) fieldNpsn.value = val;
+  validateForm();
+});
+
+async function simpanSetup(e) {
+  if (e) e.preventDefault();
+  var nama = fieldNama.value.trim();
+  var npsn = fieldNpsn.value.trim();
+
+  if (nama.length < 3) { errMsg.textContent = 'Nama sekolah minimal 3 karakter'; return; }
+  if (!/^\d{8}$/.test(npsn)) { errMsg.textContent = 'NPSN harus 8 digit angka'; return; }
+
+  btnSimpan.disabled = true;
+  btnSimpan.textContent = 'Menyimpan...';
+
+  try {
+    var r = await fetch('/api/teacher/sekolah', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nama: nama, npsn: npsn })
+    });
+    if (!r.ok) throw new Error('Gagal menyimpan data sekolah');
+    window.location.href = '/guru';
+  } catch (err) {
+    errMsg.textContent = 'Error: ' + err.message;
+    btnSimpan.disabled = false;
+    btnSimpan.textContent = 'Simpan & Lanjutkan →';
+  }
+}
+
+async function lewatiSetup() {
+  if (!confirm('Yakin lewati setup?\n\nAnda bisa melengkapi identitas sekolah nanti di menu Profil Sekolah.')) return;
+  try {
+    await fetch('/api/teacher/skip-setup', { method: 'POST' });
+    window.location.href = '/guru';
+  } catch (err) {
+    alert('Gagal: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>

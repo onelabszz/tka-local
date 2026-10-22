@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard Guru — TKA</title>
+<title>Dashboard Guru — TKA Local Host</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/katex/katex.min.css">
 <link rel="stylesheet" href="/css/guru.css">
@@ -13,32 +13,50 @@
 <body>
 
 <div class="app">
-
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo">TKA</div>
-      <div>
-        <div class="brand-name">Dashboard Guru</div>
-        <div class="brand-sub">Try Out TKA</div>
+      <div style="min-width:0;flex:1">
+        <div class="brand-name" id="brandSekolahNama">Dashboard Guru</div>
+        <div class="brand-sub" id="brandSekolahNpsn">Memuat...</div>
       </div>
     </div>
     <nav class="sidebar-nav">
-      <button class="nav-item active" data-section="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">&#9632;</span><span>Dashboard</span></button>
-      <button class="nav-item" data-section="peserta" onclick="navigate('peserta')"><span class="nav-icon">&#128101;</span><span>Peserta</span></button>
-      <button class="nav-item" data-section="paket" onclick="navigate('paket')"><span class="nav-icon">&#128230;</span><span>Paket Soal</span></button>
-      <button class="nav-item" data-section="gambar" onclick="navigate('gambar')"><span class="nav-icon">&#128444;</span><span>Gambar</span></button>
-      <button class="nav-item" data-section="analisis" onclick="navigate('analisis')"><span class="nav-icon">&#128202;</span><span>Analisis</span></button>
-      <button class="nav-item" data-section="siswa" onclick="navigate('siswa')"><span class="nav-icon">&#127891;</span><span>Data Siswa</span></button>
-      <button class="nav-item" data-section="bantuan" onclick="navigate('bantuan')"><span class="nav-icon">&#10067;</span><span>Bantuan</span></button>
-      <a class="nav-item" href="/administrasi" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#128196;</span><span>Cetak Administrasi</span></a>
-      <a class="nav-item" href="/panduan" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#128214;</span><span>Panduan Lengkap</span></a>
-      <a class="nav-item" href="/studio" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#129302;</span><span>Buat Soal AI (Studio)</span></a>
+      <div class="nav-group">
+        <div class="nav-group-title">UTAMA</div>
+        <button class="nav-item active" data-section="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">&#9632;</span><span>Dashboard</span></button>
+        <button class="nav-item" data-section="peserta" onclick="navigate('peserta')"><span class="nav-icon">&#128101;</span><span>Peserta</span></button>
+        <button class="nav-item" data-section="analisis" onclick="navigate('analisis')"><span class="nav-icon">&#128202;</span><span>Analisis</span></button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">SOAL &amp; UJIAN</div>
+        <button class="nav-item" data-section="paket" onclick="navigate('paket')"><span class="nav-icon">&#128230;</span><span>Paket Soal</span></button>
+        <button class="nav-item" data-section="gambar" onclick="navigate('gambar')"><span class="nav-icon">&#128444;</span><span>Gambar</span></button>
+        <a class="nav-item" href="https://onelabszz.github.io/tka-studio" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#129302;</span><span>Buat Soal AI (Studio)</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">DATA &amp; ADMINISTRASI</div>
+        <button class="nav-item" data-section="siswa" onclick="navigate('siswa')"><span class="nav-icon">&#127891;</span><span>Data Siswa</span></button>
+        <button class="nav-item" data-section="profil" onclick="navigate('profil')"><span class="nav-icon">&#9881;</span><span>Profil Sekolah</span></button>
+        <a class="nav-item" href="/administrasi" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#128196;</span><span>Cetak Administrasi ↗</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">SISTEM</div>
+        <button class="nav-item" data-section="pengaturan" onclick="navigate('pengaturan')">
+          <span class="nav-icon">&#9881;</span><span>Pengaturan</span>
+        </button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">BANTUAN</div>
+        <a class="nav-item" href="/panduan" target="_blank" rel="noopener" style="text-decoration:none"><span class="nav-icon">&#128214;</span><span>Panduan Lengkap ↗</span></a>
+        <button class="nav-item" data-section="bantuan" onclick="navigate('bantuan')"><span class="nav-icon">&#10067;</span><span>Bantuan</span></button>
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-status" id="globalStatus">Tidak Aktif</div>
       <div class="sidebar-token" id="sidebarToken"></div>
-      <div style="text-align:center;font-size:10px;color:var(--sidebar-text-muted);margin-top:12px;opacity:.7;letter-spacing:.3px;line-height:1.4">
-        © 2026 Ekwan Nugroho<br>Wonogiri
+      <div style="text-align:center;font-size:10px;color:var(--sidebar-text-muted);margin-top:12px;opacity:.45;letter-spacing:.3px;line-height:1.6">
+        &copy; 2026 Ekwan Nugroho<br>Wonogiri<br><span style="opacity:.7">v18.35</span>
       </div>
     </div>
   </aside>
@@ -46,17 +64,22 @@
   <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 
   <main class="main">
-
     <div class="mobile-topbar">
       <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
       <div class="mobile-brand">TKA · Dashboard Guru</div>
     </div>
 
-    <!-- ============ DASHBOARD ============ -->
+    <!-- DASHBOARD -->
     <section id="section-dashboard" class="section active">
-      <div class="section-header">
-        <h1 class="section-title">Dashboard</h1>
-        <p class="section-sub">Ringkasan ujian, token, dan QR untuk siswa</p>
+      <div class="dash-header">
+        <div>
+          <h1 class="section-title">Dashboard</h1>
+          <p class="section-sub">Ringkasan pelaksanaan ujian</p>
+        </div>
+        <div id="dashStatusBadge" class="dash-status-badge">
+          <span class="dot"></span>
+          <span id="dashStatusText">Ujian Belum Aktif</span>
+        </div>
       </div>
 
       <div class="metrics">
@@ -82,50 +105,61 @@
         </div>
       </div>
 
-      <div class="card">
-        <h3 class="card-title">Mulai Ujian</h3>
-        <select id="paketSelect" class="form-input" style="margin-bottom:12px"></select>
-        <div>
-          <button class="btn btn-primary" onclick="startExam()">Mulai Ujian</button>
-          <button class="btn btn-danger" onclick="stopExam()">Hentikan</button>
-          <button class="btn btn-secondary" onclick="rilisPembahasan()">Rilis Pembahasan</button>
-          <button class="btn btn-success" onclick="backupDb()">Backup ZIP</button>
-          <button class="btn btn-danger" onclick="shutdownServer()">Matikan Server</button>
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <h2>Kontrol Ujian</h2>
+          <span class="dash-card-sub">Pilih paket lalu mulai sesi ujian</span>
+        </div>
+        <div class="dash-card-body">
+          <label class="dash-field-label">Paket Soal</label>
+          <select id="paketSelect" class="form-input" style="margin-bottom:12px"></select>
+          <div class="dash-actions-primary">
+            <button class="btn btn-primary" onclick="startExam()">Mulai Ujian</button>
+            <button class="btn btn-danger" onclick="stopExam()">Hentikan Sesi</button>
+          </div>
+          <div class="dash-actions-secondary">
+            <button class="btn btn-secondary" onclick="rilisPembahasan()">Rilis Pembahasan</button>
+            
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <h3 class="card-title">Token &amp; Status</h3>
-        <div class="token-display">
-          <div class="token-label">Token Ujian</div>
-          <div class="token-value token-empty" id="token">— — — —</div>
-          <div class="sesi-info" id="sesiInfo">Belum ada sesi aktif</div>
-          <div class="countdown-big" id="countdown"></div>
+      <div class="dash-grid-2">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h2>Token Ujian</h2>
+            <span class="dash-card-sub">Bacakan atau tampilkan ke siswa</span>
+          </div>
+          <div class="dash-card-body" style="text-align:center">
+            <div class="dash-access-token empty" id="token">— — — —</div>
+            <div class="dash-access-label" id="sesiInfo">Belum ada sesi aktif</div>
+            <div id="countdown" class="dash-access-countdown" style="display:none"></div>
+          </div>
         </div>
-      </div>
 
-      <div class="card">
-        <h3 class="card-title">Scan QR untuk Masuk</h3>
-        <div class="qr-section">
-          <div><img id="qrImage" class="qr-image" alt="QR Code"></div>
-          <div>
-            <p class="muted" style="margin-top:0">Tampilkan QR ini ke siswa — mereka scan dari HP untuk langsung masuk.</p>
-            <div class="qr-url" id="siswaUrl">memuat…</div>
-            <div>
-              <button class="btn btn-primary" onclick="bukaQRFullscreen()">Perbesar untuk Proyektor</button>
-              <button class="btn btn-secondary" onclick="refreshQR()">Refresh QR</button>
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h2>Akses Siswa</h2>
+            <span class="dash-card-sub">Siswa scan QR untuk masuk</span>
+          </div>
+          <div class="dash-card-body" style="text-align:center">
+            <img id="qrImage" class="dash-qr-img" alt="QR Code">
+            <div class="dash-url" id="siswaUrl">memuat…</div>
+            <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="bukaQRFullscreen()" style="font-size:13px;padding:8px 14px">Perbesar QR</button>
+              <button class="btn btn-secondary" onclick="refreshQR()" style="font-size:13px;padding:8px 14px">Refresh</button>
             </div>
-            <p class="muted" id="qrError" style="color:var(--danger);margin-top:8px"></p>
+            <p class="muted" id="qrError" style="color:var(--danger);margin:8px 0 0;font-size:12px"></p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ PESERTA ============ -->
+    <!-- PESERTA -->
     <section id="section-peserta" class="section">
       <div class="section-header">
-        <h1 class="section-title">Peserta</h1>
-        <p class="section-sub">Daftar siswa yang sedang dan sudah mengerjakan <span id="autoInfo"></span></p>
+        <h1 class="section-title">Peserta Ujian</h1>
+        <p class="section-sub">Pantau kehadiran dan progres pengerjaan siswa <span id="autoInfo"></span></p>
       </div>
       <div class="card" style="padding:0">
         <div style="padding:16px 24px;border-bottom:1px solid var(--g200);display:flex;justify-content:space-between;align-items:center">
@@ -146,52 +180,40 @@
       </div>
     </section>
 
-    <!-- ============ PAKET SOAL ============ -->
+    <!-- PAKET SOAL -->
     <section id="section-paket" class="section">
-      <div class="section-header">
-        <h1 class="section-title">Paket Soal</h1>
-        <p class="section-sub">Kelola bank soal: import CSV, edit, preview, duplikat, export, hapus</p>
+      <div class="paket-header">
+        <div>
+          <h1 class="section-title">Paket Soal</h1>
+          <p class="section-sub" id="paketStats">Memuat...</p>
+        </div>
+        <button class="btn btn-primary btn-buat-paket" onclick="bukaModalBuatPaket()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Buat / Import Paket
+        </button>
       </div>
 
-      <div class="card">
-        <h3 class="card-title">Import dari CSV</h3>
-        <div class="callout" style="margin-bottom:12px; font-size:13px; background:#eff6ff; border-left:4px solid #1e40af; padding:10px 14px; border-radius:4px">
-          <b>Format CSV Baru (Lebih Mudah):</b> Hanya ada 14 kolom. 
-          Untuk soal <b>Benar/Salah (BS)</b>, cukup isi kolom <code>opsi_a</code> s.d <code>opsi_d</code> dengan 4 pernyataan, dan isi kolom <code>kunci</code> dengan <code>B,S,B,S</code>.
+      <div class="paket-toolbar">
+        <div class="paket-search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="search" id="paketSearch" class="paket-search" placeholder="Cari judul atau mapel..." oninput="onPaketFilterChange()">
         </div>
-        <div class="form-row">
-          <input id="impPaketId" class="form-input" placeholder="ID paket (kosongkan = otomatis dari judul)" oninput="previewSlug()">
-          <input id="impJudul" class="form-input" placeholder="Judul paket" oninput="previewSlug()">
-          <input id="impMapel" class="form-input" placeholder="Mata pelajaran">
-          <input id="impDurasi" class="form-input" type="number" value="15" placeholder="Durasi (menit)">
-        </div>
-        <p id="impSlugPreview" class="muted" style="margin-top:0;margin-bottom:10px">ID final: (kosong)</p>
-        <input type="file" id="csvFile" accept=".csv,text/csv" style="padding:10px;border:2px dashed var(--g200);border-radius:5px;width:100%;margin-bottom:10px">
-        <button class="btn btn-primary" onclick="importCSV()">Import</button>
-        <button class="btn btn-secondary" onclick="downloadTemplate()">Unduh Template</button>
-          <button class="btn btn-success" onclick="bukaModalImportJSON()">📥 Import JSON (dari Studio)</button>
-        <p id="importInfo" class="muted"></p>
+        <select id="paketMapelFilter" class="paket-filter-select" onchange="onPaketFilterChange()">
+          <option value="all">Semua Mapel</option>
+        </select>
+        <select id="paketSort" class="paket-filter-select" onchange="onPaketFilterChange()">
+          <option value="newest">Terbaru</option>
+          <option value="oldest">Terlama</option>
+          <option value="az">A - Z</option>
+          <option value="za">Z - A</option>
+          <option value="soal-desc">Soal Terbanyak</option>
+        </select>
       </div>
 
-      <div class="card" style="padding:0">
-        <div style="padding:16px 24px;border-bottom:1px solid var(--g200);display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:700;color:var(--g700);font-size:13px;text-transform:uppercase;letter-spacing:.5px">Daftar Paket</div>
-          <button class="btn btn-secondary btn-sm" onclick="loadPaket()">Reload</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th><th>Judul</th><th>Mapel</th><th>Soal</th><th>Durasi</th><th>Acak</th><th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="paketTable"><tr><td colspan="7" class="muted" style="text-align:center;padding:36px">Belum ada paket</td></tr></tbody>
-          </table>
-        </div>
-      </div>
+      <div id="paketListContainer" class="paket-list"></div>
     </section>
 
-    <!-- ============ GAMBAR ============ -->
+    <!-- GAMBAR -->
     <section id="section-gambar" class="section">
       <div class="section-header">
         <h1 class="section-title">Gambar Soal</h1>
@@ -210,7 +232,7 @@
       </div>
     </section>
 
-    <!-- ============ ANALISIS ============ -->
+    <!-- ANALISIS -->
     <section id="section-analisis" class="section">
       <div class="section-header">
         <h1 class="section-title">Analisis Butir Soal</h1>
@@ -226,12 +248,16 @@
       </div>
     </section>
 
-    <!-- ============ EDITOR PAKET ============ -->
+    <!-- EDITOR -->
     <section id="section-editor" class="section">
-      <div class="section-header">
-        <button class="btn btn-secondary btn-sm" onclick="editorKembali()" style="margin-bottom:8px">← Kembali ke Paket</button>
-        <h1 class="section-title" id="editorTitle">Edit Paket</h1>
-        <p class="section-sub">Edit soal, opsi, kunci, dan gambar. Jangan lupa Simpan.</p>
+      <div class="editor-topbar">
+        <button class="btn btn-secondary btn-sm" onclick="batalEdit()">← Batal</button>
+        <div class="editor-topbar-title" id="editorTitle">Edit Paket</div>
+        <div class="editor-topbar-actions">
+          <button class="btn btn-secondary btn-sm" onclick="editorPreview()">Preview</button>
+          <button class="btn btn-secondary btn-sm" onclick="simpanDraft()">Simpan Draft</button>
+          <button class="btn btn-primary btn-sm" onclick="editorSimpan()">Simpan & Kembali</button>
+        </div>
       </div>
       <div class="card">
         <div class="form-row">
@@ -244,176 +270,322 @@
             <option value="none">Tidak diacak (urutan asli)</option>
           </select>
         </div>
-        <div style="margin-top:8px">
-          <button class="btn btn-primary" onclick="editorSimpan()">Simpan</button>
-          <button class="btn btn-secondary" onclick="editorPreview()">Preview</button>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-secondary" onclick="editorTambahSoal()">+ Tambah Soal</button>
-          <span id="editorDirtyBadge" class="badge badge-warn" style="display:none;margin-left:8px">Ada perubahan belum disimpan</span>
+          <select id="editorFilterType" class="form-input" style="width:160px; padding:6px 10px; font-size:14px" onchange="renderEditorSoal()">
+            <option value="all">Semua Tipe Soal</option>
+            <option value="pg">Hanya PG</option>
+            <option value="mcma">Hanya MCMA</option>
+            <option value="bs">Hanya B/S</option>
+          </select>
+          <span id="editorTotalBadge" class="badge badge-info" style="margin-left:8px"></span>
+          <span id="editorDirtyBadge" class="badge badge-warn" style="display:none">Ada perubahan belum disimpan</span>
         </div>
       </div>
       <div id="editorSoalList"></div>
     </section>
 
-    <!-- ============ DATA SISWA ============ -->
+    <!-- DATA SISWA -->
     <section id="section-siswa" class="section">
-      <div class="section-header">
-        <h1 class="section-title">Data Siswa</h1>
-        <p class="section-sub">Daftar siswa untuk validasi login ujian</p>
-      </div>
-
-      <div class="card">
-        <h3 class="card-title">Pengaturan Validasi</h3>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 0">
-          <input type="checkbox" id="wajibSiswaToggle" onchange="toggleWajibSiswa()" style="width:20px;height:20px;cursor:pointer">
-          <span><b>Wajib terdaftar</b> — siswa hanya bisa join kalau namanya ada di daftar</span>
-        </label>
-        <p class="muted" style="margin:8px 0 0">
-          Kalau dimatikan, siapa pun dengan token bisa ikut ujian. Aktifkan untuk ujian resmi.
-        </p>
-      </div>
-
-      <div class="metrics" id="siswaMetrics" style="display:none">
-        <div class="metric">
-          <div class="metric-label">Terdaftar</div>
-          <div class="metric-value" id="mTerdaftar">0</div>
-          <div class="metric-sub" id="mTerdaftarSub">—</div>
+      <div class="dash-header">
+        <div>
+          <h1 class="section-title">Data Siswa</h1>
+          <p class="section-sub" id="siswaStats">Memuat...</p>
         </div>
-        <div class="metric success">
-          <div class="metric-label">Sudah Masuk</div>
-          <div class="metric-value" id="mSudahMasuk">0</div>
-          <div class="metric-sub" id="mSudahMasukSub">—</div>
-        </div>
-        <div class="metric danger">
-          <div class="metric-label">Belum Masuk</div>
-          <div class="metric-value" id="mBelumMasuk">0</div>
-          <div class="metric-sub" id="mBelumMasukSub">—</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-buat-paket" onclick="bukaModalImportSiswa()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Import CSV
+          </button>
+          <button class="btn btn-danger btn-buat-paket" onclick="clearSemuaSiswa()" title="Hapus semua data siswa" style="margin-right:8px">
+            Hapus Semua
+          </button>
+          <button class="btn btn-primary btn-buat-paket" onclick="bukaModalSiswa()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tambah Siswa
+          </button>
         </div>
       </div>
 
-      <div class="card">
-        <h3 class="card-title">Import dari CSV</h3>
-        <p class="muted" style="margin-top:0">
-          Format: <code style="background:var(--g100);padding:2px 6px;border-radius:3px">nisn,nama,kelas</code>
-        </p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-          <input type="file" id="csvSiswaFile" accept=".csv,text/csv" style="padding:10px;border:2px dashed var(--g200);border-radius:5px;flex:1;min-width:200px">
-          <select id="importSiswaMode" class="form-input" style="max-width:220px">
-            <option value="append">Tambah (append)</option>
-            <option value="replace">Ganti semua (replace)</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" onclick="importSiswaCSV()">Import</button>
-        <button class="btn btn-secondary" onclick="downloadTemplateSiswa()">Unduh Template</button>
-        <p id="importSiswaInfo" class="muted"></p>
-      </div>
-
-      <div class="card" style="padding:0">
-        <div style="padding:16px 24px;border-bottom:1px solid var(--g200);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-          <div style="font-weight:700;color:var(--g700);font-size:13px;text-transform:uppercase;letter-spacing:.5px">
-            Daftar Siswa <span id="siswaCount" class="muted" style="font-weight:400;text-transform:none"></span>
-          </div>
+      <!-- Banner Validasi -->
+      <div class="siswa-validation-banner" id="validasiBanner">
+        <div class="svb-content">
+          <div class="svb-icon">🛡️</div>
           <div>
-            <button class="btn btn-secondary btn-sm" onclick="loadSiswa()">Reload</button>
-            <button class="btn btn-danger btn-sm" onclick="clearSemuaSiswa()">Hapus Semua</button>
+            <div class="svb-title">Validasi Login Siswa</div>
+            <div class="svb-desc" id="validasiDesc">Memuat status...</div>
           </div>
         </div>
+        <label class="switch">
+          <input type="checkbox" id="wajibSiswaToggle" onchange="toggleWajibSiswa()">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <!-- Kehadiran Metrics (Hanya muncul saat ujian aktif) -->
+      <div class="metrics" id="siswaMetrics" style="display:none;margin-bottom:16px">
+        <div class="metric"><div class="metric-label">Terdaftar</div><div class="metric-value" id="mTerdaftar">0</div><div class="metric-sub" id="mTerdaftarSub">—</div></div>
+        <div class="metric success"><div class="metric-label">Sudah Masuk</div><div class="metric-value" id="mSudahMasuk">0</div><div class="metric-sub" id="mSudahMasukSub">—</div></div>
+        <div class="metric danger"><div class="metric-label">Belum Masuk</div><div class="metric-value" id="mBelumMasuk">0</div><div class="metric-sub" id="mBelumMasukSub">—</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="paket-toolbar">
+        <div class="paket-search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="search" id="siswaSearch" class="paket-search" placeholder="Cari Nama atau NISN..." oninput="onSiswaFilterChange()">
+        </div>
+        <select id="siswaKelasFilter" class="paket-filter-select" onchange="onSiswaFilterChange()">
+          <option value="all">Semua Kelas</option>
+        </select>
+      </div>
+
+      <!-- Tabel -->
+      <div class="card" style="padding:0">
         <div style="overflow-x:auto">
-          <table>
+          <table class="siswa-table">
             <thead>
-              <tr><th>#</th><th>NISN</th><th>Nama</th><th>Kelas</th><th></th></tr>
+              <tr><th>#</th><th>NISN</th><th>Nama Siswa</th><th>Kelas</th><th>Status</th><th style="text-align:center">Aksi</th></tr>
             </thead>
-            <tbody id="siswaTable"><tr><td colspan="5" class="muted" style="text-align:center;padding:36px">Belum ada siswa</td></tr></tbody>
+            <tbody id="siswaTable">
+              <tr><td colspan="5" class="muted" style="text-align:center;padding:36px">Belum ada siswa.</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ============ BANTUAN ============ -->
+    <section id="section-profil" class="section">
+      <div class="section-header">
+        <h1 class="section-title">Profil Sekolah</h1>
+        <p class="section-sub">Informasi ini dipakai untuk header dokumen resmi</p>
+      </div>
+      <div class="card" id="profilView">
+        <div style="display:flex;gap:24px;align-items:start;flex-wrap:wrap">
+          <div style="width:120px;height:120px;background:var(--g100);border:2px dashed var(--g300);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+            <img id="profilLogo" src="" alt="Logo Sekolah" style="max-width:100%;max-height:100%;object-fit:contain;display:none">
+            <span id="profilLogoEmpty" style="color:var(--g500);font-size:12px;text-align:center">Belum ada logo</span>
+          </div>
+          <div style="flex:1;min-width:240px">
+            <h2 id="profilNama" style="margin:0 0 4px;font-size:22px">—</h2>
+            <p id="profilNpsn" style="margin:0 0 12px;color:var(--g600);font-size:14px">NPSN: —</p>
+            <p id="profilAlamat" style="margin:0 0 16px;color:var(--g700)">—</p>
+            <p id="profilKepsek" style="margin:0;color:var(--g700);font-size:14px">Kepala Sekolah: —</p>
+            <p id="profilNip" style="margin:0;color:var(--g600);font-size:13px">NIP: —</p>
+          </div>
+        </div>
+        <hr style="margin:20px 0;border:none;border-top:1px solid var(--g200)">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+          <div><small class="muted">Tahun Ajaran</small><div id="profilTA" style="font-weight:600">—</div></div>
+          <div><small class="muted">Telepon</small><div id="profilTelp" style="font-weight:600">—</div></div>
+          <div><small class="muted">Email</small><div id="profilEmail" style="font-weight:600">—</div></div>
+          <div><small class="muted">Website</small><div id="profilWebsite" style="font-weight:600">—</div></div>
+          <div><small class="muted">Label Cetak</small><div id="profilNamaKegiatan" style="font-weight:600">—</div></div>
+        </div>
+        <div style="margin-top:20px">
+          <button class="btn btn-primary" onclick="editProfilSekolah()">✏️ Edit Profil</button>
+        </div>
+      </div>
+
+      <div class="card" id="profilForm" style="display:none">
+        <h3 class="card-title">Edit Profil Sekolah</h3>
+        <div class="form-row">
+          <input id="editNama" class="form-input" placeholder="Nama Sekolah *">
+          <input id="editNpsn" class="form-input" placeholder="NPSN * (8 digit angka)">
+        </div>
+        <div class="form-row">
+          <input id="editAlamat" class="form-input" placeholder="Alamat Lengkap">
+          <input id="editTA" class="form-input" placeholder="Tahun Ajaran (contoh: 2025/2026)">
+        </div>
+        <div class="form-row">
+          <input id="editKepsek" class="form-input" placeholder="Nama Kepala Sekolah">
+          <input id="editNip" class="form-input" placeholder="NIP Kepala Sekolah">
+        </div>
+        <div class="form-row">
+          <input id="editTelp" class="form-input" placeholder="Telepon Sekolah">
+          <input id="editEmail" class="form-input" placeholder="Email Sekolah">
+        </div>
+        <div class="form-row single">
+          <input id="editWebsite" class="form-input" placeholder="Website (opsional)">
+        </div>
+        <div class="form-row single">
+          <input id="editNamaKegiatan" class="form-input" placeholder="Label Cetak (contoh: Tryout TKA Mandiri)" maxlength="40">
+        </div>
+        <div style="margin:12px 0">
+          <label class="muted" style="display:block;margin-bottom:6px">Logo Sekolah (PNG/JPG, maks 500 KB)</label>
+          <input type="file" id="logoUpload" accept="image/*" style="padding:8px;border:1px dashed var(--g300);border-radius:6px">
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary" onclick="simpanProfilSekolah()">💾 Simpan</button>
+          <button class="btn btn-secondary" onclick="batalEditProfil()">Batal</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANTUAN -->
+    
+    <!-- PENGATURAN SISTEM -->
+    <section id="section-pengaturan" class="section">
+      <div class="section-header">
+        <h1 class="section-title">Pengaturan Sistem</h1>
+        <p class="section-sub">Pencadangan data, pemeliharaan server, dan reset aplikasi</p>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <h2>Pencadangan Data (Backup)</h2>
+          <span class="dash-card-sub">Simpan seluruh data ke file ZIP</span>
+        </div>
+        <div class="dash-card-body">
+          <p class="muted" style="margin-top:0;margin-bottom:16px">Mengunduh seluruh database siswa, hasil ujian, paket soal, dan gambar dalam satu file ZIP. Disarankan untuk melakukan backup secara berkala.</p>
+          <button class="btn btn-primary" onclick="backupDb()">💾 Unduh Backup (ZIP)</button>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <h2>Pemeliharaan Server</h2>
+          <span class="dash-card-sub">Hentikan server dengan aman</span>
+        </div>
+        <div class="dash-card-body">
+          <p class="muted" style="margin-top:0;margin-bottom:16px">Matikan server jika ujian telah selesai. Aplikasi akan berhenti dan browser tidak bisa diakses hingga server dinyalakan kembali.</p>
+          <button class="btn btn-secondary" onclick="shutdownServer()">⏹ Matikan Server</button>
+        </div>
+      </div>
+
+      <div class="dash-card" style="border: 1px solid #fca5a5; background: #fef2f2;">
+        <div class="dash-card-header" style="border-bottom: 1px solid #fecaca;">
+          <h2 style="color: #991b1b;">Zona Bahaya (Danger Zone)</h2>
+          <span class="dash-card-sub" style="color: #b91c1c;">Tindakan di sini tidak dapat dibatalkan</span>
+        </div>
+        <div class="dash-card-body">
+          <p style="margin-top:0; margin-bottom:16px; color: #7f1d1d; font-size: 14px; line-height: 1.6;">
+            Menghapus <b>SEMUA DATA</b> (siswa, soal, gambar, hasil ujian, profil) dan mengembalikan aplikasi seperti baru di-install.<br>
+            Sistem akan membuat <b>Backup Otomatis</b> ke folder <code>backups/</code> sebelum menghapus.
+          </p>
+          <button class="btn btn-danger" onclick="konfirmasiReset()">⚠️ Reset Aplikasi</button>
+        </div>
+      </div>
+    </section>
+
     <section id="section-bantuan" class="section">
       <div class="section-header">
         <h1 class="section-title">Bantuan</h1>
-        <p class="section-sub">Panduan singkat penggunaan aplikasi</p>
+        <p class="section-sub">Panduan singkat & link ke dokumentasi lengkap</p>
       </div>
 
       <div class="card" style="background:linear-gradient(135deg, #eff6ff, #dbeafe); border-left:4px solid #1e40af">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
           <div>
-            <h3 style="margin:0 0 4px;font-size:15px">Panduan Penggunaan Lengkap</h3>
-            <p style="margin:0;color:#475569;font-size:13px">Setup, import soal, analisis, troubleshooting, dan panduan siswa — semua dalam satu halaman yang bisa dicetak.</p>
+            <h3 style="margin:0 0 4px;font-size:15px">📖 Panduan Penggunaan Lengkap</h3>
+            <p style="margin:0;color:#475569;font-size:13px">Setup, import, ujian, analisis, cetak administrasi, troubleshooting — semua dalam satu halaman.</p>
           </div>
-          <a href="/panduan" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none">📖 Buka Panduan</a>
+          <a href="/panduan" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none">Buka Panduan</a>
         </div>
       </div>
 
       <div class="card">
-        <details open>
-          <summary>Hotspot Wi-Fi di Laptop</summary>
+        <details>
+          <summary>🚀 Setup Awal & Profil Sekolah</summary>
           <ol class="help-list">
-            <li>Buka <b>Settings → Network &amp; Internet → Mobile Hotspot</b> (Windows 10/11).</li>
-            <li>Aktifkan, catat nama &amp; sandi Wi-Fi.</li>
-            <li>Hubungkan HP siswa ke Wi-Fi tersebut.</li>
-            <li>Scan QR dari menu <b>Dashboard</b>.</li>
+            <li>Saat pertama buka, isi <b>Nama Sekolah</b> dan <b>NPSN</b> di wizard.</li>
+            <li>Data lain bisa diisi di menu <b>Profil Sekolah</b>.</li>
+            <li>Data ini otomatis dipakai di header dokumen cetak.</li>
           </ol>
-          <p class="muted">Jika HP tidak bisa membuka halaman, izinkan Node.js di Windows Firewall pada <i>Private network</i>.</p>
         </details>
       </div>
-
       <div class="card">
         <details>
-          <summary>Format CSV Paket Soal</summary>
-          <p class="muted">Tiga tipe soal didukung dalam satu file CSV:</p>
+          <summary>📚 Membuat Paket Soal</summary>
           <ul class="help-list">
-            <li><b>PG</b> — pilihan tunggal. <code>tipe=pg</code>, <code>kunci</code> = satu huruf (a/b/c/d).</li>
-            <li><b>MCMA</b> — pilihan ganda kompleks. <code>tipe=mcma</code>, <code>kunci</code> = dua huruf atau lebih (misal <code>ac</code> atau <code>a,c</code>).</li>
-            <li><b>BS</b> — pernyataan benar/salah. <code>tipe=bs</code>, kolom <code>pernyataan_1..5</code> dan <code>kunci_1..5</code> = B/S.</li>
+            <li><b>Editor Visual</b> — klik "Edit" pada paket untuk mengubah soal.</li>
+            <li><b>Rumus</b> — gunakan tombol a/b, x², √ di editor.</li>
+            <li><b>Gambar</b> — tombol 📷 atau copy-paste (Ctrl+V).</li>
           </ul>
         </details>
       </div>
-
       <div class="card">
         <details>
-          <summary>Cara Menjalankan Ujian</summary>
+          <summary>📥 Import CSV & JSON</summary>
+          <ul class="help-list">
+            <li><b>CSV</b> — data massal dari Excel.</li>
+            <li><b>JSON</b> — dari TKA Studio.</li>
+          </ul>
+        </details>
+      </div>
+      <div class="card">
+        <details>
+          <summary>👥 Data Siswa</summary>
+          <ul class="help-list">
+            <li>Import CSV: <code>nisn, nama, kelas</code>.</li>
+            <li>Aktifkan toggle "Wajib terdaftar" untuk validasi login.</li>
+          </ul>
+        </details>
+      </div>
+      <div class="card">
+        <details>
+          <summary>▶ Menjalankan Ujian</summary>
           <ol class="help-list">
-            <li>Buka menu <b>Paket Soal</b> → import CSV (atau gunakan paket yang sudah ada).</li>
-            <li>Kembali ke <b>Dashboard</b> → pilih paket → klik <b>Mulai Ujian</b>.</li>
-            <li>Token muncul. Tampilkan QR ke siswa atau bacakan token.</li>
-            <li>Siswa scan QR / buka alamat, isi nama &amp; token → mengerjakan.</li>
+            <li>Dashboard → pilih paket → <b>Mulai Ujian</b>.</li>
+            <li>Token muncul. Tampilkan QR ke siswa.</li>
             <li>Pantau di menu <b>Peserta</b>.</li>
-            <li>Setelah selesai: klik <b>Rilis Pembahasan</b> agar siswa bisa lihat pembahasan.</li>
+            <li>Selesai: klik <b>Rilis Pembahasan</b>.</li>
           </ol>
         </details>
       </div>
-
       <div class="card">
         <details>
-          <summary>Mode Acak Soal</summary>
+          <summary>🛡 Mode Kiosk & Anti-Cheat</summary>
           <ul class="help-list">
-            <li><b>Acak per tipe</b> — PG dulu, lalu MCMA, lalu BS. Cocok untuk ujian formal.</li>
-            <li><b>Acak total</b> — semua soal dicampur. Cocok untuk kuis singkat.</li>
-            <li><b>Tidak diacak</b> — urutan sesuai CSV. Cocok untuk soal bertahap mudah → sulit.</li>
+            <li>Layar siswa otomatis masuk mode kiosk (fullscreen).</li>
+            <li>Pelanggaran (Esc) tercatat di dashboard.</li>
           </ul>
-          <p class="muted">Opsi jawaban tetap diacak per siswa di semua mode.</p>
         </details>
       </div>
-
       <div class="card">
         <details>
-          <summary>Cara Memakai Gambar di Soal</summary>
-          <ol class="help-list">
-            <li>Upload gambar di menu <b>Gambar</b> — catat nama filenya.</li>
-            <li>Di CSV, isi kolom <code>img</code> dengan nama file (contoh: <code>peta.png</code>).</li>
-            <li>Untuk gambar di opsi, isi kolom <code>opsi_a_img</code>, <code>opsi_b_img</code>, dst.</li>
-            <li>Atau, lewat editor UI: klik <b>Edit</b> pada paket → klik tombol <b>📷 Pilih Gambar</b>.</li>
-          </ol>
+          <summary>📊 Analisis Butir Soal</summary>
+          <ul class="help-list">
+            <li><b>p-value</b>, <b>D-index</b>, <b>Distraktor</b>.</li>
+            <li>Butuh minimal 8 peserta untuk analisis akurat.</li>
+          </ul>
+        </details>
+      </div>
+      <div class="card">
+        <details>
+          <summary>🖨 Cetak Administrasi</summary>
+          <ul class="help-list">
+            <li>5 dokumen: Kartu Peserta, Daftar Hadir, Berita Acara, Label Kursi, Tata Tertib.</li>
+            <li>Otomatis pakai data Profil Sekolah.</li>
+          </ul>
+        </details>
+      </div>
+      <div class="card">
+        <details>
+          <summary>🎓 Mode Latihan Mandiri</summary>
+          <ul class="help-list">
+            <li>Aktifkan toggle "Latihan: ON" di menu Paket Soal.</li>
+            <li>Siswa akses link di halaman login tanpa token.</li>
+          </ul>
+        </details>
+      </div>
+      <div class="card">
+        <details>
+          <summary>💾 Backup & Pemulihan</summary>
+          <ul class="help-list">
+            <li>Otomatis: setiap Mulai Ujian (14 terakhir disimpan).</li>
+            <li>Manual: Dashboard → Backup ZIP.</li>
+          </ul>
         </details>
       </div>
 
       <div class="card" style="border-left:4px solid #059669">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
           <div>
-            <h3 style="margin:0 0 4px;font-size:15px">Butuh bantuan lebih lanjut?</h3>
-            <p style="margin:0;color:#475569;font-size:13px">Laporkan bug atau saran fitur dengan menyertakan screenshot error dan langkah yang dilakukan.</p>
+            <h3 style="margin:0 0 4px;font-size:15px">💬 Layanan Bantuan</h3>
+            <p style="margin:0;color:#475569;font-size:13px">Laporkan kendala atau berikan saran melalui WhatsApp. Sertakan screenshot jika memungkinkan.</p>
           </div>
+          <a href="javascript:void(0)" onclick="bukaWA()" class="btn btn-success" style="text-decoration:none">Hubungi via WhatsApp</a>
         </div>
       </div>
     </section>
@@ -421,36 +593,121 @@
   </main>
 </div>
 
-<!-- ============ IMAGE PICKER MODAL ============ -->
-<div id="imagePickerModal" class="modal-overlay" style="display:none">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 class="modal-title" id="imagePickerTitle">Pilih Gambar</h3>
-      <button class="btn btn-secondary" onclick="closeImagePicker()">Tutup</button>
+<!-- MODAL BUAT PAKET -->
+<div id="modalBuatPaket" class="paket-modal-overlay" style="display:none">
+  <div class="paket-modal">
+    <div class="paket-modal-header">
+      <div>
+        <h2>Buat Paket Soal Baru</h2>
+        <p class="muted" style="margin:2px 0 0;font-size:13px">Pilih cara membuat paket soal</p>
+      </div>
+      <button class="btn-icon" onclick="tutupModalBuatPaket()" style="width:32px;height:32px">×</button>
     </div>
-    <p class="muted" id="imagePickerTarget" style="margin:0 0 12px 0"></p>
-    <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <input type="file" id="pickerUploadInput" accept="image/*" style="display:none" onchange="uploadDariPicker(this)">
-      <button class="btn btn-primary" onclick="document.getElementById('pickerUploadInput').click()">📤 Upload Baru</button>
-      <button class="btn btn-secondary" onclick="pasteGambarManual()">📋 Paste (Ctrl+V)</button>
-      <span class="muted" style="font-size:12px">atau seret file gambar ke area bawah</span>
+
+    <div class="paket-modal-tabs">
+      <button class="paket-tab active" data-tab="manual" onclick="switchBuatPaketTab('manual')"><span class="tab-icon">✏️</span> Buat Manual</button>
+      <button class="paket-tab" data-tab="csv" onclick="switchBuatPaketTab('csv')"><span class="tab-icon">📝</span> Import CSV</button>
+      <button class="paket-tab" data-tab="json" onclick="switchBuatPaketTab('json')"><span class="tab-icon">🤖</span> Import JSON</button>
     </div>
-    <div id="imagePickerList" class="gambar-grid">
-      <p class="muted" style="grid-column:1/-1;text-align:center;margin:0;padding:24px 0">Memuat gambar…</p>
-    </div>
-    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-      <button class="btn btn-danger btn-sm" onclick="hapusGambarDariTarget()">Lepas Gambar</button>
-      <span id="pickerUploadInfo" class="muted" style="font-size:12px"></span>
+
+    <div class="paket-modal-body">
+      <!-- Manual Tab -->
+      <div id="paneBuatPaket-manual" class="paket-pane active">
+        <p class="pane-desc">Buat paket kosong, lalu tambah soal satu per satu di editor.</p>
+        <div class="paket-form-grid">
+          <input id="manualId" class="form-input" placeholder="ID paket (auto dari judul)" oninput="previewManualSlug()">
+          <input id="manualJudul" class="form-input" placeholder="Judul paket *" oninput="previewManualSlug()">
+          <input id="manualMapel" class="form-input" placeholder="Mata pelajaran">
+          <input id="manualDurasi" class="form-input" type="number" value="15" placeholder="Durasi (menit)">
+        </div>
+        <p id="manualSlugPreview" class="muted" style="font-size:12px;margin:8px 0 12px">ID final: (kosong)</p>
+        <button class="btn btn-primary" onclick="buatPaketManual()" style="width:100%;margin-top:12px">✏️ Buat &amp; Buka Editor</button>
+        <p id="manualInfo" class="muted" style="text-align:center;margin-top:8px;font-size:13px"></p>
+      </div>
+
+      <!-- CSV Tab -->
+      <div id="paneBuatPaket-csv" class="paket-pane">
+        <p class="pane-desc">Upload file CSV dari Excel. <a href="javascript:void(0)" onclick="downloadTemplate()">Unduh template →</a></p>
+        <div class="paket-form-grid">
+          <input id="impPaketId" class="form-input" placeholder="ID paket (auto dari judul)" oninput="previewSlug()">
+          <input id="impJudul" class="form-input" placeholder="Judul paket *" oninput="previewSlug()">
+          <input id="impMapel" class="form-input" placeholder="Mata pelajaran">
+          <input id="impDurasi" class="form-input" type="number" value="15" placeholder="Durasi (menit)">
+        </div>
+        <p id="impSlugPreview" class="muted" style="font-size:12px;margin:8px 0 12px">ID final: (kosong)</p>
+        <input type="file" id="csvFile" accept=".csv,text/csv" class="file-input">
+        <button class="btn btn-primary" onclick="importCSV()" style="width:100%;margin-top:12px">📥 Import CSV</button>
+        <p id="importInfo" class="muted" style="text-align:center;margin-top:8px;font-size:13px"></p>
+      </div>
+
+      <!-- JSON Tab -->
+      <div id="paneBuatPaket-json" class="paket-pane">
+        <p class="pane-desc">Paste JSON dari TKA Studio atau upload file <code>.json</code></p>
+        <div class="paket-json-tabs">
+          <button class="paket-json-tab active" onclick="switchJsonMode('paste')">📋 Paste</button>
+          <button class="paket-json-tab" onclick="switchJsonMode('upload')">📁 Upload</button>
+        </div>
+        <div id="jsonPasteMode">
+          <textarea id="jsonPasteArea" class="paket-json-textarea" placeholder='{"id":"...","judul":"...","soal":[...]}' oninput="validateJSONRealtime(this.value)"></textarea>
+        </div>
+        <div id="jsonUploadMode" style="display:none">
+          <div id="jsonDropzone" class="paket-dropzone" onclick="document.getElementById('jsonFileInput').click()">
+            <div style="font-size:36px;margin-bottom:8px">📁</div>
+            <div style="font-weight:600;color:var(--g700)">Klik atau seret file JSON ke sini</div>
+            <div class="muted" style="font-size:12px;margin-top:4px">Format .json</div>
+            <input type="file" id="jsonFileInput" accept=".json,application/json" style="display:none" onchange="handleFileSelect(this)">
+          </div>
+          <p id="fileNameDisplay" class="muted" style="text-align:center;margin-top:8px;font-size:13px"></p>
+        </div>
+        <div id="jsonPreview" style="display:none;margin-top:12px;padding:12px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:13px;color:#166534"></div>
+        <div id="jsonError" style="color:#dc2626;font-size:13px;margin-top:8px;min-height:20px;text-align:center"></div>
+        <button class="btn btn-success" id="btnProsesImport" onclick="prosesImportJSON()" disabled style="width:100%;margin-top:8px;background:var(--success)">📥 Proses Import JSON</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ============ QR FULLSCREEN ============ -->
-<div id="qrFullscreen">
-  <h1 id="qrFullUrl"></h1>
-  <img id="qrFullImage" alt="">
-  <p>Scan dengan kamera HP</p>
-  <button class="btn btn-secondary btn-close" onclick="tutupQRFullscreen()">Tutup</button>
+<!-- MODAL REVIEW -->
+<div id="reviewModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px">
+  <div style="background:white;max-width:800px;width:100%;max-height:90vh;overflow:auto;border-radius:12px;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0" id="reviewTitle">Review Jawaban</h3>
+      <button class="btn btn-secondary" onclick="tutupReview()">Tutup</button>
+    </div>
+    <div id="reviewBody"></div>
+  </div>
+</div>
+
+<!-- QR FULLSCREEN -->
+<div id="qrFullscreen" style="position:fixed;inset:0;background:white;z-index:2000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+  <h1 id="qrFullUrl" style="font-family:monospace;font-size:38px;color:var(--primary-dark);margin:0 0 24px;letter-spacing:2px"></h1>
+  <img id="qrFullImage" style="max-width:70vmin;width:80%;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.15)">
+  <p style="color:var(--g500);font-size:20px;margin-top:24px">Scan dengan kamera HP</p>
+  <button class="btn btn-secondary" onclick="tutupQRFullscreen()" style="position:fixed;top:20px;right:20px;font-size:18px;padding:10px 18px">Tutup</button>
+</div>
+
+<!-- IMAGE PICKER MODAL -->
+<div id="imagePickerModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px">
+  <div style="background:white;border-radius:10px;padding:0;max-width:900px;width:100%;max-height:90vh;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:16px 24px;border-bottom:1px solid var(--g200);display:flex;justify-content:space-between;align-items:center;background:var(--g50)">
+      <h3 style="margin:0;font-size:17px">Pilih Gambar</h3>
+      <button class="btn btn-secondary" onclick="closeImagePicker()">Tutup</button>
+    </div>
+    <div style="padding:20px;overflow-y:auto;flex:1">
+      <p class="muted" id="imagePickerTarget" style="margin-top:0;margin-bottom:12px"></p>
+      <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="file" id="pickerUploadInput" accept="image/*" style="display:none" onchange="uploadDariPicker(this)">
+        <button class="btn btn-primary" onclick="document.getElementById('pickerUploadInput').click()">📤 Upload Baru</button>
+        <button class="btn btn-secondary" onclick="pasteGambarManual()">📋 Paste (Ctrl+V)</button>
+        <span class="muted" style="font-size:12px">atau seret file gambar ke area bawah</span>
+      </div>
+      <div id="imagePickerList" class="gambar-grid"></div>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid var(--g200);display:flex;justify-content:space-between;align-items:center;background:var(--g50)">
+      <button class="btn btn-danger btn-sm" onclick="hapusGambarDariTarget()">Lepas Gambar</button>
+      <span id="pickerUploadInfo" class="muted" style="font-size:12px"></span>
+    </div>
+  </div>
 </div>
 
 <script src="/sweetalert2.min.js"></script>
@@ -464,77 +721,72 @@
 <script src="/js/guru-analisis.js"></script>
 <script src="/js/guru-editor.js"></script>
 <script src="/js/guru-siswa.js"></script>
+<script src="/js/guru-profil.js"></script>
 <script src="/js/guru-main.js"></script>
 
-
-
-
-<!-- MODAL IMPORT JSON DARI STUDIO (v2) -->
-<div id="modalImportJSON" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:16px">
-  <div style="background:white;border-radius:10px;padding:0;max-width:720px;width:100%;max-height:90vh;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden">
-    
-    <!-- Header -->
-    <div style="padding:20px 24px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
+<!-- MODAL IMPORT SISWA -->
+<div id="modalImportSiswa" class="paket-modal-overlay" style="display:none">
+  <div class="paket-modal" style="max-width:500px">
+    <div class="paket-modal-header">
       <div>
-        <h3 style="margin:0;font-size:18px">Import Bank Soal dari TKA Studio</h3>
-        <p style="margin:4px 0 0;font-size:13px;color:#64748b">Paste JSON atau upload file <code style="background:#f1f5f9;padding:2px 6px;border-radius:3px">.json</code></p>
+        <h2>Import Data Siswa</h2>
+        <p class="muted" style="margin:2px 0 0;font-size:13px">Upload file CSV (NISN, Nama, Kelas)</p>
       </div>
-      <button class="btn btn-secondary" onclick="tutupModalImportJSON()">Tutup</button>
+      <button class="btn-icon" onclick="tutupModalImportSiswa()" style="width:32px;height:32px">×</button>
     </div>
-
-    <!-- Tabs -->
-    <div style="display:flex;border-bottom:1px solid #e2e8f0;background:#f8fafc">
-      <button id="tabPaste" onclick="switchTabImport('paste')" style="flex:1;padding:14px;background:white;border:none;border-bottom:2px solid #1e40af;cursor:pointer;font-weight:600;font-size:14px;color:#1e40af">
-        📋 Paste JSON
-      </button>
-      <button id="tabUpload" onclick="switchTabImport('upload')" style="flex:1;padding:14px;background:#f8fafc;border:none;border-bottom:2px solid transparent;cursor:pointer;font-weight:600;font-size:14px;color:#64748b">
-        📁 Upload File
-      </button>
-    </div>
-
-    <!-- Body -->
-    <div style="padding:20px 24px;overflow-y:auto;flex:1">
-
-      <!-- Tab Paste -->
-      <div id="panePaste">
-        <label style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:8px">
-          Paste JSON di sini:
-        </label>
-        <textarea id="jsonPasteArea" placeholder='{&#10;  "version": "1.0",&#10;  "id": "matematika-pecahan-2026",&#10;  "judul": "...",&#10;  "soal": [...]&#10;}' style="width:100%;height:280px;padding:12px;border:1.5px solid #cbd5e1;border-radius:8px;font-family:'Courier New',monospace;font-size:12px;resize:vertical" oninput="validateJSONRealtime(this.value)"></textarea>
-        <div id="pasteError" style="margin-top:8px;font-size:13px;color:#dc2626;min-height:20px"></div>
+    <div class="paket-modal-body">
+      <p class="pane-desc">Pastikan file CSV memiliki header: <code>nisn,nama,kelas</code>. <a href="javascript:void(0)" onclick="downloadTemplateSiswa()">Unduh Template →</a></p>
+      
+      <div style="margin-bottom:16px">
+        <label class="dash-field-label">Mode Import</label>
+        <select id="importSiswaMode" class="form-input">
+          <option value="append">Tambah (Append) - Data lama tetap ada</option>
+          <option value="replace">Ganti Semua (Replace) - Hapus data lama</option>
+        </select>
       </div>
 
-      <!-- Tab Upload -->
-      <div id="paneUpload" style="display:none">
-        <label style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:8px">
-          Pilih file atau seret ke area di bawah:
-        </label>
-        <div id="dropZone" style="border:2px dashed #cbd5e1;border-radius:8px;padding:40px 20px;text-align:center;background:#f8fafc;transition:all .2s;cursor:pointer" onclick="document.getElementById('jsonFileInput').click()">
-          <div style="font-size:42px;margin-bottom:8px">📁</div>
-          <div style="font-weight:600;color:#334155;margin-bottom:4px">Klik untuk pilih file</div>
-          <div style="font-size:13px;color:#64748b">atau seret file .json ke sini</div>
-          <input type="file" id="jsonFileInput" accept=".json,application/json" style="display:none" onchange="handleFileSelect(this)">
-        </div>
-        <p id="fileNameDisplay" style="margin-top:12px;text-align:center;font-size:13px;color:#64748b"></p>
-        <div id="uploadError" style="margin-top:8px;font-size:13px;color:#dc2626;min-height:20px"></div>
+      <div style="margin-bottom:16px">
+        <label class="dash-field-label">File CSV</label>
+        <input type="file" id="csvSiswaFile" accept=".csv,text/csv" class="file-input">
       </div>
 
-      <!-- Preview -->
-      <div id="jsonPreview" style="display:none;margin-top:20px;padding:16px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px">
-        <div style="font-weight:700;color:#166534;margin-bottom:8px">✅ JSON Valid</div>
-        <div id="jsonPreviewContent" style="font-size:13px;color:#166534;line-height:1.6"></div>
-      </div>
-
+      <p id="importSiswaInfo" class="muted" style="text-align:center;min-height:20px"></p>
+      
+      <button class="btn btn-primary" onclick="importSiswaCSV()" style="width:100%;margin-top:8px">📥 Proses Import</button>
     </div>
-
-    <!-- Footer -->
-    <div style="padding:16px 24px;border-top:1px solid #e2e8f0;background:#f8fafc;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-secondary" onclick="tutupModalImportJSON()">Batal</button>
-      <button id="btnProsesImport" class="btn btn-success" onclick="prosesImportJSON()" disabled>📥 Proses Import</button>
-    </div>
-
   </div>
 </div>
 
+<!-- MODAL TAMBAH/EDIT SISWA -->
+<div id="modalSiswa" class="paket-modal-overlay" style="display:none">
+  <div class="paket-modal" style="max-width:450px">
+    <div class="paket-modal-header">
+      <div>
+        <h2 id="modalSiswaTitle">Tambah Siswa</h2>
+        <p class="muted" style="margin:2px 0 0;font-size:13px">Isi data siswa dengan lengkap</p>
+      </div>
+      <button class="btn-icon" onclick="tutupModalSiswa()" style="width:32px;height:32px">×</button>
+    </div>
+    <div class="paket-modal-body">
+      <input type="hidden" id="formSiswaId">
+      <div class="paket-form-grid" style="grid-template-columns:1fr">
+        <div>
+          <label class="dash-field-label">Nama Lengkap <span style="color:red">*</span></label>
+          <input id="formSiswaNama" class="form-input" placeholder="Contoh: Budi Santoso">
+        </div>
+        <div>
+          <label class="dash-field-label">NISN</label>
+          <input id="formSiswaNisn" class="form-input" placeholder="10 digit angka">
+        </div>
+        <div>
+          <label class="dash-field-label">Kelas</label>
+          <input id="formSiswaKelas" class="form-input" placeholder="Contoh: VI A">
+        </div>
+      </div>
+      <p id="formSiswaInfo" class="muted" style="text-align:center;min-height:20px;margin-top:12px"></p>
+      <button class="btn btn-primary" onclick="simpanSiswa()" style="width:100%;margin-top:8px">Simpan</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

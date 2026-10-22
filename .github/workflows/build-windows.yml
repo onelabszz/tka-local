@@ -121,6 +121,7 @@ jobs:
             tka-local-windows-*.zip
             TKA-Setup-*.exe
           name: TKA Local Host ${{ steps.version.outputs.value }}
+          generate_release_notes: true
           body: |
             ## TKA Local Host ${{ steps.version.outputs.value }}
 

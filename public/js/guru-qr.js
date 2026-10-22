@@ -11,5 +11,5 @@ async function refreshQR() {
     document.getElementById('siswaUrl').textContent = d.url;
   } catch (e) { errEl.textContent = 'Gagal memuat QR: ' + e.message; }
 }
-function bukaQRFullscreen() { document.getElementById('qrFullscreen').classList.add('show'); }
-function tutupQRFullscreen() { document.getElementById('qrFullscreen').classList.remove('show'); }
+function bukaQRFullscreen() { document.getElementById('qrFullscreen').style.display = 'flex'; }
+function tutupQRFullscreen() { document.getElementById('qrFullscreen').style.display = 'none'; }
