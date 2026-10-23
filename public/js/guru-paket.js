@@ -228,7 +228,16 @@ async function previewPaketById(id) {
     if (!r.ok) { if (Swal) Swal.close(); await swalError(data.error || 'Gagal'); return; }
     var items = data.soal.map(function(s, i) {
       var tipe = s.tipe || 'pg';
-      var imgHtml = s.img ? '<img src="/gambar/' + encodeURIComponent(s.img) + '" style="display:block;max-width:100%;max-height:200px;margin:8px auto;border-radius:4px">' : '';
+      var wacanaHtml = '';
+      if (s.wacana) {
+        wacanaHtml = '<div style="background:#f8fafc;border-left:3px solid #1e40af;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left">';
+        if (s.wacana_judul) wacanaHtml += '<div style="font-weight:700;margin-bottom:6px;color:#1e40af">' + escapeHtml(s.wacana_judul) + '</div>';
+        wacanaHtml += '<div style="font-size:13px;line-height:1.6;color:#334155">' + escapeHtml(s.wacana).replace(/\n/g, '<br>') + '</div>';
+        if (s.wacana_sumber) wacanaHtml += '<div style="font-size:11px;color:#64748b;margin-top:6px;font-style:italic">Sumber: ' + escapeHtml(s.wacana_sumber) + '</div>';
+        wacanaHtml += '</div>';
+      }
+      var captionHtml = s.img_caption ? '<div style="text-align:center;font-size:12px;color:#64748b;font-style:italic;margin-top:-4px;margin-bottom:8px">' + escapeHtml(s.img_caption) + '</div>' : '';
+      var imgHtml = s.img ? '<img src="/gambar/' + encodeURIComponent(s.img) + '" style="display:block;max-width:100%;max-height:200px;margin:8px auto;border-radius:4px">' + captionHtml : '';
       var body = '';
       if (tipe === 'bs') {
         body = '<table style="width:100%;border-collapse:collapse;margin:8px 0;border:1px solid #e2e8f0"><thead><tr style="background:#f1f5f9"><th style="padding:6px;text-align:left;font-size:12px">Pernyataan</th><th style="padding:6px;width:50px;text-align:center;font-size:12px">Kunci</th></tr></thead><tbody>';
@@ -246,7 +255,7 @@ async function previewPaketById(id) {
       }
       var tipeBadge = tipe === 'mcma' ? '<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700">MCMA</span>' : tipe === 'bs' ? '<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700">B/S</span>' : '<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700">PG</span>';
       var pemb = s.pembahasan ? '<div style="margin-top:8px;padding:8px;background:#f1f5f9;border-radius:4px;font-size:12px"><b>Pembahasan:</b> ' + escapeHtml(s.pembahasan) + '</div>' : '';
-      return '<div style="border:1px solid #e2e8f0;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left"><div style="margin-bottom:6px;font-size:13px"><b>' + (i + 1) + '.</b> ' + tipeBadge + ' ' + escapeHtml(s.q || '(kosong)') + '</div>' + imgHtml + body + pemb + '</div>';
+      return '<div style="border:1px solid #e2e8f0;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left">' + wacanaHtml + '<div style="margin-bottom:6px;font-size:13px"><b>' + (i + 1) + '.</b> ' + tipeBadge + ' ' + escapeHtml(s.q || '(kosong)') + '</div>' + imgHtml + body + pemb + '</div>';
     }).join('');
     Swal.fire({ title: escapeHtml(data.judul) + ' — ' + escapeHtml(data.mapel), html: '<div style="font-size:13px;color:#64748b;margin-bottom:12px">' + data.soal.length + ' soal / ' + data.durasiMenit + ' menit</div>' + items, width: '850px', showCloseButton: true, showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Tutup', cancelButtonColor: '#64748b' });
   } catch (e) { if (Swal) Swal.close(); await swalError(e.message); }

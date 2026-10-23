@@ -97,6 +97,26 @@ CREATE TABLE IF NOT EXISTS sekolah (
   nama_kegiatan TEXT DEFAULT 'Tryout TKA Mandiri'
 );
 INSERT OR IGNORE INTO sekolah (id) VALUES (1);
+
+CREATE TABLE IF NOT EXISTS latihan_sesi (
+  id TEXT PRIMARY KEY,
+  paket_id TEXT NOT NULL,
+  nama TEXT NOT NULL,
+  kelas TEXT,
+  mulai_at INTEGER NOT NULL,
+  deadline INTEGER NOT NULL,
+  submit_at INTEGER,
+  skor REAL,
+  total INTEGER,
+  layout TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS latihan_jawaban (
+  latihan_id TEXT NOT NULL,
+  soal_id TEXT NOT NULL,
+  jawaban_json TEXT,
+  saved_at INTEGER NOT NULL,
+  PRIMARY KEY (latihan_id, soal_id)
+);
 `);
 
 // Migrasi kolom (dijalankan TERPISAH dari db.exec utama)
@@ -464,27 +484,32 @@ function computeAnalisis(sesiId) {
 // ============================================================
 function parseCSV(text) {
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  // Abaikan baris "sep=;" atau "sep=," jika ada
   text = text.replace(/^sep=[;,][ \t]*\r?\n/i, '');
   const firstLine = (text.split(/\r?\n/)[0] || '');
   const sep = firstLine.includes(';') ? ';' : ',';
-  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  
   const rows = [];
-  for (const line of lines) {
-    const row = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"' && !inQ) { inQ = true; continue; }
-      if (c === '"' && inQ) {
-        if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false;
-        continue;
-      }
-      if (c === sep && !inQ) { row.push(cur); cur = ''; continue; }
+  let row = [], cur = '', inQ = false;
+  
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (inQ && text[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === sep && !inQ) {
+      row.push(cur); cur = '';
+    } else if ((c === '\n' || c === '\r') && !inQ) {
+      if (c === '\r' && text[i+1] === '\n') i++;
+      row.push(cur); cur = '';
+      if (row.length > 1 || (row[0] && row[0].trim())) rows.push(row);
+      row = [];
+    } else {
       cur += c;
     }
+  }
+  if (cur || row.length) {
     row.push(cur);
-    rows.push(row);
+    if (row.length > 1 || (row[0] && row[0].trim())) rows.push(row);
   }
   return rows;
 }
@@ -517,6 +542,16 @@ function csvToPaket(csv, meta) {
     };
     const img = get('img');
     if (img) item.img = img;
+    const imgCaption = get('img_caption');
+    if (imgCaption) item.img_caption = imgCaption;
+    const imgRef = get('img_ref');
+    if (imgRef) item.img_ref = imgRef;
+    const wacana = get('wacana');
+    if (wacana) item.wacana = wacana;
+    const wacanaJudul = get('wacana_judul');
+    if (wacanaJudul) item.wacana_judul = wacanaJudul;
+    const wacanaSumber = get('wacana_sumber');
+    if (wacanaSumber) item.wacana_sumber = wacanaSumber;
 
     if (tipe === 'bs') {
       const pernyataan = [];
@@ -725,21 +760,24 @@ app.get('/api/teacher/paket/:id/export-csv', (req, res) => {
   if (!paket) return res.status(404).send('Paket tidak ditemukan');
   function esc(s) { s = String(s == null ? '' : s); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
   function huruf(k) { return ['a','b','c','d'][k] || 'a'; }
-  const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
+  const COLS = ['no','tipe','wacana_judul','wacana','wacana_sumber','soal','img','img_caption','img_ref',
+    'opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
   function rowArr(arr) { return arr.map(esc).join(';'); }
   const header = COLS.join(';') + '\n';
   const rows = paket.soal.map((s, i) => {
     const tipe = getTipe(s);
+    const wacana = [s.wacana_judul || '', s.wacana || '', s.wacana_sumber || ''];
+    const imgFields = [s.img || '', s.img_caption || '', s.img_ref || ''];
     if (tipe === 'bs') {
       const p = s.pernyataan || [];
-      const arr = [i + 1, tipe, s.q || '', s.img || '',
+      const arr = [i + 1, tipe, ...wacana, s.q || '', ...imgFields,
         p[0] ? p[0].teks : '', '', p[1] ? p[1].teks : '', '',
-        p[2] ? p[2].teks : '', '', p[3] ? p[3].teks : '', '',
+        p[2] ? p[2].teks : '', '', p[3] ? p[3].teks : '',
         p.map(x => x.key ? 'B' : 'S').join(','), s.pembahasan || ''];
       return rowArr(arr);
     }
     const kunci = tipe === 'mcma' ? (Array.isArray(s.key) ? s.key.map(huruf).join(',') : huruf(s.key)) : huruf(s.key);
-    const arr = [i + 1, tipe, s.q || '', s.img || '',
+    const arr = [i + 1, tipe, ...wacana, s.q || '', ...imgFields,
       (s.options && s.options[0]) || '', (s.optionImgs && s.optionImgs[0]) || '',
       (s.options && s.options[1]) || '', (s.optionImgs && s.optionImgs[1]) || '',
       (s.options && s.options[2]) || '', (s.optionImgs && s.optionImgs[2]) || '',
@@ -801,14 +839,26 @@ app.post('/api/teacher/hapus-paket', (req, res) => {
 
 app.get('/api/teacher/template-csv', (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Hanya guru');
-  const COLS = ['no','tipe','soal','img','opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
+  const COLS = ['no','tipe','wacana_judul','wacana','wacana_sumber','soal','img','img_caption','img_ref',
+    'opsi_a','opsi_a_img','opsi_b','opsi_b_img','opsi_c','opsi_c_img','opsi_d','opsi_d_img','kunci','pembahasan'];
   function esc(s) { s = String(s == null ? '' : s); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
   function row(arr) { return arr.map(esc).join(';'); }
   const header = COLS.join(';') + '\n';
   const body = [
-    row([1, 'pg', 'Contoh PG: Ibu kota Indonesia adalah', '', 'Bandung', '', 'Jakarta', '', 'Surabaya', '', 'Medan', '', 'B', 'Jakarta adalah ibu kota NKRI']),
-    row([2, 'mcma', 'Contoh MCMA: Manakah yang termasuk bilangan prima?', '', '2', '', '4', '', '5', '', '9', '', 'A,C', '2 dan 5 adalah bilangan prima']),
-    row([3, 'bs', 'Contoh BS: Tentukan B/S pernyataan berikut', '', 'Jakarta ibu kota RI', '', 'Bumi itu datar', '', '2 + 2 = 4', '', 'Matahari terbit dari barat', '', 'B,S,B,S', 'Perhatikan fakta sains']),
+    // Contoh 1: PG biasa tanpa wacana
+    row([1, 'pg', '', '', '', 'Ibu kota Indonesia adalah...', '', '', '',
+      'Bandung', '', 'Jakarta', '', 'Surabaya', '', 'Medan', '', 'B', 'Jakarta adalah ibu kota NKRI']),
+    // Contoh 2: MCMA dengan wacana
+    row([2, 'mcma', 'Kentus yang Sombong',
+      'Di tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kentus adalah anak katak yang paling besar dan kuat namun sombong.',
+      'ceritaanak.org',
+      'Apa yang dirasakan Kentus setelah menyadari kesalahannya?', '', '', '',
+      'Malu', '', 'Marah', '', 'Menyesal', '', 'Bangga', '', 'A,C',
+      'Kentus menunduk dan meminta maaf menunjukkan rasa malu dan penyesalan.']),
+    // Contoh 3: PG dengan gambar + caption
+    row([3, 'pg', '', '', '', 'Hewan apa yang ditunjukkan gambar?', 'anak-lembu.png', 'Ilustrasi anak lembu', 'anak lembu kartun',
+      'Kambing', '', 'Sapi', '', 'Anak Lembu', '', 'Kerbau', '', 'C',
+      'Gambar menunjukkan anak lembu.']),
   ].join('\n') + '\n';
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="template-soal.csv"');
@@ -1271,6 +1321,18 @@ app.post('/api/student/practice/join', (req, res) => {
     const tipe = l.tipe || getTipe(s);
     const q = { id: s.id, q: s.q, tipe };
     if (s.img) { const r = resolveGambar(s.img); if (r) q.img = r; }
+    if (s.img_caption) q.img_caption = s.img_caption;
+    if (s.wacana) q.wacana = s.wacana;
+    if (s.wacana_judul) q.wacana_judul = s.wacana_judul;
+    if (s.wacana_sumber) q.wacana_sumber = s.wacana_sumber;
+    if (s.img_caption) q.img_caption = s.img_caption;
+    if (s.wacana) q.wacana = s.wacana;
+    if (s.wacana_judul) q.wacana_judul = s.wacana_judul;
+    if (s.wacana_sumber) q.wacana_sumber = s.wacana_sumber;
+    if (s.img_caption) q.img_caption = s.img_caption;
+    if (s.wacana) q.wacana = s.wacana;
+    if (s.wacana_judul) q.wacana_judul = s.wacana_judul;
+    if (s.wacana_sumber) q.wacana_sumber = s.wacana_sumber;
     if (tipe === 'pg' || tipe === 'mcma') {
       q.options = l.optionsOrder.map(k => s.options[k]);
       if (s.optionImgs) q.optionImgs = l.optionsOrder.map(k => {

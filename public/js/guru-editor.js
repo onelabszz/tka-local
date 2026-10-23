@@ -212,6 +212,16 @@ function renderKartuSoal(s, i) {
     html += '<option value="' + o[0] + '"' + (tipe === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
   });
   html += '</select></div>';
+  // Teks Bacaan (opsional)
+  html += '<details class="wacana-editor" style="margin-bottom:8px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc"' + (s.wacana ? ' open' : '') + '>';
+  html += '<summary style="cursor:pointer;font-weight:600;font-size:13px;color:#475569">📖 Teks Bacaan / Wacana (opsional)</summary>';
+  html += '<div style="margin-top:8px">';
+  html += '<input class="form-input" placeholder="Judul wacana (contoh: Kentus yang Sombong)" value="' + escapeHtml(s.wacana_judul || '') + '" oninput="editorUpdateField(' + i + ',\'wacana_judul\',this.value)" style="margin-bottom:6px">';
+  html += '<textarea class="form-input" rows="3" placeholder="Isi teks bacaan panjang..." oninput="editorUpdateField(' + i + ',\'wacana\',this.value)" style="margin-bottom:6px">' + escapeHtml(s.wacana || '') + '</textarea>';
+  html += '<input class="form-input" placeholder="Sumber (contoh: ceritaanak.org)" value="' + escapeHtml(s.wacana_sumber || '') + '" oninput="editorUpdateField(' + i + ',\'wacana_sumber\',this.value)">';
+  html += '</div></details>';
+  
+  // Teks soal
   html += '<div style="margin-bottom:8px"><label class="muted">Teks soal</label>';
   html += '<div class="math-toolbar" style="margin-bottom:4px;display:flex;gap:4px;">';
   html += '<button type="button" class="btn btn-secondary btn-sm" onclick="sisipkanPecahan(' + i + ')">a/b</button>';
@@ -257,7 +267,14 @@ function renderGambarField(soalIdx, field, namaFile, label) {
   } else {
     html += '<button class="btn btn-secondary btn-sm" onclick="openImagePicker(' + soalIdx + ',\'' + field + '\')">📷 Pilih Gambar</button>';
   }
-  html += '</div></div>';
+  html += '</div>';
+  if (field === 'img' && soalIdx !== undefined && editorPaket && editorPaket.soal[soalIdx]) {
+    var s = editorPaket.soal[soalIdx];
+    if (namaFile) {
+      html += '<input class="form-input" placeholder="Caption gambar (opsional)" value="' + escapeHtml(s.img_caption || '') + '" oninput="editorUpdateField(' + soalIdx + ',\'img_caption\',this.value)" style="margin-top:6px;font-size:13px">';
+    }
+  }
+  html += '</div>';
   return html;
 }
 
@@ -515,7 +532,16 @@ function editorPreview() {
 
 function renderPreviewSoal(s, i) {
   var tipe = s.tipe || 'pg';
-  var imgHtml = s.img ? '<img src="/gambar/' + encodeURIComponent(s.img) + '" style="display:block;max-width:100%;max-height:200px;margin:8px auto;border-radius:4px">' : '';
+  var wacanaHtml = '';
+  if (s.wacana) {
+    wacanaHtml = '<div style="background:#f8fafc;border-left:3px solid #1e40af;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left">';
+    if (s.wacana_judul) wacanaHtml += '<div style="font-weight:700;margin-bottom:6px;color:#1e40af">' + escapeHtml(s.wacana_judul) + '</div>';
+    wacanaHtml += '<div style="font-size:13px;line-height:1.6;color:#334155">' + escapeHtml(s.wacana).replace(/\n/g, '<br>') + '</div>';
+    if (s.wacana_sumber) wacanaHtml += '<div style="font-size:11px;color:#64748b;margin-top:6px;font-style:italic">Sumber: ' + escapeHtml(s.wacana_sumber) + '</div>';
+    wacanaHtml += '</div>';
+  }
+  var captionHtml = s.img_caption ? '<div style="text-align:center;font-size:12px;color:#64748b;font-style:italic;margin-top:-4px;margin-bottom:8px">' + escapeHtml(s.img_caption) + '</div>' : '';
+  var imgHtml = s.img ? '<img src="/gambar/' + encodeURIComponent(s.img) + '" style="display:block;max-width:100%;max-height:200px;margin:8px auto;border-radius:4px">' + captionHtml : '';
   var body = '';
   if (tipe === 'bs') {
     body = '<table style="width:100%;border-collapse:collapse;margin:8px 0;border:1px solid #e2e8f0"><thead><tr style="background:#f1f5f9"><th style="padding:6px;text-align:left;font-size:12px">Pernyataan</th><th style="padding:6px;width:50px;text-align:center;font-size:12px">Kunci</th></tr></thead><tbody>';
@@ -531,7 +557,7 @@ function renderPreviewSoal(s, i) {
   }
   var tipeBadge = '<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700">' + tipe.toUpperCase() + '</span>';
   var pemb = s.pembahasan ? '<div style="margin-top:8px;padding:8px;background:#f1f5f9;border-radius:4px;font-size:12px"><b>Pembahasan:</b> ' + escapeHtml(s.pembahasan) + '</div>' : '';
-  return '<div style="border:1px solid #e2e8f0;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left"><div style="margin-bottom:6px;font-size:13px"><b>' + (i + 1) + '.</b> ' + tipeBadge + ' ' + escapeHtml(s.q || '(kosong)') + '</div>' + imgHtml + body + pemb + '</div>';
+  return '<div style="border:1px solid #e2e8f0;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left">' + wacanaHtml + '<div style="margin-bottom:6px;font-size:13px"><b>' + (i + 1) + '.</b> ' + tipeBadge + ' ' + escapeHtml(s.q || '(kosong)') + '</div>' + imgHtml + body + pemb + '</div>';
 }
 
 document.addEventListener('keydown', function(e) {

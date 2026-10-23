@@ -258,3 +258,130 @@ button { font-family: inherit; cursor: pointer; border: none; }
   25% { transform: translateX(-10px); }
   75% { transform: translateX(10px); }
 }
+
+
+/* ============ WACANA (v1.1) ============ */
+.wacana-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  max-height: 280px;
+  overflow-y: auto;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #1f2937;
+}
+.wacana-box::-webkit-scrollbar { width: 6px; }
+.wacana-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.wacana-box-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--primary);
+  margin-bottom: 10px;
+  font-family: -apple-system, sans-serif;
+}
+.wacana-box-text { font-style: italic; white-space: pre-wrap; }
+.wacana-box-source {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 10px;
+  text-align: right;
+  font-family: -apple-system, sans-serif;
+}
+.wacana-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 8px;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  text-align: left;
+}
+.wacana-btn:hover { background: #dbeafe; }
+
+.q-img-caption {
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+
+/* Modal wacana */
+.wacana-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.wacana-modal.hidden { display: none !important; }
+.wacana-modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 680px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.wacana-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.wacana-modal-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.wacana-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: #64748b;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+}
+.wacana-modal-close:hover { color: #0f172a; }
+.wacana-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #1f2937;
+  font-style: italic;
+  white-space: pre-wrap;
+}
+.wacana-modal-source {
+  padding: 12px 20px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #64748b;
+  text-align: right;
+  font-family: -apple-system, sans-serif;
+}

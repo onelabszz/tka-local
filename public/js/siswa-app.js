@@ -291,10 +291,30 @@ function toggleSidebar() {
 function renderQuestion() {
   var q = questions[currentQ];
   var saved = answers[q.id];
+  var prevQ = currentQ > 0 ? questions[currentQ - 1] : null;
+  var isDuplicateWacana = q.wacana && prevQ && prevQ.wacana === q.wacana && prevQ.wacana_judul === q.wacana_judul;
+  
   var html = '<div class="question-card">';
   html += '<div class="q-badge">Soal ' + (currentQ + 1) + ' dari ' + questions.length + '</div>';
+  
+  // Render wacana
+  if (q.wacana) {
+    if (isDuplicateWacana) {
+      html += '<button type="button" class="wacana-btn" onclick="bukaWacanaModal()">📖 Lihat Teks Bacaan' + (q.wacana_judul ? ': ' + escapeHtml(q.wacana_judul) : '') + '</button>';
+    } else {
+      html += '<div class="wacana-box">';
+      if (q.wacana_judul) html += '<div class="wacana-box-title">' + escapeHtml(q.wacana_judul) + '</div>';
+      html += '<div class="wacana-box-text">' + escapeHtml(q.wacana) + '</div>';
+      if (q.wacana_sumber) html += '<div class="wacana-box-source">Sumber: ' + escapeHtml(q.wacana_sumber) + '</div>';
+      html += '</div>';
+    }
+  }
+  
   html += '<h2 class="q-text">' + escapeHtml(q.q) + '</h2>';
-  if (q.img) html += '<img class="q-image" src="/gambar/' + encodeURIComponent(q.img) + '" onclick="bukaLightbox(this.src)" alt="">';
+  if (q.img) {
+    html += '<img class="q-image" src="/gambar/' + encodeURIComponent(q.img) + '" onclick="bukaLightbox(this.src)" alt="">';
+    if (q.img_caption) html += '<div class="q-img-caption">' + escapeHtml(q.img_caption) + '</div>';
+  }
   
   if (q.tipe === 'pg') html += renderPg(q, saved);
   else if (q.tipe === 'mcma') html += renderMcma(q, saved);
@@ -309,6 +329,20 @@ function renderQuestion() {
   updateRaguButton();
   updateProgress();
   renderNavigator();
+}
+
+// ============ WACANA MODAL ============
+function bukaWacanaModal() {
+  var q = questions[currentQ];
+  if (!q || !q.wacana) return;
+  document.getElementById('wacanaModalTitle').textContent = q.wacana_judul || 'Teks Bacaan';
+  document.getElementById('wacanaModalBody').textContent = q.wacana;
+  document.getElementById('wacanaModalSource').textContent = q.wacana_sumber ? 'Sumber: ' + q.wacana_sumber : '';
+  document.getElementById('wacanaModal').classList.remove('hidden');
+}
+
+function tutupWacanaModal() {
+  document.getElementById('wacanaModal').classList.add('hidden');
 }
 
 function renderPg(q, saved) {
@@ -639,8 +673,19 @@ function renderReviewItem(it) {
   if (it.benar) badge = '<span class="review-badge benar">BENAR</span>';
   else if (it.sebagian) badge = '<span class="review-badge sebagian">SEBAGIAN (' + it.skor + ')</span>';
   else badge = '<span class="review-badge salah">SALAH</span>';
-  var html = '<div class="review-item"><div class="review-q"><div class="review-q-text">' + it.nomor + '. ' + escapeHtml(it.q) + '</div>' + badge + '</div>';
-  if (it.img) html += '<img class="q-image" src="/gambar/' + encodeURIComponent(it.img) + '" onclick="bukaLightbox(this.src)" alt="">';
+  var html = '<div class="review-item">';
+  if (it.wacana) {
+    html += '<div class="wacana-box" style="margin-bottom:12px">';
+    if (it.wacana_judul) html += '<div class="wacana-box-title">' + escapeHtml(it.wacana_judul) + '</div>';
+    html += '<div class="wacana-box-text">' + escapeHtml(it.wacana) + '</div>';
+    if (it.wacana_sumber) html += '<div class="wacana-box-source">Sumber: ' + escapeHtml(it.wacana_sumber) + '</div>';
+    html += '</div>';
+  }
+  html += '<div class="review-q"><div class="review-q-text">' + it.nomor + '. ' + escapeHtml(it.q) + '</div>' + badge + '</div>';
+  if (it.img) {
+    html += '<img class="q-image" src="/gambar/' + encodeURIComponent(it.img) + '" onclick="bukaLightbox(this.src)" alt="">';
+    if (it.img_caption) html += '<div class="q-img-caption">' + escapeHtml(it.img_caption) + '</div>';
+  }
   if (it.tipe === 'pg') {
     for (var idx = 0; idx < it.options.length; idx++) {
       var isK = (idx === it.correctIdx);

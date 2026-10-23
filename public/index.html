@@ -174,5 +174,16 @@ if (window.location.search) {
         <button onclick="masukLayarPenuh()" style="margin-top:20px;padding:12px 24px;font-size:16px;background:#1e40af;color:white;border:none;border-radius:6px;cursor:pointer">Kembali ke Layar Penuh</button>
       </div>
     </div>
+
+<div id="wacanaModal" class="wacana-modal hidden">
+  <div class="wacana-modal-content">
+    <div class="wacana-modal-header">
+      <h2 id="wacanaModalTitle">Teks Bacaan</h2>
+      <button onclick="tutupWacanaModal()" class="wacana-modal-close">×</button>
+    </div>
+    <div class="wacana-modal-body" id="wacanaModalBody"></div>
+    <div class="wacana-modal-source" id="wacanaModalSource"></div>
+  </div>
+</div>
 </body>
 </html>
