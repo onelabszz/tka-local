@@ -385,3 +385,125 @@ button { font-family: inherit; cursor: pointer; border: none; }
   text-align: right;
   font-family: -apple-system, sans-serif;
 }
+
+/* =========================================
+   UI SOAL TKA v1.1 (Standar TKA Studio)
+   ========================================= */
+.sembunyi { display: none !important; }
+
+/* Base untuk semua opsi */
+.soal-opsi {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1.4;
+  text-align: left;
+  width: 100%;
+}
+.soal-opsi:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+}
+
+/* 1. PG (Huruf A, B, C, D tanpa bulatan) */
+.huruf-pg {
+  font-weight: 700;
+  margin-right: 12px;
+  color: #64748b;
+  font-size: 16px;
+}
+.soal-opsi.pg-terpilih {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+.soal-opsi.pg-terpilih .huruf-pg {
+  color: #1e40af;
+}
+
+/* 2. MCMA (Kotak Centang) */
+.kotak-centang {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  transition: all 0.2s;
+}
+.soal-opsi.mcma-terpilih {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+.soal-opsi.mcma-terpilih .kotak-centang {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+.soal-opsi.mcma-terpilih .kotak-centang::after {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+  margin-bottom: 3px;
+}
+
+/* 3. B/S (Tabel Benar/Salah) */
+.tabel-bs {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 15px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tabel-bs th, .tabel-bs td {
+  border: 1px solid #cbd5e1;
+  padding: 12px;
+  text-align: left;
+}
+.tabel-bs th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+.tabel-bs td.pusat {
+  text-align: center;
+}
+.radio-bs {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+input[type="radio"]:checked + .radio-bs {
+  border-color: #3b82f6;
+}
+input[type="radio"]:checked + .radio-bs::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background: #3b82f6;
+  border-radius: 50%;
+}
+
+/* Override style lama agar tidak konflik */
+.q-options .option { display: none; }
+.q-options .option-letter { display: none; }

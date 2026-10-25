@@ -349,9 +349,15 @@ function renderPg(q, saved) {
   var html = '<div class="q-options">';
   for (var idx = 0; idx < q.options.length; idx++) {
     var letter = String.fromCharCode(65 + idx);
-    var cls = 'option' + (saved === idx ? ' selected' : '');
-    var optImg = (q.optionImgs && q.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(q.optionImgs[idx]) + '" onclick="event.stopPropagation(); bukaLightbox(this.src)" alt="">' : '';
-    html += '<button type="button" class="' + cls + '" onclick="selectPg(' + idx + ')"><span class="option-letter">' + letter + '</span><span class="option-text">' + escapeHtml(q.options[idx] || '') + optImg + '</span><span class="option-check">✓</span></button>';
+    var isSelected = (saved === idx);
+    var cls = 'soal-opsi' + (isSelected ? ' pg-terpilih' : '');
+    var optImg = (q.optionImgs && q.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(q.optionImgs[idx]) + '" onclick="event.preventDefault(); event.stopPropagation(); bukaLightbox(this.src)" alt="">' : '';
+    
+    html += '<label class="' + cls + '">';
+    html += '<input type="radio" name="pg_' + q.id + '" value="' + idx + '" class="sembunyi" ' + (isSelected ? 'checked' : '') + ' onchange="selectPg(' + idx + ')">';
+    html += '<span class="huruf-pg">' + letter + '.</span>';
+    html += '<span class="option-text">' + escapeHtml(q.options[idx] || '') + optImg + '</span>';
+    html += '</label>';
   }
   return html + '</div>';
 }
@@ -360,11 +366,15 @@ function renderMcma(q, saved) {
   var arr = Array.isArray(saved) ? saved : [];
   var html = '<p class="q-hint">Pilih semua jawaban yang benar</p><div class="q-options">';
   for (var idx = 0; idx < q.options.length; idx++) {
-    var letter = String.fromCharCode(65 + idx);
     var checked = arr.indexOf(idx) >= 0;
-    var cls = 'option' + (checked ? ' selected' : '');
-    var optImg = (q.optionImgs && q.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(q.optionImgs[idx]) + '" onclick="event.stopPropagation(); bukaLightbox(this.src)" alt="">' : '';
-    html += '<button type="button" class="' + cls + '" onclick="toggleMcma(' + idx + ')"><span class="option-letter">' + (checked ? '✓' : letter) + '</span><span class="option-text">' + escapeHtml(q.options[idx] || '') + optImg + '</span></button>';
+    var cls = 'soal-opsi' + (checked ? ' mcma-terpilih' : '');
+    var optImg = (q.optionImgs && q.optionImgs[idx]) ? '<img class="option-img" src="/gambar/' + encodeURIComponent(q.optionImgs[idx]) + '" onclick="event.preventDefault(); event.stopPropagation(); bukaLightbox(this.src)" alt="">' : '';
+    
+    html += '<label class="' + cls + '">';
+    html += '<input type="checkbox" name="mcma_' + q.id + '" value="' + idx + '" class="sembunyi" ' + (checked ? 'checked' : '') + ' onchange="toggleMcma(' + idx + ')">';
+    html += '<span class="kotak-centang"></span>';
+    html += '<span class="option-text">' + escapeHtml(q.options[idx] || '') + optImg + '</span>';
+    html += '</label>';
   }
   return html + '</div>';
 }
@@ -372,12 +382,12 @@ function renderMcma(q, saved) {
 function renderBs(q, saved) {
   var arr = Array.isArray(saved) ? saved : [];
   var html = '<p class="q-hint">Tentukan Benar atau Salah untuk setiap pernyataan</p>';
-  html += '<table class="bs-table"><thead><tr><th>Pernyataan</th><th>B</th><th>S</th></tr></thead><tbody>';
+  html += '<table class="tabel-bs"><thead><tr><th>Pernyataan</th><th class="pusat">Benar</th><th class="pusat">Salah</th></tr></thead><tbody>';
   for (var i = 0; i < q.pernyataan.length; i++) {
     var val = arr[i];
     html += '<tr><td>' + escapeHtml(q.pernyataan[i]) + '</td>';
-    html += '<td><label class="bs-cell"><input type="radio" name="bs' + i + '" ' + (val === true ? 'checked' : '') + ' onchange="setBs(' + i + ', true)">B</label></td>';
-    html += '<td><label class="bs-cell"><input type="radio" name="bs' + i + '" ' + (val === false ? 'checked' : '') + ' onchange="setBs(' + i + ', false)">S</label></td>';
+    html += '<td class="pusat"><label><input type="radio" name="bs_' + i + '" value="true" class="sembunyi" ' + (val === true ? 'checked' : '') + ' onchange="setBs(' + i + ', true)"><span class="radio-bs"></span></label></td>';
+    html += '<td class="pusat"><label><input type="radio" name="bs_' + i + '" value="false" class="sembunyi" ' + (val === false ? 'checked' : '') + ' onchange="setBs(' + i + ', false)"><span class="radio-bs"></span></label></td>';
     html += '</tr>';
   }
   return html + '</tbody></table>';

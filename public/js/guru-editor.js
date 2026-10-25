@@ -530,25 +530,32 @@ function renderPreviewSoal(s, i) {
   var tipe = s.tipe || 'pg';
   var wacanaHtml = '';
   if (s.wacana) {
-    wacanaHtml = '<div style="background:#f8fafc;border-left:3px solid #1e40af;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left">';
-    if (s.wacana_judul) wacanaHtml += '<div style="font-weight:700;margin-bottom:6px;color:#1e40af">' + escapeHtml(s.wacana_judul) + '</div>';
-    wacanaHtml += '<div style="font-size:13px;line-height:1.6;color:#334155">' + escapeHtml(s.wacana).replace(/\n/g, '<br>') + '</div>';
-    if (s.wacana_sumber) wacanaHtml += '<div style="font-size:11px;color:#64748b;margin-top:6px;font-style:italic">Sumber: ' + escapeHtml(s.wacana_sumber) + '</div>';
+    wacanaHtml = '<div class="pv-wacana">';
+    if (s.wacana_judul) wacanaHtml += '<div class="pv-wacana-title">' + escapeHtml(s.wacana_judul) + '</div>';
+    wacanaHtml += '<div class="pv-wacana-text">' + escapeHtml(s.wacana) + '</div>';
+    if (s.wacana_sumber) wacanaHtml += '<div class="pv-wacana-src">Sumber: ' + escapeHtml(s.wacana_sumber) + '</div>';
     wacanaHtml += '</div>';
   }
-  var captionHtml = s.img_caption ? '<div style="text-align:center;font-size:12px;color:#64748b;font-style:italic;margin-top:-4px;margin-bottom:8px">' + escapeHtml(s.img_caption) + '</div>' : '';
+  var captionHtml = s.img_caption ? '<div class="pv-img-caption">' + escapeHtml(s.img_caption) + '</div>' : '';
   var imgHtml = s.img ? '<img src="/gambar/' + encodeURIComponent(s.img) + '" style="display:block;max-width:100%;max-height:200px;margin:8px auto;border-radius:4px">' + captionHtml : '';
   var body = '';
   if (tipe === 'bs') {
-    body = '<table style="width:100%;border-collapse:collapse;margin:8px 0;border:1px solid #e2e8f0"><thead><tr style="background:#f1f5f9"><th style="padding:6px;text-align:left;font-size:12px">Pernyataan</th><th style="padding:6px;width:50px;text-align:center;font-size:12px">Kunci</th></tr></thead><tbody>';
-    (s.pernyataan || []).forEach(function(p) { body += '<tr><td style="padding:6px;border-top:1px solid #e2e8f0;font-size:13px">' + escapeHtml(p.teks) + '</td><td style="padding:6px;border-top:1px solid #e2e8f0;text-align:center;font-weight:700">' + (p.key === true ? 'B' : p.key === false ? 'S' : '—') + '</td></tr>'; });
+    body = '<table class="pv-bs"><thead><tr><th>Pernyataan</th><th style="width:70px;text-align:center">Kunci</th></tr></thead><tbody>';
+    (s.pernyataan || []).forEach(function(p) {
+      var teks = p.key === true ? 'B' : p.key === false ? 'S' : '—';
+      var kelas = p.key === true ? 'pv-kunci-bs' : p.key === false ? 'pv-salah-bs' : '';
+      body += '<tr><td>' + escapeHtml(p.teks) + '</td><td class="pv-pusat ' + kelas + '">' + teks + '</td></tr>';
+    });
     body += '</tbody></table>';
   } else {
     var kunciArr = tipe === 'mcma' ? (Array.isArray(s.key) ? s.key : []) : [s.key];
     body = (s.options || []).map(function(o, idx) {
       var isK = kunciArr.indexOf(idx) >= 0;
       var oi = (s.optionImgs && s.optionImgs[idx]) ? '<img src="/gambar/' + encodeURIComponent(s.optionImgs[idx]) + '" style="display:block;max-width:100%;max-height:80px;margin-top:4px;border-radius:3px">' : '';
-      return '<div style="padding:8px 12px;border-radius:4px;margin:4px 0;border:1px solid ' + (isK ? '#86efac' : '#e2e8f0') + ';background:' + (isK ? '#d1fae5' : '#f8fafc') + '"><b>' + String.fromCharCode(65 + idx) + '.</b> ' + escapeHtml(o || '') + (isK ? ' <b style="color:#047857">[KUNCI]</b>' : '') + oi + '</div>';
+      var prefix = (tipe === 'mcma')
+        ? '<span class="pv-kotak"></span>'
+        : '<span class="pv-huruf">' + String.fromCharCode(65 + idx) + '.</span>';
+      return '<div class="pv-opsi ' + (isK ? 'pv-kunci' : '') + '">' + prefix + '<span>' + escapeHtml(o || '') + oi + '</span></div>';
     }).join('');
   }
   var tipeBadge = '<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700">' + tipe.toUpperCase() + '</span>';
