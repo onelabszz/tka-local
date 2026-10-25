@@ -522,11 +522,7 @@ function editorPreview() {
     showCancelButton: true, 
     cancelButtonText: 'Tutup', 
     cancelButtonColor: '#64748b',
-    didOpen: function() {
-      if (window.renderMathInElement) {
-        renderMathInElement(document.querySelector('.swal2-html-container'), { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
-      }
-    }
+    didOpen: renderMathInSwal
   });
 }
 

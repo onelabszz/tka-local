@@ -83,3 +83,20 @@ async function konfirmasiReset() {
     Swal.fire('Error', e.message, 'error');
   }
 }
+
+
+// ============ RENDER LATEX DI MODAL SWEETALERT ============
+function renderMathInSwal() {
+  if (!window.renderMathInElement) return;
+  var container = document.querySelector('.swal2-html-container');
+  if (!container) return;
+  renderMathInElement(container, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false},
+      {left: '\\(', right: '\\)', display: false},
+      {left: '\\[', right: '\\]', display: true}
+    ],
+    throwOnError: false
+  });
+}

@@ -257,7 +257,17 @@ async function previewPaketById(id) {
       var pemb = s.pembahasan ? '<div style="margin-top:8px;padding:8px;background:#f1f5f9;border-radius:4px;font-size:12px"><b>Pembahasan:</b> ' + escapeHtml(s.pembahasan) + '</div>' : '';
       return '<div style="border:1px solid #e2e8f0;border-radius:4px;padding:12px;margin-bottom:10px;text-align:left">' + wacanaHtml + '<div style="margin-bottom:6px;font-size:13px"><b>' + (i + 1) + '.</b> ' + tipeBadge + ' ' + escapeHtml(s.q || '(kosong)') + '</div>' + imgHtml + body + pemb + '</div>';
     }).join('');
-    Swal.fire({ title: escapeHtml(data.judul) + ' — ' + escapeHtml(data.mapel), html: '<div style="font-size:13px;color:#64748b;margin-bottom:12px">' + data.soal.length + ' soal / ' + data.durasiMenit + ' menit</div>' + items, width: '850px', showCloseButton: true, showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Tutup', cancelButtonColor: '#64748b' });
+    Swal.fire({
+      title: escapeHtml(data.judul) + ' — ' + escapeHtml(data.mapel),
+      html: '<div style="font-size:13px;color:#64748b;margin-bottom:12px">' + data.soal.length + ' soal / ' + data.durasiMenit + ' menit</div>' + items,
+      width: '850px',
+      showCloseButton: true,
+      showConfirmButton: false,
+      showCancelButton: true,
+      cancelButtonText: 'Tutup',
+      cancelButtonColor: '#64748b',
+      didOpen: renderMathInSwal
+    });
   } catch (e) { if (Swal) Swal.close(); await swalError(e.message); }
 }
 

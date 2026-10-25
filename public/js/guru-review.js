@@ -61,7 +61,8 @@ async function lihatReview(siswaId, nama) {
     Swal.fire({
       title: escapeHtml(nama) + ' — ' + data.skor + '/' + data.total,
       html: html, width: '850px', showCloseButton: true, showConfirmButton: false,
-      showCancelButton: true, cancelButtonText: 'Tutup', cancelButtonColor: '#64748b'
+      showCancelButton: true, cancelButtonText: 'Tutup', cancelButtonColor: '#64748b',
+      didOpen: renderMathInSwal
     });
   } catch (e) {
     Swal.close();
