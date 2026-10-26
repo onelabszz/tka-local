@@ -71,6 +71,34 @@ if (window.location.search) {
 </div>
 
 <!-- EXAM -->
+
+<!-- READY SCREEN (Persiapan Sebelum Ujian) -->
+<div id="readyView" class="ready-wrap hidden">
+  <div class="ready-card">
+    <div class="ready-icon">📝</div>
+    <h1 class="ready-title">Ujian Siap Dimulai</h1>
+    <p class="ready-desc">Saat Anda menekan tombol di bawah, layar akan masuk ke mode ujian penuh. Jangan keluar dari layar hingga ujian selesai.</p>
+    
+    <div class="ready-info">
+      <div><span>Nama</span><strong id="readyName">-</strong></div>
+      <div><span>Jumlah Soal</span><strong id="readyTotal">0</strong></div>
+      <div><span>Durasi</span><strong id="readyDurasi">0 menit</strong></div>
+    </div>
+    
+    <button class="btn-ready" onclick="mulaiUjianPenuh()">🚀 Mulai Mengerjakan</button>
+    <p class="ready-hint">Jika muncul notifikasi "to exit full screen..." di bagian atas layar, abaikan saja. Notifikasi akan hilang otomatis.</p>
+  </div>
+</div>
+
+<!-- LOADING TRANSITION -->
+<div id="transitionView" class="transition-wrap hidden">
+  <div class="transition-content">
+    <div class="transition-spinner"></div>
+    <h2>Menyiapkan Ujian...</h2>
+    <p>Memasuki mode layar penuh</p>
+  </div>
+</div>
+
 <div id="examView" class="exam-shell hidden">
   <header class="exam-header">
     <div class="exam-header-left">

@@ -245,7 +245,6 @@ const shuffle = (arr) => {
   return a;
 };
 
-const TIPE_SOAL = ['pg', 'mcma', 'bs'];
 function getTipe(soal) {
   const t = (soal.tipe || 'pg').toLowerCase();
   return TIPE_SOAL.includes(t) ? t : 'pg';
@@ -513,6 +512,10 @@ function parseCSV(text) {
   }
   return rows;
 }
+
+
+const KUNCI_MAP = { 'a': 0, 'b': 1, 'c': 2, 'd': 3, '0': 0, '1': 1, '2': 2, '3': 3 };
+const TIPE_SOAL = ['pg', 'mcma', 'bs'];
 
 function csvToPaket(csv, meta) {
   const rows = parseCSV(csv);

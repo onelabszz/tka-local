@@ -81,17 +81,43 @@ function tutupLightbox(e) {
 }
 
 // ============ FULLSCREEN LOCK (KIOSK) ============
-function masukLayarPenuh() {
+async function masukLayarPenuh() {
   var el = document.documentElement;
-  if (el.requestFullscreen) {
-    el.requestFullscreen().catch(function(e){ console.warn('Fullscreen gagal:', e); });
-  } else if (el.webkitRequestFullscreen) {
-    el.webkitRequestFullscreen();
-  } else if (el.msRequestFullscreen) {
-    el.msRequestFullscreen();
+  if (document.fullscreenElement) return; // already fullscreen
+  try {
+    if (el.requestFullscreen) {
+      await el.requestFullscreen();
+    } else if (el.webkitRequestFullscreen) {
+      await el.webkitRequestFullscreen();
+    } else if (el.msRequestFullscreen) {
+      await el.msRequestFullscreen();
+    }
+    var warning = document.getElementById('fullscreenWarning');
+    if (warning) warning.classList.add('hidden');
+  } catch (e) {
+    console.warn('Fullscreen gagal:', e.message);
   }
-  var warning = document.getElementById('fullscreenWarning');
-  if (warning) warning.classList.add('hidden');
+}
+
+async function mulaiUjianPenuh() {
+  var btn = event.target;
+  if (btn) btn.disabled = true;
+  
+  // Enter fullscreen (requires user gesture - this click counts)
+  await masukLayarPenuh();
+  
+  // Show transition screen
+  document.getElementById('readyView').classList.add('hidden');
+  document.getElementById('transitionView').classList.remove('hidden');
+  
+  // Wait 2.5s for Android notification to fade
+  await new Promise(function(r) { setTimeout(r, 2500); });
+  
+  // Hide transition, show exam
+  document.getElementById('transitionView').classList.add('hidden');
+  document.getElementById('examView').classList.remove('hidden');
+  renderQuestion();
+  startTimer();
 }
 
 document.addEventListener('fullscreenchange', function() {
@@ -271,12 +297,25 @@ function resumeExam(data) {
   document.getElementById('studentClass').textContent = data.kelas || localStorage.getItem('tka_kelas') || '-';
   document.getElementById('loginView').classList.add('hidden');
   document.getElementById('latihanView').classList.add('hidden');
-  document.getElementById('examView').classList.remove('hidden');
   document.body.classList.add('exam-active');
-  if (examMode === 'ujian') masukLayarPenuh();
   loadLocalDraft();
-  renderQuestion();
-  startTimer();
+  
+  // Populate ready screen
+  document.getElementById('readyName').textContent = data.nama || localStorage.getItem('tka_nama') || '-';
+  document.getElementById('readyTotal').textContent = questions.length + ' soal';
+  document.getElementById('readyDurasi').textContent = data.durasiMenit + ' menit';
+  
+  // Show ready screen (NOT examView)
+  document.getElementById('readyView').classList.remove('hidden');
+  
+  // If already in fullscreen (rare), skip ready
+  if (examMode === 'latihan') {
+    // Latihan mandiri tidak perlu fullscreen, langsung mulai
+    document.getElementById('readyView').classList.add('hidden');
+    document.getElementById('examView').classList.remove('hidden');
+    renderQuestion();
+    startTimer();
+  }
 }
 
 // ============ SIDEBAR ============
