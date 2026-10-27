@@ -12,10 +12,14 @@ backups/
 tka.log
 tka.log.*
 
-# Paket soal (data pribadi sekolah)
+# Paket soal (data pribadi sekolah) — JANGAN PUSH
 paket/*.json
 paket/gambar/*
+!paket/contoh.json
 !paket/contoh-tka.json
+!paket/.gitkeep
+!paket/gambar/.gitkeep
+
 
 # File backup editor
 *.bak
@@ -32,4 +36,3 @@ Thumbs.db
 # Build output
 dist/
 *.zip
-paket/latihan-tka-sd-matematika.json
