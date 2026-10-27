@@ -32,3 +32,4 @@ Thumbs.db
 # Build output
 dist/
 *.zip
+paket/latihan-tka-sd-matematika.json
