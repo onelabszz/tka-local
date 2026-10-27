@@ -690,6 +690,18 @@ app.get('/favicon.ico', (req, res) => {
 // ============================================================
 // ENDPOINT GURU
 // ============================================================
+app.get('/api/public/sekolah', (req, res) => {
+  try {
+    const s = db.prepare("SELECT nama, logo FROM sekolah WHERE id=1").get();
+    res.json({
+      nama: (s && s.nama) ? s.nama : 'Try Out TKA Mandiri',
+      logo: (s && s.logo) ? s.logo : null
+    });
+  } catch (e) {
+    res.json({ nama: 'Try Out TKA Mandiri', logo: null });
+  }
+});
+
 app.get('/guru', (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Akses hanya dari laptop guru');
   const sekolah = db.prepare("SELECT setup_done FROM sekolah WHERE id=1").get();

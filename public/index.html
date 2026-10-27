@@ -2,216 +2,236 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Try Out TKA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#003580">
+<title>Tes Kemampuan Akademik</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1e40af">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link rel="stylesheet" href="/katex/katex.min.css">
 <link rel="stylesheet" href="/css/siswa.css">
-<script defer src="/katex/katex.min.js">
-// Auto-fill token dari QR Code (jika ada parameter ?t=)
-if (window.location.search) {
-  const params = new URLSearchParams(window.location.search);
-  const t = params.get('t');
-  if (t) {
-    const tokenEl = document.getElementById('token');
-    if (tokenEl) tokenEl.value = t.toUpperCase();
-  }
-}
-</script>
+<script defer src="/katex/katex.min.js"></script>
 <script defer src="/katex/contrib/auto-render.min.js"></script>
 </head>
 <body>
 
-<!-- LOGIN UJIAN -->
+<!-- ============ LOGIN ============ -->
 <div id="loginView" class="login-wrap">
   <div class="login-card">
     <div class="login-header">
-      <span class="login-kemen">Try Out TKA</span>
+      <div class="login-logo" id="loginLogo">TKA</div>
+      <div class="login-school" id="loginSchool">Try Out TKA Mandiri</div>
       <h1 class="login-title">Tes Kemampuan Akademik</h1>
+      <div class="login-subtitle">Sesi Try Out Mandiri</div>
     </div>
-    <p class="login-sub">Masukkan data untuk memulai ujian</p>
-    <form onsubmit="join(event)">
-      <div class="field"><label>Nama Lengkap</label><input id="name" type="text" placeholder="Nama sesuai absen" required autocomplete="name"></div>
-      <div class="field"><label>Kelas</label><input id="kelas" type="text" placeholder="Contoh: XI IPA 1" autocomplete="off"></div>
-      <div class="field"><label>Token Ujian</label><input id="token" class="token-input" type="text" placeholder="XXXXXXXX" autocapitalize="characters" required maxlength="8" autocomplete="off"></div>
-      <button type="submit" class="btn btn-primary" id="joinBtn">Mulai Ujian</button>
-      <p id="err" class="err-msg"></p>
-      <p id="resuming" class="hidden" style="text-align:center;color:var(--g500);margin-top:12px;font-size:13px;">Memuat sesi sebelumnya…</p>
-      
-      <div style="text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid var(--g200)">
-        <a href="#" onclick="event.preventDefault();bukaLatihanMode()" style="color:var(--primary);font-weight:600;font-size:14px;text-decoration:none">🎓 Mode Latihan Mandiri →</a>
-        
-        <!-- TOMBOL INSTALL PWA -->
-        <div id="pwaInstallWrap" style="display:none; margin-top:12px;">
-          <button type="button" id="pwaInstallBtn" class="btn btn-secondary" style="width:100%; padding:10px; border-radius:8px;">
-            📥 Install Aplikasi ke Layar Utama
-          </button>
-        </div>
+
+    <form onsubmit="join(event)" class="login-form">
+      <div class="field">
+        <label>Nama Peserta</label>
+        <input id="name" type="text" placeholder="Nama lengkap sesuai absensi" required autocomplete="name">
       </div>
-      
-      <p class="copyright">© 2026 Ekwan Nugroho · Wonogiri</p>
+      <div class="field">
+        <label>Kelas</label>
+        <input id="kelas" type="text" placeholder="Contoh: VI A" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Token Ujian</label>
+        <input id="token" class="token-input" type="text" placeholder="XXXXXXXX" autocapitalize="characters" required maxlength="8" autocomplete="off">
+      </div>
+      <button type="submit" class="btn-primary" id="joinBtn">Masuk Ujian</button>
+      <p id="err" class="err-msg"></p>
+      <p id="resuming" class="hidden muted-center">Memuat sesi sebelumnya…</p>
     </form>
-  </div>
-</div>
 
-<!-- LATIHAN -->
-<div id="latihanView" class="login-wrap hidden">
-  <div class="login-card" style="max-width:520px">
-    <div class="login-header">
-      <span class="login-kemen">Mode Latihan</span>
-      <h1 class="login-title">Latihan Mandiri</h1>
+    <div class="login-footer">
+      <a href="#" onclick="event.preventDefault();bukaLatihanMode()" class="link-latihan">Mode Latihan Mandiri</a>
+      <div id="pwaInstallWrap" class="hidden" style="margin-top:12px">
+        <button type="button" id="pwaInstallBtn" class="btn-secondary">Install ke Perangkat</button>
+      </div>
+      <div class="login-copyright">© 2026 Ekwan Nugroho · Wonogiri</div>
     </div>
-    <p class="login-sub">Pilih paket untuk berlatih. Tidak perlu token.</p>
-    <div id="latihanPaketList" style="margin-bottom:20px"><p style="text-align:center;color:var(--g500)">Memuat paket…</p></div>
-    <button class="btn btn-secondary" style="width:100%" onclick="kembaliKeLogin()">← Kembali ke Ujian</button>
   </div>
 </div>
 
-<!-- EXAM -->
+<!-- ============ LATIHAN ============ -->
+<div id="latihanView" class="login-wrap hidden">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">TKA</div>
+      <div class="login-school">Mode Latihan Mandiri</div>
+      <h1 class="login-title">Pilih Paket Latihan</h1>
+      <div class="login-subtitle">Tidak memerlukan token</div>
+    </div>
+    <div id="latihanPaketList" class="latihan-list">
+      <p class="muted-center">Memuat paket…</p>
+    </div>
+    <button class="btn-secondary" style="width:100%;margin-top:16px" onclick="kembaliKeLogin()">Kembali ke Ujian</button>
+  </div>
+</div>
 
-<!-- READY SCREEN (Persiapan Sebelum Ujian) -->
+<!-- ============ READY (Persiapan Ujian) ============ -->
 <div id="readyView" class="ready-wrap hidden">
   <div class="ready-card">
-    <div class="ready-icon">📝</div>
+    <div class="ready-brand" id="readyBrand">TKA</div>
     <h1 class="ready-title">Ujian Siap Dimulai</h1>
-    <p class="ready-desc">Saat Anda menekan tombol di bawah, layar akan masuk ke mode ujian penuh. Jangan keluar dari layar hingga ujian selesai.</p>
-    
+    <p class="ready-desc">Anda akan memasuki mode ujian layar penuh. Harap tidak keluar dari layar hingga ujian selesai.</p>
+
     <div class="ready-info">
-      <div><span>Nama</span><strong id="readyName">-</strong></div>
-      <div><span>Jumlah Soal</span><strong id="readyTotal">0</strong></div>
-      <div><span>Durasi</span><strong id="readyDurasi">0 menit</strong></div>
+      <div class="ready-row"><span>Nama Peserta</span><strong id="readyName">-</strong></div>
+      <div class="ready-row"><span>Jumlah Soal</span><strong id="readyTotal">0 soal</strong></div>
+      <div class="ready-row"><span>Durasi</span><strong id="readyDurasi">0 menit</strong></div>
     </div>
-    
-    <button class="btn-ready" onclick="mulaiUjianPenuh()">🚀 Mulai Mengerjakan</button>
-    <p class="ready-hint">Jika muncul notifikasi "to exit full screen..." di bagian atas layar, abaikan saja. Notifikasi akan hilang otomatis.</p>
+
+    <button class="btn-primary btn-large" onclick="mulaiUjianPenuh(event)">Mulai Mengerjakan</button>
+    <p class="ready-hint">Notifikasi "to exit full screen" akan muncul sebentar di bagian atas layar. Abaikan, karena akan hilang otomatis.</p>
   </div>
 </div>
 
-<!-- LOADING TRANSITION -->
+<!-- ============ TRANSITION ============ -->
 <div id="transitionView" class="transition-wrap hidden">
   <div class="transition-content">
     <div class="transition-spinner"></div>
-    <h2>Menyiapkan Ujian...</h2>
+    <h2>Menyiapkan Ujian</h2>
     <p>Memasuki mode layar penuh</p>
   </div>
 </div>
 
+<!-- ============ EXAM ============ -->
 <div id="examView" class="exam-shell hidden">
   <header class="exam-header">
     <div class="exam-header-left">
-      <div class="exam-logo" id="examBadge">TKA</div>
-      <div style="min-width:0">
-        <div class="exam-title" id="studentName">-</div>
-        <div class="exam-sub" id="studentClass">-</div>
+      <div class="exam-brand">TKA</div>
+      <div class="exam-title-block">
+        <div class="exam-title" id="examTitle">Try Out TKA Mandiri</div>
+        <div class="exam-subtitle" id="examMapel">Ujian</div>
       </div>
     </div>
-    <div class="exam-header-right">
-      <span id="syncIndicator" class="sync-indicator"></span>
+    <div class="exam-header-center">
+      <div class="exam-timer-label">Sisa Waktu</div>
       <div class="exam-timer" id="timer"><span id="timerText">--:--</span></div>
-      <button class="btn-nav-toggle" onclick="toggleSidebar()">☰ Soal</button>
+    </div>
+    <div class="exam-header-right">
+      <div class="exam-participant" id="studentName">-</div>
+      <div class="exam-participant-sub" id="studentClass">-</div>
     </div>
   </header>
-  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="exam-progress">
+    <div class="exam-progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="exam-subheader">
+    <div class="exam-q-counter">
+      Soal <span class="q-current" id="qCounterCurrent">1</span>
+      <span class="q-sep">dari</span>
+      <span class="q-total" id="qCounterTotal">10</span>
+    </div>
+    <button class="btn-ragu" id="raguBtn" onclick="toggleRagu()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22V4a2 2 0 0 1 2-2h12l-3 5 3 5H6"/></svg>
+      <span>Tandai Ragu</span>
+    </button>
+  </div>
 
   <div class="exam-body">
     <main class="exam-main">
-      <div class="exam-main-content">
+      <div class="exam-content">
         <div id="questionContainer"></div>
-      </div>
-      <div class="exam-footer-nav">
-        <button class="btn-nav" id="prevBtn" onclick="prevQuestion()">← Sebelumnya</button>
-        <button class="btn-ragu" id="raguBtn" onclick="toggleRagu()">🚩 Ragu</button>
-        <button class="btn-nav-primary" id="nextBtn" onclick="nextQuestion()">Selanjutnya →</button>
       </div>
     </main>
 
     <aside class="exam-sidebar" id="examSidebar">
-      <div class="sidebar-content">
-        <div class="sidebar-header">
-          <h3>Navigasi Soal</h3>
-          <button class="btn-close-sidebar" onclick="toggleSidebar()">✕</button>
-        </div>
-        <div class="sidebar-progress">
-          <div class="sidebar-progress-stats">
-            <div><span class="stat-num" id="statDijawab">0</span><span class="stat-label">Dijawab</span></div>
-            <div><span class="stat-num" id="statRagu">0</span><span class="stat-label">Ragu</span></div>
-            <div><span class="stat-num" id="statKosong">0</span><span class="stat-label">Kosong</span></div>
-          </div>
-          <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="sidebarProgressFill"></div></div>
-          <div class="sidebar-progress-label" id="sidebarProgressLabel">0 dari 0 soal dijawab</div>
-        </div>
-        <div class="nav-legend">
-          <span><span class="dot dot-answered"></span>Dijawab</span>
-          <span><span class="dot dot-ragu"></span>Ragu</span>
-          <span><span class="dot dot-empty"></span>Kosong</span>
-          <span><span class="dot dot-current"></span>Saat ini</span>
-        </div>
-        <div class="nav-grid" id="navGrid"></div>
+      <div class="sidebar-title">Navigasi Soal</div>
+      <div class="sidebar-stats">
+        <div><span id="statDijawab">0</span><small>Dijawab</small></div>
+        <div><span id="statRagu">0</span><small>Ragu</small></div>
+        <div><span id="statKosong">0</span><small>Kosong</small></div>
       </div>
+      <div class="sidebar-legend">
+        <div><span class="lg-answered"></span>Dijawab</div>
+        <div><span class="lg-ragu"></span>Ragu</div>
+        <div><span class="lg-empty"></span>Kosong</div>
+      </div>
+      <div class="sidebar-grid" id="navGrid"></div>
       <div class="sidebar-footer">
-        <button class="btn-selesai" onclick="submitExam()">Selesai &amp; Kirim</button>
+        <button class="btn-selesai" onclick="submitExam()">Selesai Ujian</button>
       </div>
     </aside>
   </div>
 
+  <footer class="exam-footer-nav">
+    <button class="btn-nav" id="prevBtn" onclick="prevQuestion()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Sebelumnya
+    </button>
+    <button class="btn-nav-center" onclick="toggleSidebar()">
+      Navigasi Soal
+    </button>
+    <button class="btn-nav btn-nav-primary" id="nextBtn" onclick="nextQuestion()">
+      Selanjutnya
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </footer>
+
   <div id="navOverlay" class="nav-overlay hidden" onclick="toggleSidebar()"></div>
 </div>
 
-<!-- DONE -->
+<!-- ============ DONE ============ -->
 <div id="doneView" class="done-wrap hidden">
   <div class="done-card">
-    <div class="done-icon">✓</div>
+    <div class="done-icon-wrap">✓</div>
     <h1 class="done-title" id="doneTitle">Ujian Selesai</h1>
-    <div class="done-score">
-      <div class="score-label">Skor Kamu</div>
-      <div class="score-value" id="result">-</div>
+    <div class="done-score-card">
+      <div class="done-score-label">Skor Akhir</div>
+      <div class="done-score-value" id="result">-</div>
     </div>
     <p id="late" class="done-late"></p>
-    <button class="btn btn-primary" onclick="bukaPembahasan()" style="margin-bottom:8px;">Lihat Pembahasan</button>
-    <button class="btn btn-secondary" onclick="window.location.reload()" style="width:100%;">Selesai</button>
+    <button class="btn-primary" onclick="bukaPembahasan()" style="margin-bottom:10px">Lihat Pembahasan</button>
+    <button class="btn-secondary" onclick="window.location.reload()">Selesai</button>
     <p id="reviewInfo" class="err-msg"></p>
   </div>
 </div>
 
-<!-- REVIEW -->
+<!-- ============ REVIEW ============ -->
 <div id="reviewView" class="hidden">
   <header class="review-header">
-    <button class="btn btn-secondary" style="color:var(--g900);" onclick="window.location.reload()">Tutup</button>
-    <h1 class="review-title">Pembahasan</h1>
-    <div style="width:80px"></div>
+    <button class="btn-ghost-light" onclick="window.location.reload()">Tutup</button>
+    <h1 class="review-title">Pembahasan Jawaban</h1>
+    <div style="width:60px"></div>
   </header>
   <p id="reviewWho" class="review-who"></p>
   <div id="reviewList" class="review-list"></div>
-  <p class="review-copyright">© 2026 Ekwan Nugroho · Wonogiri · Try Out TKA</p>
+  <p class="review-copyright">© 2026 Ekwan Nugroho · Wonogiri</p>
 </div>
 
-<script src="/js/siswa-app.js"></script>
-<!-- LIGHTBOX ZOOM GAMBAR -->
-<div id="imageLightbox" class="lightbox" onclick="tutupLightbox(event)">
-  <span class="lightbox-close">&times;</span>
-  <img id="lightboxImg" src="" alt="Zoom Gambar">
-</div>
-<div id="fullscreenWarning" class="fullscreen-warning hidden">
-      <div class="fullscreen-box">
-        <h2>⚠️ Anda Keluar dari Mode Ujian</h2>
-        <p>Harap kembali ke mode layar penuh untuk melanjutkan ujian.</p>
-        <p style="font-size:14px;color:#64748b;margin-top:12px">Pelanggaran ini telah dicatat oleh sistem.</p>
-        <button onclick="masukLayarPenuh()" style="margin-top:20px;padding:12px 24px;font-size:16px;background:#1e40af;color:white;border:none;border-radius:6px;cursor:pointer">Kembali ke Layar Penuh</button>
-      </div>
-    </div>
-
+<!-- ============ WACANA MODAL ============ -->
 <div id="wacanaModal" class="wacana-modal hidden">
   <div class="wacana-modal-content">
     <div class="wacana-modal-header">
       <h2 id="wacanaModalTitle">Teks Bacaan</h2>
-      <button onclick="tutupWacanaModal()" class="wacana-modal-close">×</button>
+      <button onclick="tutupWacanaModal()" class="wacana-modal-close" aria-label="Tutup">×</button>
     </div>
     <div class="wacana-modal-body" id="wacanaModalBody"></div>
     <div class="wacana-modal-source" id="wacanaModalSource"></div>
   </div>
 </div>
+
+<!-- ============ LIGHTBOX ============ -->
+<div id="imageLightbox" class="lightbox" onclick="tutupLightbox(event)">
+  <span class="lightbox-close">×</span>
+  <img id="lightboxImg" src="" alt="Zoom Gambar">
+</div>
+
+<!-- ============ FULLSCREEN WARNING ============ -->
+<div id="fullscreenWarning" class="fullscreen-warning hidden">
+  <div class="fullscreen-box">
+    <div class="fs-warn-icon">!</div>
+    <h2>Anda Keluar dari Mode Ujian</h2>
+    <p>Harap kembali ke mode layar penuh untuk melanjutkan ujian.</p>
+    <p class="fs-warn-note">Pelanggaran ini telah dicatat oleh sistem.</p>
+    <button onclick="masukLayarPenuh()" class="btn-primary">Kembali ke Layar Penuh</button>
+  </div>
+</div>
+
+<script src="/js/siswa-app.js"></script>
 </body>
 </html>
