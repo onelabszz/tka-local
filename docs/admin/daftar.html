@@ -3,84 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Daftar — TKA Local Host</title>
+<title>Pendaftaran Ditutup — TKA</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./admin.css">
 </head>
 <body>
 <div class="login-wrap">
-  <div class="login-card">
-    <div class="login-brand">TKA</div>
-    <h1>Daftar Akun Guru</h1>
-    <p class="sub">Setelah daftar, tunggu persetujuan admin</p>
-    <form id="f">
-      <label>Email</label>
-      <input id="email" type="email" required autocomplete="username">
-      <label>Password</label>
-      <input id="pass" type="password" required minlength="6" autocomplete="new-password">
-      <label>Nama Sekolah</label>
-      <input id="school" type="text" required placeholder="SD Negeri 1 Wonogiri">
-      <button id="btn" type="submit" class="btn-primary btn-block">Daftar</button>
-      <p id="err" class="err"></p>
-      <p id="ok" class="err" style="color:#15803d"></p>
-    </form>
-    <p class="help"><a href="./index.html">Sudah punya akun? Masuk</a></p>
+  <div class="login-card" style="text-align: center;">
+    <div class="login-brand" style="margin-bottom: 20px;">TKA</div>
+    <h1 style="font-size: 20px; margin-bottom: 12px;">Pendaftaran Ditutup</h1>
+    <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+      Pendaftaran akun mandiri hanya dapat dilakukan melalui portal TKA Studio. <br><br>
+      Jika Anda guru yang ingin menggunakan TKA Local Host, silakan hubungi <strong>Admin Sekolah</strong> atau Pengawas untuk dibuatkan akun.
+    </p>
+    <a href="./index.html" class="btn-primary btn-block" style="text-decoration: none;">Kembali ke Login Admin</a>
   </div>
 </div>
-<script type="module">
-import { getClient } from './admin.js';
-const form = document.getElementById('f');
-const btn = document.getElementById('btn');
-const errEl = document.getElementById('err');
-const okEl = document.getElementById('ok');
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  errEl.textContent = ''; okEl.textContent = '';
-  btn.disabled = true; btn.textContent = 'Memproses…';
-
-  const email = document.getElementById('email').value.trim().toLowerCase();
-  const password = document.getElementById('pass').value;
-  const school = document.getElementById('school').value.trim();
-
-  if (password.length < 6) {
-    errEl.textContent = 'Password minimal 6 karakter';
-    btn.disabled = false; btn.textContent = 'Daftar';
-    return;
-  }
-
-  try {
-    const sb = await getClient();
-    const { data, error } = await sb.auth.signUp({ email, password });
-    if (error) { errEl.textContent = error.message; return; }
-    if (!data.user) { errEl.textContent = 'Pendaftaran gagal. Coba lagi.'; return; }
-
-    const { error: profErr } = await sb.from('local_profiles').insert({
-      id: data.user.id,
-      email,
-      school_name: school,
-      status: 'pending',
-      role: 'teacher',
-      expires_at: null
-    });
-
-    if (profErr) {
-      errEl.textContent = 'Gagal menyimpan profil: ' + profErr.message;
-      return;
-    }
-
-    okEl.textContent = 'Pendaftaran berhasil. Tunggu persetujuan admin, lalu masuk kembali.';
-    form.reset();
-    setTimeout(async () => {
-      await sb.auth.signOut();
-      setTimeout(() => { window.location.href = './index.html'; }, 1500);
-    }, 2000);
-  } catch (ex) {
-    errEl.textContent = 'Gagal: ' + ex.message;
-  } finally {
-    btn.disabled = false; btn.textContent = 'Daftar';
-  }
-});
-</script>
 </body>
 </html>
