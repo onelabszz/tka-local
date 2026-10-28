@@ -36,7 +36,8 @@ serve(async (req) => {
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!profile || profile.role !== "admin" || profile.status !== "active") {
+    if (!profile || profile.status !== "active" ||
+        !["admin", "superadmin"].includes(profile.role)) {
       return json({ error: "Bukan admin yang aktif" }, 403);
     }
 
