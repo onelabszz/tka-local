@@ -152,3 +152,69 @@ export function randomPassword() {
   for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
   return p;
 }
+
+// ============ Toast Notification ============
+const ICON_SUCCESS = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+const ICON_ERROR = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M15 9l-6 6M9 9l6 6"/></svg>';
+const ICON_WARNING = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>';
+
+export function toast(title, msg = '', type = 'info') {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  const icon = type === 'success' ? ICON_SUCCESS : type === 'error' ? ICON_ERROR : ICON_WARNING;
+  el.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-body">
+      <div class="toast-title">${escapeHtml(title)}</div>
+      ${msg ? `<div class="toast-msg">${escapeHtml(msg)}</div>` : ''}
+    </div>
+  `;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity .2s';
+    setTimeout(() => el.remove(), 200);
+  }, 4000);
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+
+// ============ Confirm Modal ============
+export function confirmModal({ title, message, confirmText = 'Ya', danger = false }) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+          <div class="modal-title">${escapeHtml(title)}</div>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:14px;color:#374151;line-height:1.6">${escapeHtml(message)}</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" data-cancel>Batal</button>
+          <button class="btn-primary" data-confirm style="${danger ? 'background:#b91c1c' : ''}">${escapeHtml(confirmText)}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const close = (val) => { overlay.remove(); resolve(val); };
+    overlay.querySelector('[data-cancel]').addEventListener('click', () => close(false));
+    overlay.querySelector('[data-confirm]').addEventListener('click', () => close(true));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+    const esc = (e) => { if (e.key === 'Escape') { document.removeEventListener('keydown', esc); close(false); } };
+    document.addEventListener('keydown', esc);
+  });
+}

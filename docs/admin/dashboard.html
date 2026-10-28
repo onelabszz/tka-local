@@ -8,179 +8,368 @@
 <link rel="stylesheet" href="./admin.css">
 </head>
 <body>
-<div id="loading" class="loading">Memuat…</div>
 
-<div id="app" class="hidden">
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="brand-small">TKA</div>
-      <div>
-        <div class="topbar-title">Admin Panel <span id="roleBadge"></span></div>
-        <div class="topbar-sub" id="adminEmail">-</div>
+<!-- Loading -->
+<div id="loadingScreen" class="loading-screen">
+  <span class="spinner"></span> Memuat…
+</div>
+
+<!-- App -->
+<div id="app" class="app hidden">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">TKA</div>
+      <div class="brand-text">
+        <div class="brand-title">Admin Panel</div>
+        <div class="brand-sub">TKA Local Host</div>
       </div>
     </div>
-    <button id="logoutBtn" class="btn-ghost">Keluar</button>
-  </header>
-
-  <main class="container">
-    <section class="stats-grid">
-      <div class="stat-card"><div class="stat-num" id="stTotal">0</div><div class="stat-label">Total</div></div>
-      <div class="stat-card"><div class="stat-num text-success" id="stActive">0</div><div class="stat-label">Aktif</div></div>
-      <div class="stat-card"><div class="stat-num text-warning" id="stPending">0</div><div class="stat-label">Pending</div></div>
-      <div class="stat-card"><div class="stat-num text-danger" id="stSuspended">0</div><div class="stat-label">Suspended</div></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-header">
-        <div class="tabs" id="filterTabs">
-          <button class="tab active" data-filter="all">Semua</button>
-          <button class="tab" data-filter="pending">Pending</button>
-          <button class="tab" data-filter="active">Aktif</button>
-          <button class="tab" data-filter="suspended">Suspended</button>
-          <button class="tab" data-filter="expired">Expired</button>
-          <button class="tab superadmin-only" data-filter="superadmin" style="display:none">Superadmin</button>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-view="overview">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span>Ringkasan</span>
+      </a>
+      <a class="nav-item" data-view="users">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <span>Pengguna</span>
+      </a>
+      <a class="nav-item" data-view="bulk">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-8"/></svg>
+        <span>Bulk Import</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-info">
+          <div class="user-email" id="userEmail">-</div>
+          <div class="user-role" id="userRole">-</div>
         </div>
-        <input id="searchInput" class="search-input" type="search" placeholder="Cari email / sekolah…">
       </div>
-      <div class="panel-body">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Sekolah</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Expire</th>
-              <th class="right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="tbody">
-            <tr><td colspan="6" class="empty">Memuat…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+      <button id="logoutBtn" class="btn-logout">Keluar</button>
+    </div>
+  </aside>
 
-    <section class="panel">
-      <div class="panel-header">
-        <h2 class="panel-title">Buat User Baru</h2>
+  <!-- Sidebar backdrop (mobile) -->
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+  <!-- Main -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="btnMenu" class="btn-menu">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div>
+          <div class="topbar-title" id="pageTitle">Ringkasan</div>
+          <div class="topbar-sub" id="pageSub">Selamat datang kembali</div>
+        </div>
       </div>
-      <div class="panel-body">
-        <div class="create-tabs">
-          <button class="create-tab active" data-mode="manual">Manual</button>
-          <button class="create-tab" data-mode="csv">CSV Bulk</button>
+      <div class="topbar-actions">
+        <button class="btn-sm" id="btnCreateTop">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
+          Buat User
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- VIEW: Overview -->
+      <section id="view-overview" class="view">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-num" id="stTotal">0</div>
+              <div class="stat-label">Total Pengguna</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-num" id="stActive">0</div>
+              <div class="stat-label">Aktif</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-num" id="stPending">0</div>
+              <div class="stat-label">Menunggu Approve</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-num" id="stSuspended">0</div>
+              <div class="stat-label">Suspended</div>
+            </div>
+          </div>
         </div>
 
-        <div id="manualPanel">
-          <div class="form-row">
-            <div>
-              <label>Email</label>
-              <input id="mEmail" type="email" placeholder="guru@sekolah.sch.id">
+        <div class="quick-actions">
+          <button class="action-card" id="qaCreate">
+            <div class="action-card-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
             </div>
-            <div>
-              <label>Password</label>
-              <input id="mPassword" type="text" placeholder="minimal 6 karakter">
+            <div class="action-card-body">
+              <div class="action-card-title">Buat User Baru</div>
+              <div class="action-card-sub">Tambah guru atau admin secara manual</div>
             </div>
-          </div>
-          <div class="form-row">
-            <div>
-              <label>Nama Sekolah</label>
-              <input id="mSchool" type="text" placeholder="SD Negeri 1 Wonogiri">
+          </button>
+          <button class="action-card" id="qaBulk">
+            <div class="action-card-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-8"/></svg>
             </div>
-            <div>
-              <label>Expire</label>
-              <input id="mExpire" type="date">
+            <div class="action-card-body">
+              <div class="action-card-title">Bulk Import CSV</div>
+              <div class="action-card-sub">Upload banyak user sekaligus</div>
             </div>
-          </div>
-          <div class="form-row">
-            <div>
-              <label>Role</label>
-              <select id="mRole">
-                <option value="teacher">Teacher (User)</option>
-                <option value="admin" class="superadmin-only" style="display:none">Admin</option>
-              </select>
+          </button>
+          <button class="action-card" id="qaUsers">
+            <div class="action-card-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </div>
-            <div>
-              <label>&nbsp;</label>
-              <button id="mGenerate" class="btn-secondary" style="width:100%">Generate Password</button>
+            <div class="action-card-body">
+              <div class="action-card-title">Kelola Pengguna</div>
+              <div class="action-card-sub">Lihat dan edit semua akun</div>
             </div>
-          </div>
-          <div class="row-actions">
-            <button id="mSubmit" class="btn-primary" style="width:auto;padding:10px 24px">Buat User</button>
-          </div>
-          <div id="mResult" class="csv-result hidden"></div>
+          </button>
         </div>
 
-        <div id="csvPanel" class="hidden">
-          <p class="hint">
-            Format: <code>email,password,school_name,expires_at,role</code><br>
-            <code>expires_at</code> kosong = 1 tahun. <code>role</code> kosong = teacher.
-          </p>
-          <textarea id="csvInput" class="csv-input" rows="6" placeholder="email,password,school_name,expires_at,role
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Pengguna Terbaru</div>
+              <div class="panel-sub">5 akun yang paling baru bergabung</div>
+            </div>
+            <button class="btn-sm ghost" id="viewAllBtn">Lihat Semua</button>
+          </div>
+          <div class="panel-body" style="padding:0">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Sekolah</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Bergabung</th>
+                  </tr>
+                </thead>
+                <tbody id="recentBody">
+                  <tr><td colspan="5" class="empty">Memuat…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: Users -->
+      <section id="view-users" class="view hidden">
+        <div class="panel">
+          <div class="toolbar">
+            <div class="tabs" id="filterTabs">
+              <button class="tab active" data-filter="all">Semua</button>
+              <button class="tab" data-filter="pending">Pending</button>
+              <button class="tab" data-filter="active">Aktif</button>
+              <button class="tab" data-filter="suspended">Suspended</button>
+              <button class="tab" data-filter="expired">Expired</button>
+              <button class="tab superadmin-only" data-filter="superadmin" style="display:none">Superadmin</button>
+            </div>
+            <div class="search-box">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+              <input id="searchInput" class="search-input" type="search" placeholder="Cari email atau sekolah…">
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Sekolah</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Expire</th>
+                  <th style="text-align:right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr><td colspan="6" class="empty">Memuat…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: Bulk Import -->
+      <section id="view-bulk" class="view hidden">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Bulk Import CSV</div>
+              <div class="panel-sub">Buat banyak user sekaligus dari file CSV atau paste teks</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label>Format CSV</label>
+              <div class="field-hint">
+                <code>email,password,school_name,expires_at,role</code><br>
+                <code>expires_at</code> kosong = default 1 tahun · <code>role</code> kosong = teacher
+              </div>
+            </div>
+            <div class="field">
+              <label>Data CSV</label>
+              <textarea id="csvInput" rows="8" placeholder="email,password,school_name,expires_at,role
 guru1@sdn1.sch.id,Pass123!,SD Negeri 1,,
 guru2@sdn2.sch.id,Pass456!,SD Negeri 2,2027-12-31,teacher"></textarea>
-          <div class="row-actions">
-            <input type="file" id="csvFile" accept=".csv,text/csv">
-            <button id="uploadBtn" class="btn-primary" style="width:auto;padding:10px 20px">Upload CSV</button>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap">
+              <input type="file" id="csvFile" accept=".csv,text/csv" style="font-size:13px">
+              <button id="uploadBtn" class="btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-8"/></svg>
+                Upload CSV
+              </button>
+            </div>
+            <div id="csvResult" class="result-box hidden"></div>
           </div>
-          <div id="csvResult" class="csv-result hidden"></div>
         </div>
-      </div>
-    </section>
+      </section>
+
+    </div>
   </main>
 </div>
 
-<!-- Modal: Reset Password -->
-<div id="modalReset" class="modal-overlay hidden">
+<!-- MODAL: Create User -->
+<div id="modalCreate" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-header">
-      <h3 class="modal-title">Reset Password</h3>
-      <button class="modal-close" data-close="reset">×</button>
+      <div class="modal-title">Buat User Baru</div>
+      <button class="modal-close" data-close="create">×</button>
     </div>
     <div class="modal-body">
-      <p class="hint">Reset password untuk: <b id="resetEmail">-</b></p>
-      <label>Password Baru</label>
-      <input id="resetPassword" type="text" placeholder="minimal 6 karakter">
-      <button id="resetGenerate" class="btn-secondary" style="width:100%;margin-bottom:14px">Generate Password</button>
-      <p class="hint-inline">Password akan tampil di bawah setelah berhasil. Salin dan kirim ke guru.</p>
+      <div class="field">
+        <label>Email</label>
+        <input id="mEmail" type="email" placeholder="guru@sekolah.sch.id">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div style="display:flex;gap:8px">
+          <input id="mPassword" type="text" placeholder="minimal 6 karakter" style="flex:1">
+          <button id="mGenerate" class="btn-secondary" style="padding:0 14px;white-space:nowrap">Generate</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nama Sekolah</label>
+        <input id="mSchool" type="text" placeholder="SD Negeri 1 Wonogiri">
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Expire (opsional)</label>
+          <input id="mExpire" type="date">
+        </div>
+        <div class="field">
+          <label>Role</label>
+          <select id="mRole">
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin" class="superadmin-only" style="display:none">Superadmin</option>
+          </select>
+        </div>
+      </div>
+      <div id="mResult" class="result-box hidden"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" data-close="reset">Batal</button>
-      <button id="resetSubmit" class="btn-primary" style="width:auto;padding:10px 20px">Reset</button>
+      <button class="btn-secondary" data-close="create">Batal</button>
+      <button id="mSubmit" class="btn-primary">Buat User</button>
     </div>
   </div>
 </div>
 
-<!-- Modal: Edit User -->
+<!-- MODAL: Edit User -->
 <div id="modalEdit" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-header">
-      <h3 class="modal-title">Edit User</h3>
+      <div class="modal-title">Edit User</div>
       <button class="modal-close" data-close="edit">×</button>
     </div>
     <div class="modal-body">
-      <p class="hint">Edit: <b id="editEmail">-</b></p>
-      <label>Nama Sekolah</label>
-      <input id="editSchool" type="text">
-      <label>Status</label>
-      <select id="editStatus">
-        <option value="active">Aktif</option>
-        <option value="pending">Pending</option>
-        <option value="suspended">Suspended</option>
-      </select>
-      <label>Role</label>
-      <select id="editRole">
-        <option value="teacher">Teacher (User)</option>
-        <option value="admin">Admin</option>
-        <option value="superadmin" class="superadmin-only" style="display:none">Superadmin</option>
-      </select>
-      <label>Expire</label>
-      <input id="editExpire" type="date">
-      <p class="hint-inline">Kosongkan expire = tanpa masa aktif.</p>
+      <div class="field">
+        <label>Email</label>
+        <input id="editEmail" type="text" disabled style="background:#f8fafc">
+      </div>
+      <div class="field">
+        <label>Nama Sekolah</label>
+        <input id="editSchool" type="text">
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Status</label>
+          <select id="editStatus">
+            <option value="active">Aktif</option>
+            <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Role</label>
+          <select id="editRole">
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin" class="superadmin-only" style="display:none">Superadmin</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Expire (kosongkan = tanpa batas)</label>
+        <input id="editExpire" type="date">
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" data-close="edit">Batal</button>
-      <button id="editSubmit" class="btn-primary" style="width:auto;padding:10px 20px">Simpan</button>
+      <button id="editSubmit" class="btn-primary">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Reset Password -->
+<div id="modalReset" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Reset Password</div>
+      <button class="modal-close" data-close="reset">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Email</label>
+        <input id="resetEmail" type="text" disabled style="background:#f8fafc">
+      </div>
+      <div class="field">
+        <label>Password Baru</label>
+        <div style="display:flex;gap:8px">
+          <input id="resetPassword" type="text" placeholder="minimal 6 karakter" style="flex:1">
+          <button id="resetGenerate" class="btn-secondary" style="padding:0 14px;white-space:nowrap">Generate</button>
+        </div>
+        <div class="field-hint">Password akan tampil setelah berhasil. Salin dan kirim ke guru.</div>
+      </div>
+      <div id="resetResult" class="result-box hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-close="reset">Batal</button>
+      <button id="resetSubmit" class="btn-primary">Reset Password</button>
     </div>
   </div>
 </div>
@@ -189,7 +378,8 @@ guru2@sdn2.sch.id,Pass456!,SD Negeri 2,2027-12-31,teacher"></textarea>
 import {
   getClient, requireAdmin, logout, listProfiles,
   updateProfile, bulkCreate, resetPassword, deleteUser,
-  parseCSV, fmtDate, isExpired, addOneYear, randomPassword
+  parseCSV, fmtDate, isExpired, addOneYear, randomPassword,
+  toast, confirmModal
 } from './admin.js';
 
 const $ = id => document.getElementById(id);
@@ -198,36 +388,104 @@ let currentFilter = 'all';
 let currentSearch = '';
 let isSuper = false;
 let currentUser = null;
+let currentView = 'overview';
+let editTargetId = null;
+let resetTargetId = null;
 
+const ICON = {
+  approve: '<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>',
+  suspend: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M10 9v6M14 9v6"/></svg>',
+  activate: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>',
+  edit: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>',
+  reset: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>',
+  delete: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>'
+};
+
+// ============ INIT ============
 (async () => {
   const a = await requireAdmin();
   if (!a) { window.location.href = './index.html'; return; }
   currentUser = a.user;
   isSuper = a.profile.role === 'superadmin';
-  $('adminEmail').textContent = a.user.email + ' · ' + a.profile.school_name;
 
-  $('roleBadge').innerHTML = isSuper
-    ? '<span class="badge badge-superadmin" style="margin-left:6px">SUPERADMIN</span>'
-    : '<span class="badge badge-admin" style="margin-left:6px">ADMIN</span>';
+  const email = a.user.email || '';
+  $('userEmail').textContent = email;
+  $('userRole').textContent = a.profile.role;
+  $('userAvatar').textContent = email.charAt(0).toUpperCase();
 
   if (isSuper) {
     document.querySelectorAll('.superadmin-only').forEach(el => { el.style.display = ''; });
   }
 
-  $('loading').classList.add('hidden');
+  $('loadingScreen').classList.add('hidden');
   $('app').classList.remove('hidden');
   await refresh();
 })();
 
-$('logoutBtn').addEventListener('click', logout);
+// ============ NAVIGATION ============
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const view = item.dataset.view;
+    switchView(view);
+    closeSidebarMobile();
+  });
+});
 
+const VIEW_TITLES = {
+  overview: { title: 'Ringkasan', sub: 'Selamat datang kembali di panel admin' },
+  users: { title: 'Pengguna', sub: 'Kelola semua akun guru dan admin' },
+  bulk: { title: 'Bulk Import', sub: 'Tambah banyak user sekaligus dari CSV' }
+};
+
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach(x => {
+    x.classList.toggle('active', x.dataset.view === view);
+  });
+  ['overview', 'users', 'bulk'].forEach(v => {
+    $('view-' + v).classList.toggle('hidden', v !== view);
+  });
+  const t = VIEW_TITLES[view];
+  $('pageTitle').textContent = t.title;
+  $('pageSub').textContent = t.sub;
+}
+
+// Quick actions
+$('qaCreate').addEventListener('click', openCreate);
+$('qaBulk').addEventListener('click', () => switchView('bulk'));
+$('qaUsers').addEventListener('click', () => switchView('users'));
+$('viewAllBtn').addEventListener('click', () => switchView('users'));
+$('btnCreateTop').addEventListener('click', openCreate);
+
+// Mobile sidebar
+$('btnMenu').addEventListener('click', () => {
+  $('sidebar').classList.toggle('open');
+  $('sidebarBackdrop').classList.toggle('show');
+});
+$('sidebarBackdrop').addEventListener('click', closeSidebarMobile);
+function closeSidebarMobile() {
+  $('sidebar').classList.remove('open');
+  $('sidebarBackdrop').classList.remove('show');
+}
+
+$('logoutBtn').addEventListener('click', async () => {
+  const ok = await confirmModal({
+    title: 'Keluar',
+    message: 'Yakin ingin keluar dari panel admin?',
+    confirmText: 'Keluar'
+  });
+  if (ok) logout();
+});
+
+// ============ DATA ============
 async function refresh() {
   try {
     allProfiles = await listProfiles();
     renderStats();
+    renderRecent();
     renderTable();
   } catch (e) {
-    alert('Gagal memuat: ' + e.message);
+    toast('Gagal memuat data', e.message, 'error');
   }
 }
 
@@ -236,6 +494,24 @@ function renderStats() {
   $('stActive').textContent = allProfiles.filter(p => p.status === 'active' && !isExpired(p.expires_at)).length;
   $('stPending').textContent = allProfiles.filter(p => p.status === 'pending').length;
   $('stSuspended').textContent = allProfiles.filter(p => p.status === 'suspended').length;
+}
+
+function renderRecent() {
+  const recent = allProfiles.slice(0, 5);
+  const tbody = $('recentBody');
+  if (recent.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Belum ada pengguna</td></tr>';
+    return;
+  }
+  tbody.innerHTML = recent.map(p => `
+    <tr>
+      <td class="email-cell">${esc(p.email || '-')}</td>
+      <td>${esc(p.school_name || '-')}</td>
+      <td>${roleBadge(p.role)}</td>
+      <td>${statusBadge(p)}</td>
+      <td>${fmtDate(p.created_at)}</td>
+    </tr>
+  `).join('');
 }
 
 function filtered() {
@@ -255,20 +531,26 @@ function filtered() {
   });
 }
 
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+
 function statusBadge(p) {
   if (p.expires_at && isExpired(p.expires_at) && p.status === 'active') {
-    return '<span class="badge badge-expired">EXPIRED</span>';
+    return '<span class="status-badge expired">Expired</span>';
   }
-  if (p.status === 'active') return '<span class="badge badge-active">AKTIF</span>';
-  if (p.status === 'pending') return '<span class="badge badge-pending">PENDING</span>';
-  if (p.status === 'suspended') return '<span class="badge badge-suspended">SUSPENDED</span>';
-  return '<span class="badge">' + p.status + '</span>';
+  if (p.status === 'active') return '<span class="status-badge active">Aktif</span>';
+  if (p.status === 'pending') return '<span class="status-badge pending">Pending</span>';
+  if (p.status === 'suspended') return '<span class="status-badge suspended">Suspended</span>';
+  return '<span class="status-badge">' + esc(p.status) + '</span>';
 }
 
 function roleBadge(role) {
-  if (role === 'superadmin') return '<span class="badge badge-superadmin">SUPERADMIN</span>';
-  if (role === 'admin') return '<span class="badge badge-admin">ADMIN</span>';
-  return '<span class="badge badge-teacher">TEACHER</span>';
+  if (role === 'superadmin') return '<span class="role-badge superadmin">Superadmin</span>';
+  if (role === 'admin') return '<span class="role-badge admin">Admin</span>';
+  return '<span class="role-badge teacher">Teacher</span>';
 }
 
 function rowActions(p) {
@@ -276,24 +558,22 @@ function rowActions(p) {
   const isSuperTarget = p.role === 'superadmin';
   const canTouch = isSuper || !isSuperTarget;
 
+  if (!canTouch) return '<span style="font-size:11px;color:#9ca3af">read-only</span>';
+
   const btns = [];
-  if (canTouch) {
-    if (p.status === 'pending') {
-      btns.push(`<button class="btn-sm success" data-act="approve" data-id="${p.id}">Approve</button>`);
-    }
-    if (p.status === 'active') {
-      btns.push(`<button class="btn-sm warn" data-act="suspend" data-id="${p.id}">Suspend</button>`);
-    }
-    if (p.status === 'suspended') {
-      btns.push(`<button class="btn-sm success" data-act="activate" data-id="${p.id}">Aktifkan</button>`);
-    }
-    btns.push(`<button class="btn-sm" data-act="edit" data-id="${p.id}">Edit</button>`);
-    btns.push(`<button class="btn-sm" data-act="reset-pass" data-id="${p.id}">Reset Pass</button>`);
-    if (!isSelf) {
-      btns.push(`<button class="btn-sm danger" data-act="delete" data-id="${p.id}">Hapus</button>`);
-    }
-  } else {
-    btns.push(`<span class="hint" style="font-size:11px;color:#9ca3af">(read-only)</span>`);
+  if (p.status === 'pending') {
+    btns.push(`<button class="btn-icon success" data-act="approve" data-id="${p.id}" title="Approve">${ICON.approve}</button>`);
+  }
+  if (p.status === 'active') {
+    btns.push(`<button class="btn-icon warn" data-act="suspend" data-id="${p.id}" title="Suspend">${ICON.suspend}</button>`);
+  }
+  if (p.status === 'suspended') {
+    btns.push(`<button class="btn-icon success" data-act="activate" data-id="${p.id}" title="Aktifkan">${ICON.activate}</button>`);
+  }
+  btns.push(`<button class="btn-icon" data-act="edit" data-id="${p.id}" title="Edit">${ICON.edit}</button>`);
+  btns.push(`<button class="btn-icon" data-act="reset-pass" data-id="${p.id}" title="Reset password">${ICON.reset}</button>`);
+  if (!isSelf) {
+    btns.push(`<button class="btn-icon danger" data-act="delete" data-id="${p.id}" title="Hapus">${ICON.delete}</button>`);
   }
   return btns.join('');
 }
@@ -302,22 +582,22 @@ function renderTable() {
   const list = filtered();
   const tbody = $('tbody');
   if (list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Tidak ada data</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Tidak ada data yang cocok</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(p => `
     <tr>
-      <td>${p.email || '-'}</td>
-      <td>${p.school_name || '-'}</td>
+      <td class="email-cell">${esc(p.email || '-')}</td>
+      <td>${esc(p.school_name || '-')}</td>
       <td>${roleBadge(p.role)}</td>
       <td>${statusBadge(p)}</td>
       <td>${fmtDate(p.expires_at)}</td>
-      <td class="right"><div class="actions-cell">${rowActions(p)}</div></td>
+      <td style="text-align:right"><div class="actions-cell">${rowActions(p)}</div></td>
     </tr>
   `).join('');
 }
 
-// ============ Actions ============
+// ============ TABLE ACTIONS ============
 $('tbody').addEventListener('click', async (e) => {
   const btn = e.target.closest('button[data-act]');
   if (!btn) return;
@@ -329,77 +609,120 @@ $('tbody').addEventListener('click', async (e) => {
   try {
     if (act === 'approve') {
       await updateProfile(id, { status: 'active', expires_at: addOneYear() });
+      toast('Berhasil', `${p.email} telah diaktifkan`, 'success');
       await refresh();
     } else if (act === 'suspend') {
       await updateProfile(id, { status: 'suspended' });
+      toast('Berhasil', `${p.email} disuspend`, 'success');
       await refresh();
     } else if (act === 'activate') {
       await updateProfile(id, { status: 'active' });
+      toast('Berhasil', `${p.email} diaktifkan kembali`, 'success');
       await refresh();
     } else if (act === 'edit') {
       openEdit(p);
     } else if (act === 'reset-pass') {
       openReset(p);
     } else if (act === 'delete') {
-      if (!confirm(`Hapus user ${p.email}?\n\nAkun akan dihapus total dari auth + profil. Tindakan ini tidak bisa dibatalkan.`)) return;
-      try {
-        await deleteUser(id);
-        await refresh();
-      } catch (err) {
-        alert('Gagal hapus: ' + err.message);
-      }
+      const ok = await confirmModal({
+        title: 'Hapus User',
+        message: `Hapus akun ${p.email}?\n\nAkun akan dihapus permanen dari auth + profil. Tindakan ini tidak bisa dibatalkan.`,
+        confirmText: 'Hapus',
+        danger: true
+      });
+      if (!ok) return;
+      await deleteUser(id);
+      toast('Berhasil', `${p.email} dihapus`, 'success');
+      await refresh();
     }
   } catch (ex) {
-    alert('Gagal: ' + ex.message);
+    toast('Gagal', ex.message, 'error');
   }
 });
 
-// ============ Reset Password Modal ============
-let resetTargetId = null;
-function openReset(p) {
-  resetTargetId = p.id;
-  $('resetEmail').textContent = p.email;
-  $('resetPassword').value = '';
-  $('modalReset').classList.remove('hidden');
+// ============ FILTER & SEARCH ============
+$('filterTabs').addEventListener('click', (e) => {
+  const t = e.target.closest('.tab');
+  if (!t) return;
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  currentFilter = t.dataset.filter;
+  renderTable();
+});
+$('searchInput').addEventListener('input', (e) => {
+  currentSearch = e.target.value.trim();
+  renderTable();
+});
+
+// ============ CREATE USER ============
+function openCreate() {
+  $('mEmail').value = '';
+  $('mPassword').value = '';
+  $('mSchool').value = '';
+  $('mExpire').value = '';
+  $('mRole').value = 'teacher';
+  $('mResult').classList.add('hidden');
+  $('modalCreate').classList.remove('hidden');
+  setTimeout(() => $('mEmail').focus(), 50);
 }
-$('resetGenerate').addEventListener('click', () => {
-  $('resetPassword').value = randomPassword();
+$('mGenerate').addEventListener('click', () => {
+  $('mPassword').value = randomPassword();
 });
-$('resetSubmit').addEventListener('click', async () => {
-  const pass = $('resetPassword').value;
-  if (pass.length < 6) return alert('Password minimal 6 karakter');
-  const btn = $('resetSubmit');
-  btn.disabled = true; btn.textContent = 'Memproses…';
+
+$('mSubmit').addEventListener('click', async () => {
+  const email = $('mEmail').value.trim().toLowerCase();
+  const password = $('mPassword').value;
+  const school = $('mSchool').value.trim();
+  const expire = $('mExpire').value;
+  const role = $('mRole').value;
+
+  if (!email || !email.includes('@')) return toast('Validasi', 'Email tidak valid', 'warning');
+  if (password.length < 6) return toast('Validasi', 'Password minimal 6 karakter', 'warning');
+  if (!school) return toast('Validasi', 'Nama sekolah wajib diisi', 'warning');
+
+  const btn = $('mSubmit');
+  btn.disabled = true; btn.textContent = 'Membuat…';
   try {
-    const r = await resetPassword(resetTargetId, pass);
-    $('modalReset').classList.add('hidden');
-    alert(`✅ Password berhasil direset untuk ${r.email}\n\nPassword baru: ${pass}\n\nSalin dan kirim ke guru via WA/pesan.`);
+    const r = await bulkCreate([{
+      email, password, school_name: school,
+      expires_at: expire ? new Date(expire + 'T23:59:59').toISOString() : '',
+      role
+    }]);
+    if (r.total_created === 0) {
+      toast('Gagal', r.failed[0]?.error || 'Gagal membuat user', 'error');
+    } else {
+      const box = $('mResult');
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <div class="result-header" style="color:#15803d">✅ User berhasil dibuat</div>
+        <div style="margin-top:6px"><b>Email:</b> ${esc(email)}</div>
+        <div><b>Password:</b> <code style="background:#fff;padding:2px 6px;border-radius:3px;font-family:monospace">${esc(password)}</code></div>
+        <div style="margin-top:8px;font-size:11px;color:#64748b">Salin password dan kirim ke guru.</div>
+      `;
+      $('mEmail').value = ''; $('mPassword').value = ''; $('mSchool').value = '';
+      toast('Berhasil', `User ${email} dibuat`, 'success');
+      await refresh();
+    }
   } catch (e) {
-    alert('Gagal reset: ' + e.message);
+    toast('Gagal', e.message, 'error');
   } finally {
-    btn.disabled = false; btn.textContent = 'Reset';
+    btn.disabled = false; btn.textContent = 'Buat User';
   }
 });
 
-// ============ Edit Modal ============
-let editTargetId = null;
+// ============ EDIT ============
 function openEdit(p) {
   editTargetId = p.id;
-  $('editEmail').textContent = p.email;
+  $('editEmail').value = p.email || '';
   $('editSchool').value = p.school_name || '';
   $('editStatus').value = p.status;
   $('editRole').value = p.role;
   $('editExpire').value = p.expires_at ? p.expires_at.slice(0, 10) : '';
-  // Non-superadmin tidak boleh ubah role ke/dari superadmin
   const roleSel = $('editRole');
   Array.from(roleSel.options).forEach(opt => {
     if (opt.value === 'superadmin') opt.disabled = !isSuper;
   });
-  if (!isSuper && p.role === 'superadmin') {
-    roleSel.disabled = true;
-  } else {
-    roleSel.disabled = false;
-  }
+  roleSel.disabled = (!isSuper && p.role === 'superadmin');
   $('modalEdit').classList.remove('hidden');
 }
 $('editSubmit').addEventListener('click', async () => {
@@ -414,91 +737,65 @@ $('editSubmit').addEventListener('click', async () => {
     };
     await updateProfile(editTargetId, updates);
     $('modalEdit').classList.add('hidden');
+    toast('Berhasil', 'Data user diperbarui', 'success');
     await refresh();
   } catch (e) {
-    alert('Gagal simpan: ' + e.message);
+    toast('Gagal', e.message, 'error');
   } finally {
     btn.disabled = false; btn.textContent = 'Simpan';
   }
 });
 
-// Tutup modal
+// ============ RESET PASSWORD ============
+function openReset(p) {
+  resetTargetId = p.id;
+  $('resetEmail').value = p.email || '';
+  $('resetPassword').value = '';
+  $('resetResult').classList.add('hidden');
+  $('modalReset').classList.remove('hidden');
+  setTimeout(() => $('resetPassword').focus(), 50);
+}
+$('resetGenerate').addEventListener('click', () => {
+  $('resetPassword').value = randomPassword();
+});
+$('resetSubmit').addEventListener('click', async () => {
+  const pass = $('resetPassword').value;
+  if (pass.length < 6) return toast('Validasi', 'Password minimal 6 karakter', 'warning');
+  const btn = $('resetSubmit');
+  btn.disabled = true; btn.textContent = 'Memproses…';
+  try {
+    const r = await resetPassword(resetTargetId, pass);
+    const box = $('resetResult');
+    box.classList.remove('hidden');
+    box.innerHTML = `
+      <div class="result-header" style="color:#15803d">✅ Password direset untuk ${esc(r.email)}</div>
+      <div style="margin-top:6px"><b>Password baru:</b> <code style="background:#fff;padding:2px 6px;border-radius:3px;font-family:monospace">${esc(pass)}</code></div>
+      <div style="margin-top:8px;font-size:11px;color:#64748b">Salin dan kirim ke guru via WA/pesan.</div>
+    `;
+    toast('Berhasil', 'Password berhasil direset', 'success');
+  } catch (e) {
+    toast('Gagal', e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Reset Password';
+  }
+});
+
+// ============ MODAL CLOSE ============
 document.querySelectorAll('[data-close]').forEach(el => {
   el.addEventListener('click', () => {
     const which = el.dataset.close;
-    if (which === 'reset') $('modalReset').classList.add('hidden');
-    if (which === 'edit') $('modalEdit').classList.add('hidden');
+    $('modal' + which.charAt(0).toUpperCase() + which.slice(1)).classList.add('hidden');
   });
 });
-$('modalReset').addEventListener('click', (e) => { if (e.target === $('modalReset')) $('modalReset').classList.add('hidden'); });
-$('modalEdit').addEventListener('click', (e) => { if (e.target === $('modalEdit')) $('modalEdit').classList.add('hidden'); });
-
-// ============ Filter & Search ============
-$('filterTabs').addEventListener('click', (e) => {
-  const t = e.target.closest('.tab');
-  if (!t) return;
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  t.classList.add('active');
-  currentFilter = t.dataset.filter;
-  renderTable();
-});
-
-$('searchInput').addEventListener('input', (e) => {
-  currentSearch = e.target.value.trim();
-  renderTable();
-});
-
-// ============ Create Tabs ============
-document.querySelectorAll('.create-tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.create-tab').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    const mode = t.dataset.mode;
-    $('manualPanel').classList.toggle('hidden', mode !== 'manual');
-    $('csvPanel').classList.toggle('hidden', mode !== 'csv');
+['modalCreate', 'modalEdit', 'modalReset'].forEach(id => {
+  $(id).addEventListener('click', (e) => {
+    if (e.target === $(id)) $(id).classList.add('hidden');
   });
 });
-
-// ============ Manual Create ============
-$('mGenerate').addEventListener('click', () => {
-  $('mPassword').value = randomPassword();
-});
-$('mSubmit').addEventListener('click', async () => {
-  const email = $('mEmail').value.trim().toLowerCase();
-  const password = $('mPassword').value;
-  const school = $('mSchool').value.trim();
-  const expire = $('mExpire').value;
-  const role = $('mRole').value;
-
-  if (!email || !email.includes('@')) return alert('Email tidak valid');
-  if (password.length < 6) return alert('Password minimal 6 karakter');
-  if (!school) return alert('Nama sekolah wajib diisi');
-
-  const btn = $('mSubmit');
-  btn.disabled = true; btn.textContent = 'Membuat…';
-  try {
-    const r = await bulkCreate([{
-      email, password, school_name: school,
-      expires_at: expire ? new Date(expire + 'T23:59:59').toISOString() : '',
-      role
-    }]);
-    if (r.total_created === 0) {
-      const err = r.failed[0]?.error || 'Gagal membuat user';
-      alert('Gagal: ' + err);
-    } else {
-      $('mResult').classList.remove('hidden');
-      $('mResult').innerHTML =
-        `<div class="ok">✅ User dibuat: <b>${email}</b></div>` +
-        `<div style="margin-top:8px">Password: <code>${password}</code></div>` +
-        `<div class="hint" style="margin-top:6px">Salin dan kirim ke guru.</div>`;
-      $('mEmail').value = ''; $('mPassword').value = '';
-      $('mSchool').value = ''; $('mExpire').value = '';
-      await refresh();
-    }
-  } catch (e) {
-    alert('Gagal: ' + e.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Buat User';
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    ['modalCreate', 'modalEdit', 'modalReset'].forEach(id => $(id).classList.add('hidden'));
+    closeSidebarMobile();
   }
 });
 
@@ -510,31 +807,39 @@ $('csvFile').addEventListener('change', async (e) => {
 });
 $('uploadBtn').addEventListener('click', async () => {
   const raw = $('csvInput').value.trim();
-  if (!raw) return alert('CSV kosong');
+  if (!raw) return toast('Validasi', 'CSV kosong', 'warning');
   const rows = parseCSV(raw);
-  if (rows.length === 0) return alert('Tidak ada baris data');
-  if (!confirm(`Upload ${rows.length} baris user?`)) return;
+  if (rows.length === 0) return toast('Validasi', 'Tidak ada baris data', 'warning');
+  const ok = await confirmModal({
+    title: 'Upload CSV',
+    message: `Upload ${rows.length} baris user baru?`,
+    confirmText: 'Upload'
+  });
+  if (!ok) return;
 
   const btn = $('uploadBtn');
   btn.disabled = true; btn.textContent = 'Mengunggah…';
   try {
     const result = await bulkCreate(rows);
-    $('csvResult').classList.remove('hidden');
-    let html = `<div><b>Berhasil:</b> <span class="ok">${result.total_created}</span> · <b>Gagal:</b> <span class="fail">${result.total_failed}</span></div>`;
+    const box = $('csvResult');
+    box.classList.remove('hidden');
+    let html = `<div class="result-header">Berhasil: <span style="color:#15803d">${result.total_created}</span> · Gagal: <span style="color:#b91c1c">${result.total_failed}</span></div>`;
     if (result.created.length) {
-      html += '<div style="margin-top:8px"><b>Dibuat:</b><ul>';
-      result.created.forEach(c => { html += `<li class="ok">${c.email} · ${c.school_name} · ${c.role}</li>`; });
-      html += '</ul></div>';
+      html += `<div style="margin-top:8px;font-weight:600;font-size:12px">Dibuat:</div><ul class="result-list">`;
+      result.created.forEach(c => { html += `<li class="ok">${esc(c.email)} · ${esc(c.school_name)} · ${esc(c.role)}</li>`; });
+      html += '</ul>';
     }
     if (result.failed.length) {
-      html += '<div style="margin-top:8px"><b>Gagal:</b><ul>';
-      result.failed.forEach(f => { html += `<li class="fail">${f.email} — ${f.error}</li>`; });
-      html += '</ul></div>';
+      html += `<div style="margin-top:8px;font-weight:600;font-size:12px">Gagal:</div><ul class="result-list">`;
+      result.failed.forEach(f => { html += `<li class="fail">${esc(f.email)} — ${esc(f.error)}</li>`; });
+      html += '</ul>';
     }
-    $('csvResult').innerHTML = html;
+    box.innerHTML = html;
+    if (result.total_created > 0) toast('Berhasil', `${result.total_created} user dibuat`, 'success');
+    if (result.total_failed > 0) toast('Sebagian gagal', `${result.total_failed} baris ditolak`, 'warning');
     await refresh();
   } catch (e) {
-    alert('Gagal upload: ' + e.message);
+    toast('Gagal upload', e.message, 'error');
   } finally {
     btn.disabled = false; btn.textContent = 'Upload CSV';
   }

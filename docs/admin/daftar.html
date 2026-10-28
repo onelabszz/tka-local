@@ -9,8 +9,8 @@
 </head>
 <body>
 <div class="login-wrap">
-  <div class="card">
-    <div class="brand">TKA</div>
+  <div class="login-card">
+    <div class="login-brand">TKA</div>
     <h1>Daftar Akun Guru</h1>
     <p class="sub">Setelah daftar, tunggu persetujuan admin</p>
     <form id="f">
@@ -20,7 +20,7 @@
       <input id="pass" type="password" required minlength="6" autocomplete="new-password">
       <label>Nama Sekolah</label>
       <input id="school" type="text" required placeholder="SD Negeri 1 Wonogiri">
-      <button id="btn" type="submit" class="btn-primary">Daftar</button>
+      <button id="btn" type="submit" class="btn-primary btn-block">Daftar</button>
       <p id="err" class="err"></p>
       <p id="ok" class="err" style="color:#15803d"></p>
     </form>
@@ -53,15 +53,11 @@ form.addEventListener('submit', async (e) => {
     const sb = await getClient();
     const { data, error } = await sb.auth.signUp({ email, password });
     if (error) { errEl.textContent = error.message; return; }
-    if (!data.user) {
-      errEl.textContent = 'Pendaftaran gagal. Coba lagi.';
-      return;
-    }
+    if (!data.user) { errEl.textContent = 'Pendaftaran gagal. Coba lagi.'; return; }
 
-    // Insert profil sebagai pending
     const { error: profErr } = await sb.from('local_profiles').insert({
       id: data.user.id,
-      email: email,
+      email,
       school_name: school,
       status: 'pending',
       role: 'teacher',
@@ -75,7 +71,6 @@ form.addEventListener('submit', async (e) => {
 
     okEl.textContent = 'Pendaftaran berhasil. Tunggu persetujuan admin, lalu masuk kembali.';
     form.reset();
-    // Sign out agar tidak auto-login sebagai pending
     setTimeout(async () => {
       await sb.auth.signOut();
       setTimeout(() => { window.location.href = './index.html'; }, 1500);
