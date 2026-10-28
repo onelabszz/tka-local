@@ -419,3 +419,13 @@ enabled = true
 enabled = true
 verify_jwt = false
 entrypoint = "/home/ekwannugroho/tka-local/supabase/functions/admin-bulk-create/index.ts"
+
+[functions.admin-reset-password]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/admin-reset-password/index.ts"
+
+[functions.admin-delete-user]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/admin-delete-user/index.ts"

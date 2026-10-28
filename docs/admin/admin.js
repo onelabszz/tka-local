@@ -19,8 +19,15 @@ export async function requireAdmin() {
   if (!session) return null;
   const { data: profile } = await sb.from('local_profiles')
     .select('role, status, school_name, email').eq('id', session.user.id).maybeSingle();
-  if (!profile || profile.role !== 'admin' || profile.status !== 'active') return null;
+  if (!profile || !['admin', 'superadmin'].includes(profile.role) || profile.status !== 'active') return null;
   return { user: session.user, profile };
+}
+
+export async function requireSuperadmin() {
+  const a = await requireAdmin();
+  if (!a) return null;
+  if (a.profile.role !== 'superadmin') return null;
+  return a;
 }
 
 export async function logout() {
@@ -50,20 +57,46 @@ export async function deleteProfile(id) {
   if (error) throw error;
 }
 
-export async function bulkCreate(rows) {
+async function getAccessToken() {
   const sb = await getClient();
   const { data: { session } } = await sb.auth.getSession();
   if (!session) throw new Error('No session');
+  return session.access_token;
+}
+
+export async function bulkCreate(rows) {
+  const token = await getAccessToken();
   const r = await fetch(SUPABASE_URL + '/functions/v1/admin-bulk-create', {
     method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + session.access_token,
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
     body: JSON.stringify({ rows })
   });
   const d = await r.json();
   if (!r.ok) throw new Error(d.error || 'Bulk create gagal');
+  return d;
+}
+
+export async function resetPassword(userId, newPassword) {
+  const token = await getAccessToken();
+  const r = await fetch(SUPABASE_URL + '/functions/v1/admin-reset-password', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, newPassword })
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error || 'Reset password gagal');
+  return d;
+}
+
+export async function deleteUser(userId) {
+  const token = await getAccessToken();
+  const r = await fetch(SUPABASE_URL + '/functions/v1/admin-delete-user', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId })
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error || 'Delete user gagal');
   return d;
 }
 
@@ -111,4 +144,11 @@ export function isExpired(iso) {
 
 export function addOneYear() {
   return new Date(Date.now() + 365*24*3600*1000).toISOString();
+}
+
+export function randomPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let p = '';
+  for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
+  return p;
 }

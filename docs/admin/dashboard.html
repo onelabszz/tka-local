@@ -14,7 +14,7 @@
     <div class="topbar-left">
       <div class="brand-small">TKA</div>
       <div>
-        <div class="topbar-title">Admin Panel</div>
+        <div class="topbar-title">Admin Panel <span id="roleBadge"></span></div>
         <div class="topbar-sub" id="adminEmail">-</div>
       </div>
     </div>
@@ -37,6 +37,7 @@
           <button class="tab" data-filter="active">Aktif</button>
           <button class="tab" data-filter="suspended">Suspended</button>
           <button class="tab" data-filter="expired">Expired</button>
+          <button class="tab superadmin-only" data-filter="superadmin" style="display:none">Superadmin</button>
         </div>
         <input id="searchInput" class="search-input" type="search" placeholder="Cari email / sekolah…">
       </div>
@@ -46,13 +47,14 @@
             <tr>
               <th>Email</th>
               <th>Sekolah</th>
+              <th>Role</th>
               <th>Status</th>
               <th>Expire</th>
               <th class="right">Aksi</th>
             </tr>
           </thead>
           <tbody id="tbody">
-            <tr><td colspan="5" class="empty">Memuat…</td></tr>
+            <tr><td colspan="6" class="empty">Memuat…</td></tr>
           </tbody>
         </table>
       </div>
@@ -60,42 +62,157 @@
 
     <section class="panel">
       <div class="panel-header">
-        <h2 class="panel-title">Upload CSV — Bulk Create User</h2>
+        <h2 class="panel-title">Buat User Baru</h2>
       </div>
       <div class="panel-body">
-        <p class="hint">
-          Format: <code>email,password,school_name,expires_at,role</code><br>
-          <code>expires_at</code> kosong = default 1 tahun. <code>role</code> kosong = teacher.
-        </p>
-        <textarea id="csvInput" class="csv-input" rows="6" placeholder="email,password,school_name,expires_at,role
+        <div class="create-tabs">
+          <button class="create-tab active" data-mode="manual">Manual</button>
+          <button class="create-tab" data-mode="csv">CSV Bulk</button>
+        </div>
+
+        <div id="manualPanel">
+          <div class="form-row">
+            <div>
+              <label>Email</label>
+              <input id="mEmail" type="email" placeholder="guru@sekolah.sch.id">
+            </div>
+            <div>
+              <label>Password</label>
+              <input id="mPassword" type="text" placeholder="minimal 6 karakter">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Nama Sekolah</label>
+              <input id="mSchool" type="text" placeholder="SD Negeri 1 Wonogiri">
+            </div>
+            <div>
+              <label>Expire</label>
+              <input id="mExpire" type="date">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Role</label>
+              <select id="mRole">
+                <option value="teacher">Teacher (User)</option>
+                <option value="admin" class="superadmin-only" style="display:none">Admin</option>
+              </select>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button id="mGenerate" class="btn-secondary" style="width:100%">Generate Password</button>
+            </div>
+          </div>
+          <div class="row-actions">
+            <button id="mSubmit" class="btn-primary" style="width:auto;padding:10px 24px">Buat User</button>
+          </div>
+          <div id="mResult" class="csv-result hidden"></div>
+        </div>
+
+        <div id="csvPanel" class="hidden">
+          <p class="hint">
+            Format: <code>email,password,school_name,expires_at,role</code><br>
+            <code>expires_at</code> kosong = 1 tahun. <code>role</code> kosong = teacher.
+          </p>
+          <textarea id="csvInput" class="csv-input" rows="6" placeholder="email,password,school_name,expires_at,role
 guru1@sdn1.sch.id,Pass123!,SD Negeri 1,,
 guru2@sdn2.sch.id,Pass456!,SD Negeri 2,2027-12-31,teacher"></textarea>
-        <div class="row-actions">
-          <input type="file" id="csvFile" accept=".csv,text/csv">
-          <button id="uploadBtn" class="btn-primary" style="width:auto;padding:10px 20px">Upload CSV</button>
+          <div class="row-actions">
+            <input type="file" id="csvFile" accept=".csv,text/csv">
+            <button id="uploadBtn" class="btn-primary" style="width:auto;padding:10px 20px">Upload CSV</button>
+          </div>
+          <div id="csvResult" class="csv-result hidden"></div>
         </div>
-        <div id="csvResult" class="csv-result hidden"></div>
       </div>
     </section>
   </main>
 </div>
 
+<!-- Modal: Reset Password -->
+<div id="modalReset" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Reset Password</h3>
+      <button class="modal-close" data-close="reset">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint">Reset password untuk: <b id="resetEmail">-</b></p>
+      <label>Password Baru</label>
+      <input id="resetPassword" type="text" placeholder="minimal 6 karakter">
+      <button id="resetGenerate" class="btn-secondary" style="width:100%;margin-bottom:14px">Generate Password</button>
+      <p class="hint-inline">Password akan tampil di bawah setelah berhasil. Salin dan kirim ke guru.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-close="reset">Batal</button>
+      <button id="resetSubmit" class="btn-primary" style="width:auto;padding:10px 20px">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit User -->
+<div id="modalEdit" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit User</h3>
+      <button class="modal-close" data-close="edit">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint">Edit: <b id="editEmail">-</b></p>
+      <label>Nama Sekolah</label>
+      <input id="editSchool" type="text">
+      <label>Status</label>
+      <select id="editStatus">
+        <option value="active">Aktif</option>
+        <option value="pending">Pending</option>
+        <option value="suspended">Suspended</option>
+      </select>
+      <label>Role</label>
+      <select id="editRole">
+        <option value="teacher">Teacher (User)</option>
+        <option value="admin">Admin</option>
+        <option value="superadmin" class="superadmin-only" style="display:none">Superadmin</option>
+      </select>
+      <label>Expire</label>
+      <input id="editExpire" type="date">
+      <p class="hint-inline">Kosongkan expire = tanpa masa aktif.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-close="edit">Batal</button>
+      <button id="editSubmit" class="btn-primary" style="width:auto;padding:10px 20px">Simpan</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import {
   getClient, requireAdmin, logout, listProfiles,
-  updateProfile, deleteProfile, bulkCreate, parseCSV,
-  fmtDate, isExpired, addOneYear
+  updateProfile, bulkCreate, resetPassword, deleteUser,
+  parseCSV, fmtDate, isExpired, addOneYear, randomPassword
 } from './admin.js';
 
 const $ = id => document.getElementById(id);
 let allProfiles = [];
 let currentFilter = 'all';
 let currentSearch = '';
+let isSuper = false;
+let currentUser = null;
 
 (async () => {
   const a = await requireAdmin();
   if (!a) { window.location.href = './index.html'; return; }
-  $('adminEmail').textContent = a.user.email;
+  currentUser = a.user;
+  isSuper = a.profile.role === 'superadmin';
+  $('adminEmail').textContent = a.user.email + ' · ' + a.profile.school_name;
+
+  $('roleBadge').innerHTML = isSuper
+    ? '<span class="badge badge-superadmin" style="margin-left:6px">SUPERADMIN</span>'
+    : '<span class="badge badge-admin" style="margin-left:6px">ADMIN</span>';
+
+  if (isSuper) {
+    document.querySelectorAll('.superadmin-only').forEach(el => { el.style.display = ''; });
+  }
+
   $('loading').classList.add('hidden');
   $('app').classList.remove('hidden');
   await refresh();
@@ -124,6 +241,8 @@ function filtered() {
   return allProfiles.filter(p => {
     if (currentFilter === 'expired') {
       if (!(p.expires_at && isExpired(p.expires_at))) return false;
+    } else if (currentFilter === 'superadmin') {
+      if (p.role !== 'superadmin') return false;
     } else if (currentFilter !== 'all') {
       if (p.status !== currentFilter) return false;
     }
@@ -145,19 +264,36 @@ function statusBadge(p) {
   return '<span class="badge">' + p.status + '</span>';
 }
 
+function roleBadge(role) {
+  if (role === 'superadmin') return '<span class="badge badge-superadmin">SUPERADMIN</span>';
+  if (role === 'admin') return '<span class="badge badge-admin">ADMIN</span>';
+  return '<span class="badge badge-teacher">TEACHER</span>';
+}
+
 function rowActions(p) {
+  const isSelf = p.id === currentUser.id;
+  const isSuperTarget = p.role === 'superadmin';
+  const canTouch = isSuper || !isSuperTarget;
+
   const btns = [];
-  if (p.status === 'pending') {
-    btns.push(`<button class="btn-sm success" data-act="approve" data-id="${p.id}">Approve</button>`);
+  if (canTouch) {
+    if (p.status === 'pending') {
+      btns.push(`<button class="btn-sm success" data-act="approve" data-id="${p.id}">Approve</button>`);
+    }
+    if (p.status === 'active') {
+      btns.push(`<button class="btn-sm warn" data-act="suspend" data-id="${p.id}">Suspend</button>`);
+    }
+    if (p.status === 'suspended') {
+      btns.push(`<button class="btn-sm success" data-act="activate" data-id="${p.id}">Aktifkan</button>`);
+    }
+    btns.push(`<button class="btn-sm" data-act="edit" data-id="${p.id}">Edit</button>`);
+    btns.push(`<button class="btn-sm" data-act="reset-pass" data-id="${p.id}">Reset Pass</button>`);
+    if (!isSelf) {
+      btns.push(`<button class="btn-sm danger" data-act="delete" data-id="${p.id}">Hapus</button>`);
+    }
+  } else {
+    btns.push(`<span class="hint" style="font-size:11px;color:#9ca3af">(read-only)</span>`);
   }
-  if (p.status === 'active') {
-    btns.push(`<button class="btn-sm warn" data-act="suspend" data-id="${p.id}">Suspend</button>`);
-  }
-  if (p.status === 'suspended') {
-    btns.push(`<button class="btn-sm success" data-act="activate" data-id="${p.id}">Aktifkan</button>`);
-  }
-  btns.push(`<button class="btn-sm" data-act="extend" data-id="${p.id}">+1 Tahun</button>`);
-  btns.push(`<button class="btn-sm danger" data-act="delete" data-id="${p.id}">Hapus</button>`);
   return btns.join('');
 }
 
@@ -165,13 +301,14 @@ function renderTable() {
   const list = filtered();
   const tbody = $('tbody');
   if (list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Tidak ada data</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Tidak ada data</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(p => `
     <tr>
       <td>${p.email || '-'}</td>
       <td>${p.school_name || '-'}</td>
+      <td>${roleBadge(p.role)}</td>
       <td>${statusBadge(p)}</td>
       <td>${fmtDate(p.expires_at)}</td>
       <td class="right"><div class="actions-cell">${rowActions(p)}</div></td>
@@ -179,6 +316,7 @@ function renderTable() {
   `).join('');
 }
 
+// ============ Actions ============
 $('tbody').addEventListener('click', async (e) => {
   const btn = e.target.closest('button[data-act]');
   if (!btn) return;
@@ -190,22 +328,111 @@ $('tbody').addEventListener('click', async (e) => {
   try {
     if (act === 'approve') {
       await updateProfile(id, { status: 'active', expires_at: addOneYear() });
+      await refresh();
     } else if (act === 'suspend') {
       await updateProfile(id, { status: 'suspended' });
+      await refresh();
     } else if (act === 'activate') {
       await updateProfile(id, { status: 'active' });
-    } else if (act === 'extend') {
-      await updateProfile(id, { expires_at: addOneYear() });
+      await refresh();
+    } else if (act === 'edit') {
+      openEdit(p);
+    } else if (act === 'reset-pass') {
+      openReset(p);
     } else if (act === 'delete') {
-      if (!confirm(`Hapus profil ${p.email}? Profil akan hilang, tapi akun auth tetap ada di Supabase Studio.`)) return;
-      await deleteProfile(id);
+      if (!confirm(`Hapus user ${p.email}?\n\nAkun akan dihapus total dari auth + profil. Tindakan ini tidak bisa dibatalkan.`)) return;
+      try {
+        await deleteUser(id);
+        await refresh();
+      } catch (err) {
+        alert('Gagal hapus: ' + err.message);
+      }
     }
-    await refresh();
   } catch (ex) {
     alert('Gagal: ' + ex.message);
   }
 });
 
+// ============ Reset Password Modal ============
+let resetTargetId = null;
+function openReset(p) {
+  resetTargetId = p.id;
+  $('resetEmail').textContent = p.email;
+  $('resetPassword').value = '';
+  $('modalReset').classList.remove('hidden');
+}
+$('resetGenerate').addEventListener('click', () => {
+  $('resetPassword').value = randomPassword();
+});
+$('resetSubmit').addEventListener('click', async () => {
+  const pass = $('resetPassword').value;
+  if (pass.length < 6) return alert('Password minimal 6 karakter');
+  const btn = $('resetSubmit');
+  btn.disabled = true; btn.textContent = 'Memproses…';
+  try {
+    const r = await resetPassword(resetTargetId, pass);
+    $('modalReset').classList.add('hidden');
+    alert(`✅ Password berhasil direset untuk ${r.email}\n\nPassword baru: ${pass}\n\nSalin dan kirim ke guru via WA/pesan.`);
+  } catch (e) {
+    alert('Gagal reset: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Reset';
+  }
+});
+
+// ============ Edit Modal ============
+let editTargetId = null;
+function openEdit(p) {
+  editTargetId = p.id;
+  $('editEmail').textContent = p.email;
+  $('editSchool').value = p.school_name || '';
+  $('editStatus').value = p.status;
+  $('editRole').value = p.role;
+  $('editExpire').value = p.expires_at ? p.expires_at.slice(0, 10) : '';
+  // Non-superadmin tidak boleh ubah role ke/dari superadmin
+  const roleSel = $('editRole');
+  Array.from(roleSel.options).forEach(opt => {
+    if (opt.value === 'superadmin') opt.disabled = !isSuper;
+  });
+  if (!isSuper && p.role === 'superadmin') {
+    roleSel.disabled = true;
+  } else {
+    roleSel.disabled = false;
+  }
+  $('modalEdit').classList.remove('hidden');
+}
+$('editSubmit').addEventListener('click', async () => {
+  const btn = $('editSubmit');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+  try {
+    const updates = {
+      school_name: $('editSchool').value.trim(),
+      status: $('editStatus').value,
+      role: $('editRole').value,
+      expires_at: $('editExpire').value ? new Date($('editExpire').value + 'T23:59:59').toISOString() : null
+    };
+    await updateProfile(editTargetId, updates);
+    $('modalEdit').classList.add('hidden');
+    await refresh();
+  } catch (e) {
+    alert('Gagal simpan: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Simpan';
+  }
+});
+
+// Tutup modal
+document.querySelectorAll('[data-close]').forEach(el => {
+  el.addEventListener('click', () => {
+    const which = el.dataset.close;
+    if (which === 'reset') $('modalReset').classList.add('hidden');
+    if (which === 'edit') $('modalEdit').classList.add('hidden');
+  });
+});
+$('modalReset').addEventListener('click', (e) => { if (e.target === $('modalReset')) $('modalReset').classList.add('hidden'); });
+$('modalEdit').addEventListener('click', (e) => { if (e.target === $('modalEdit')) $('modalEdit').classList.add('hidden'); });
+
+// ============ Filter & Search ============
 $('filterTabs').addEventListener('click', (e) => {
   const t = e.target.closest('.tab');
   if (!t) return;
@@ -220,20 +447,71 @@ $('searchInput').addEventListener('input', (e) => {
   renderTable();
 });
 
-// CSV file load
+// ============ Create Tabs ============
+document.querySelectorAll('.create-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.create-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const mode = t.dataset.mode;
+    $('manualPanel').classList.toggle('hidden', mode !== 'manual');
+    $('csvPanel').classList.toggle('hidden', mode !== 'csv');
+  });
+});
+
+// ============ Manual Create ============
+$('mGenerate').addEventListener('click', () => {
+  $('mPassword').value = randomPassword();
+});
+$('mSubmit').addEventListener('click', async () => {
+  const email = $('mEmail').value.trim().toLowerCase();
+  const password = $('mPassword').value;
+  const school = $('mSchool').value.trim();
+  const expire = $('mExpire').value;
+  const role = $('mRole').value;
+
+  if (!email || !email.includes('@')) return alert('Email tidak valid');
+  if (password.length < 6) return alert('Password minimal 6 karakter');
+  if (!school) return alert('Nama sekolah wajib diisi');
+
+  const btn = $('mSubmit');
+  btn.disabled = true; btn.textContent = 'Membuat…';
+  try {
+    const r = await bulkCreate([{
+      email, password, school_name: school,
+      expires_at: expire ? new Date(expire + 'T23:59:59').toISOString() : '',
+      role
+    }]);
+    if (r.total_created === 0) {
+      const err = r.failed[0]?.error || 'Gagal membuat user';
+      alert('Gagal: ' + err);
+    } else {
+      $('mResult').classList.remove('hidden');
+      $('mResult').innerHTML =
+        `<div class="ok">✅ User dibuat: <b>${email}</b></div>` +
+        `<div style="margin-top:8px">Password: <code>${password}</code></div>` +
+        `<div class="hint" style="margin-top:6px">Salin dan kirim ke guru.</div>`;
+      $('mEmail').value = ''; $('mPassword').value = '';
+      $('mSchool').value = ''; $('mExpire').value = '';
+      await refresh();
+    }
+  } catch (e) {
+    alert('Gagal: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Buat User';
+  }
+});
+
+// ============ CSV ============
 $('csvFile').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  const text = await file.text();
-  $('csvInput').value = text;
+  $('csvInput').value = await file.text();
 });
-
-// CSV upload
 $('uploadBtn').addEventListener('click', async () => {
   const raw = $('csvInput').value.trim();
-  if (!raw) { alert('CSV kosong'); return; }
+  if (!raw) return alert('CSV kosong');
   const rows = parseCSV(raw);
-  if (rows.length === 0) { alert('Tidak ada baris data'); return; }
+  if (rows.length === 0) return alert('Tidak ada baris data');
   if (!confirm(`Upload ${rows.length} baris user?`)) return;
 
   const btn = $('uploadBtn');
@@ -244,7 +522,7 @@ $('uploadBtn').addEventListener('click', async () => {
     let html = `<div><b>Berhasil:</b> <span class="ok">${result.total_created}</span> · <b>Gagal:</b> <span class="fail">${result.total_failed}</span></div>`;
     if (result.created.length) {
       html += '<div style="margin-top:8px"><b>Dibuat:</b><ul>';
-      result.created.forEach(c => { html += `<li class="ok">${c.email} · ${c.school_name}</li>`; });
+      result.created.forEach(c => { html += `<li class="ok">${c.email} · ${c.school_name} · ${c.role}</li>`; });
       html += '</ul></div>';
     }
     if (result.failed.length) {

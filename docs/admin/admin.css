@@ -190,3 +190,61 @@ a:hover { text-decoration: underline; }
   .search-input { min-width: 100%; }
   .panel-header { flex-direction: column; align-items: stretch; }
 }
+
+/* Role badges */
+.badge-superadmin { background: #ede9fe; color: #6d28d9; }
+.badge-admin { background: #dbeafe; color: #1d4ed8; }
+.badge-teacher { background: #f3f4f6; color: #4b5563; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; z-index: 1000;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  background: #fff; border-radius: 12px; max-width: 500px; width: 100%;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+}
+.modal-header {
+  padding: 18px 22px; border-bottom: 1px solid #e5e7eb;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 16px; font-weight: 700; }
+.modal-close {
+  font-size: 24px; color: #9ca3af; line-height: 1;
+  padding: 4px 10px; border-radius: 6px;
+}
+.modal-close:hover { background: #f3f4f6; color: #111827; }
+.modal-body { padding: 20px 22px; }
+.modal-footer {
+  padding: 14px 22px; border-top: 1px solid #e5e7eb;
+  display: flex; gap: 10px; justify-content: flex-end;
+}
+.modal label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #374151; }
+.modal input, .modal select {
+  width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb;
+  border-radius: 8px; font-size: 14px; margin-bottom: 14px;
+}
+.modal input:focus, .modal select:focus {
+  outline: none; border-color: #003580; box-shadow: 0 0 0 3px #dbeafe;
+}
+.modal .hint-inline { font-size: 12px; color: #6b7280; margin-top: -8px; margin-bottom: 14px; }
+.btn-secondary {
+  padding: 10px 18px; background: #fff; color: #374151;
+  border: 1.5px solid #e5e7eb; border-radius: 8px; font-weight: 600; font-size: 14px;
+}
+.btn-secondary:hover { background: #f9fafb; }
+
+/* Create user tabs */
+.create-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+.create-tab {
+  padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600;
+  color: #6b7280; background: #f3f4f6;
+}
+.create-tab:hover { background: #e5e7eb; }
+.create-tab.active { background: #003580; color: #fff; }
+
+.form-row { display: flex; gap: 12px; }
+.form-row > * { flex: 1; }
