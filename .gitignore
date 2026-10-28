@@ -32,6 +32,3 @@ Thumbs.db
 # Build output
 dist/
 *.zip
-
-# Supabase CLI cache
-supabase/.temp/
