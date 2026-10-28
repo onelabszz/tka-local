@@ -62,6 +62,8 @@ jobs:
           
           Copy-Item node.exe dist\
           Copy-Item server.js dist\
+          Copy-Item auth.js dist\
+          Copy-Item config.json dist\
           Copy-Item guru.html dist\
           Copy-Item package.json dist\
           Copy-Item start.bat dist\
