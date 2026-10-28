@@ -15,6 +15,7 @@ const Database = require('better-sqlite3');
 const multer   = require('multer');
 const archiver = require('archiver');
 
+const auth = require('./auth');
 const app = express();
 const PORT = 3000;
 let SERVER_IP = 'localhost';
@@ -702,8 +703,43 @@ app.get('/api/public/sekolah', (req, res) => {
   }
 });
 
-app.get('/guru', (req, res) => {
+
+// ===== Auth Level 3 =====
+app.post('/api/auth/login', express.json(), async (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email || !password) return res.status(400).json({ error: 'Email & password wajib' });
+  try {
+    const r = await auth.login(email, password);
+    if (!r.ok) return res.status(401).json({ error: r.error });
+    res.json({ ok: true, school_name: r.session.school_name, email: r.session.email });
+  } catch (e) {
+    res.status(500).json({ error: 'Server error: ' + e.message });
+  }
+});
+
+app.post('/api/auth/logout', async (req, res) => {
+  try { await auth.logout(); res.json({ ok: true }); }
+  catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/auth/check', async (req, res) => {
+  try {
+    const r = await auth.check();
+    if (!r.ok) return res.json({ ok: false, reason: r.reason, error: r.error });
+    res.json({ ok: true, school_name: r.profile.school_name, offline: !!r.offline });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(__dirname + '/public/login.html');
+});
+
+app.get('/guru', async (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Akses hanya dari laptop guru');
+  const __authCheck = await auth.check();
+  if (!__authCheck.ok) return res.redirect('/login');
   const sekolah = db.prepare("SELECT setup_done FROM sekolah WHERE id=1").get();
   if (sekolah && sekolah.setup_done === 0) {
     return res.redirect('/setup');
@@ -711,8 +747,10 @@ app.get('/guru', (req, res) => {
   res.sendFile(path.join(__dirname, 'guru.html'));
 });
 
-app.get('/setup', (req, res) => {
+app.get('/setup', async (req, res) => {
   if (!isLocal(req)) return res.status(403).send('Akses hanya dari laptop guru');
+  const __authCheck = await auth.check();
+  if (!__authCheck.ok) return res.redirect('/login');
   res.sendFile(path.join(__dirname, 'public', 'setup.html'));
 });
 app.get('/panduan', (req, res) => {

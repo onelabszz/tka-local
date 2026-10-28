@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — TKA Local Host</title>
+<link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="card">
+    <div class="brand">TKA</div>
+    <h1>Admin Panel</h1>
+    <p class="sub">Masuk untuk kelola akun TKA Local Host</p>
+    <form id="f">
+      <label>Email</label>
+      <input id="email" type="email" required autocomplete="username">
+      <label>Password</label>
+      <input id="pass" type="password" required autocomplete="current-password">
+      <button id="btn" type="submit" class="btn-primary">Masuk</button>
+      <p id="err" class="err"></p>
+    </form>
+    <p class="help"><a href="./daftar.html">Daftar akun guru baru</a></p>
+  </div>
+</div>
+<script type="module">
+import { getClient, requireAdmin } from './admin.js';
+const form = document.getElementById('f');
+const btn = document.getElementById('btn');
+const errEl = document.getElementById('err');
+
+(async () => {
+  const a = await requireAdmin();
+  if (a) window.location.href = './dashboard.html';
+})();
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errEl.textContent = '';
+  btn.disabled = true; btn.textContent = 'Memverifikasi…';
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('pass').value;
+  try {
+    const sb = await getClient();
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { errEl.textContent = error.message; return; }
+    const a = await requireAdmin();
+    if (!a) {
+      await sb.auth.signOut();
+      errEl.textContent = 'Akun ini bukan admin aktif. Hubungi superadmin.';
+      return;
+    }
+    window.location.href = './dashboard.html';
+  } catch (ex) {
+    errEl.textContent = 'Gagal: ' + ex.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Masuk';
+  }
+});
+</script>
+</body>
+</html>

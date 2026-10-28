@@ -12,14 +12,10 @@ backups/
 tka.log
 tka.log.*
 
-# Paket soal (data pribadi sekolah) — JANGAN PUSH
+# Paket soal (data pribadi sekolah)
 paket/*.json
 paket/gambar/*
-!paket/contoh.json
 !paket/contoh-tka.json
-!paket/.gitkeep
-!paket/gambar/.gitkeep
-
 
 # File backup editor
 *.bak

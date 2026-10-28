@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard Admin — TKA Local Host</title>
+<link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+<div id="loading" class="loading">Memuat…</div>
+
+<div id="app" class="hidden">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand-small">TKA</div>
+      <div>
+        <div class="topbar-title">Admin Panel</div>
+        <div class="topbar-sub" id="adminEmail">-</div>
+      </div>
+    </div>
+    <button id="logoutBtn" class="btn-ghost">Keluar</button>
+  </header>
+
+  <main class="container">
+    <section class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="stTotal">0</div><div class="stat-label">Total</div></div>
+      <div class="stat-card"><div class="stat-num text-success" id="stActive">0</div><div class="stat-label">Aktif</div></div>
+      <div class="stat-card"><div class="stat-num text-warning" id="stPending">0</div><div class="stat-label">Pending</div></div>
+      <div class="stat-card"><div class="stat-num text-danger" id="stSuspended">0</div><div class="stat-label">Suspended</div></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div class="tabs" id="filterTabs">
+          <button class="tab active" data-filter="all">Semua</button>
+          <button class="tab" data-filter="pending">Pending</button>
+          <button class="tab" data-filter="active">Aktif</button>
+          <button class="tab" data-filter="suspended">Suspended</button>
+          <button class="tab" data-filter="expired">Expired</button>
+        </div>
+        <input id="searchInput" class="search-input" type="search" placeholder="Cari email / sekolah…">
+      </div>
+      <div class="panel-body">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Sekolah</th>
+              <th>Status</th>
+              <th>Expire</th>
+              <th class="right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="5" class="empty">Memuat…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Upload CSV — Bulk Create User</h2>
+      </div>
+      <div class="panel-body">
+        <p class="hint">
+          Format: <code>email,password,school_name,expires_at,role</code><br>
+          <code>expires_at</code> kosong = default 1 tahun. <code>role</code> kosong = teacher.
+        </p>
+        <textarea id="csvInput" class="csv-input" rows="6" placeholder="email,password,school_name,expires_at,role
+guru1@sdn1.sch.id,Pass123!,SD Negeri 1,,
+guru2@sdn2.sch.id,Pass456!,SD Negeri 2,2027-12-31,teacher"></textarea>
+        <div class="row-actions">
+          <input type="file" id="csvFile" accept=".csv,text/csv">
+          <button id="uploadBtn" class="btn-primary" style="width:auto;padding:10px 20px">Upload CSV</button>
+        </div>
+        <div id="csvResult" class="csv-result hidden"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import {
+  getClient, requireAdmin, logout, listProfiles,
+  updateProfile, deleteProfile, bulkCreate, parseCSV,
+  fmtDate, isExpired, addOneYear
+} from './admin.js';
+
+const $ = id => document.getElementById(id);
+let allProfiles = [];
+let currentFilter = 'all';
+let currentSearch = '';
+
+(async () => {
+  const a = await requireAdmin();
+  if (!a) { window.location.href = './index.html'; return; }
+  $('adminEmail').textContent = a.user.email;
+  $('loading').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  await refresh();
+})();
+
+$('logoutBtn').addEventListener('click', logout);
+
+async function refresh() {
+  try {
+    allProfiles = await listProfiles();
+    renderStats();
+    renderTable();
+  } catch (e) {
+    alert('Gagal memuat: ' + e.message);
+  }
+}
+
+function renderStats() {
+  $('stTotal').textContent = allProfiles.length;
+  $('stActive').textContent = allProfiles.filter(p => p.status === 'active' && !isExpired(p.expires_at)).length;
+  $('stPending').textContent = allProfiles.filter(p => p.status === 'pending').length;
+  $('stSuspended').textContent = allProfiles.filter(p => p.status === 'suspended').length;
+}
+
+function filtered() {
+  return allProfiles.filter(p => {
+    if (currentFilter === 'expired') {
+      if (!(p.expires_at && isExpired(p.expires_at))) return false;
+    } else if (currentFilter !== 'all') {
+      if (p.status !== currentFilter) return false;
+    }
+    if (currentSearch) {
+      const s = currentSearch.toLowerCase();
+      if (!((p.email || '').toLowerCase().includes(s) || (p.school_name || '').toLowerCase().includes(s))) return false;
+    }
+    return true;
+  });
+}
+
+function statusBadge(p) {
+  if (p.expires_at && isExpired(p.expires_at) && p.status === 'active') {
+    return '<span class="badge badge-expired">EXPIRED</span>';
+  }
+  if (p.status === 'active') return '<span class="badge badge-active">AKTIF</span>';
+  if (p.status === 'pending') return '<span class="badge badge-pending">PENDING</span>';
+  if (p.status === 'suspended') return '<span class="badge badge-suspended">SUSPENDED</span>';
+  return '<span class="badge">' + p.status + '</span>';
+}
+
+function rowActions(p) {
+  const btns = [];
+  if (p.status === 'pending') {
+    btns.push(`<button class="btn-sm success" data-act="approve" data-id="${p.id}">Approve</button>`);
+  }
+  if (p.status === 'active') {
+    btns.push(`<button class="btn-sm warn" data-act="suspend" data-id="${p.id}">Suspend</button>`);
+  }
+  if (p.status === 'suspended') {
+    btns.push(`<button class="btn-sm success" data-act="activate" data-id="${p.id}">Aktifkan</button>`);
+  }
+  btns.push(`<button class="btn-sm" data-act="extend" data-id="${p.id}">+1 Tahun</button>`);
+  btns.push(`<button class="btn-sm danger" data-act="delete" data-id="${p.id}">Hapus</button>`);
+  return btns.join('');
+}
+
+function renderTable() {
+  const list = filtered();
+  const tbody = $('tbody');
+  if (list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Tidak ada data</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(p => `
+    <tr>
+      <td>${p.email || '-'}</td>
+      <td>${p.school_name || '-'}</td>
+      <td>${statusBadge(p)}</td>
+      <td>${fmtDate(p.expires_at)}</td>
+      <td class="right"><div class="actions-cell">${rowActions(p)}</div></td>
+    </tr>
+  `).join('');
+}
+
+$('tbody').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  const p = allProfiles.find(x => x.id === id);
+  if (!p) return;
+
+  try {
+    if (act === 'approve') {
+      await updateProfile(id, { status: 'active', expires_at: addOneYear() });
+    } else if (act === 'suspend') {
+      await updateProfile(id, { status: 'suspended' });
+    } else if (act === 'activate') {
+      await updateProfile(id, { status: 'active' });
+    } else if (act === 'extend') {
+      await updateProfile(id, { expires_at: addOneYear() });
+    } else if (act === 'delete') {
+      if (!confirm(`Hapus profil ${p.email}? Profil akan hilang, tapi akun auth tetap ada di Supabase Studio.`)) return;
+      await deleteProfile(id);
+    }
+    await refresh();
+  } catch (ex) {
+    alert('Gagal: ' + ex.message);
+  }
+});
+
+$('filterTabs').addEventListener('click', (e) => {
+  const t = e.target.closest('.tab');
+  if (!t) return;
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  currentFilter = t.dataset.filter;
+  renderTable();
+});
+
+$('searchInput').addEventListener('input', (e) => {
+  currentSearch = e.target.value.trim();
+  renderTable();
+});
+
+// CSV file load
+$('csvFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  $('csvInput').value = text;
+});
+
+// CSV upload
+$('uploadBtn').addEventListener('click', async () => {
+  const raw = $('csvInput').value.trim();
+  if (!raw) { alert('CSV kosong'); return; }
+  const rows = parseCSV(raw);
+  if (rows.length === 0) { alert('Tidak ada baris data'); return; }
+  if (!confirm(`Upload ${rows.length} baris user?`)) return;
+
+  const btn = $('uploadBtn');
+  btn.disabled = true; btn.textContent = 'Mengunggah…';
+  try {
+    const result = await bulkCreate(rows);
+    $('csvResult').classList.remove('hidden');
+    let html = `<div><b>Berhasil:</b> <span class="ok">${result.total_created}</span> · <b>Gagal:</b> <span class="fail">${result.total_failed}</span></div>`;
+    if (result.created.length) {
+      html += '<div style="margin-top:8px"><b>Dibuat:</b><ul>';
+      result.created.forEach(c => { html += `<li class="ok">${c.email} · ${c.school_name}</li>`; });
+      html += '</ul></div>';
+    }
+    if (result.failed.length) {
+      html += '<div style="margin-top:8px"><b>Gagal:</b><ul>';
+      result.failed.forEach(f => { html += `<li class="fail">${f.email} — ${f.error}</li>`; });
+      html += '</ul></div>';
+    }
+    $('csvResult').innerHTML = html;
+    await refresh();
+  } catch (e) {
+    alert('Gagal upload: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Upload CSV';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Database
+tka.db
+tka.db-shm
+tka.db-wal
+
+# Backups & logs
+backups/
+tka.log
+tka.log.*
+
+# Paket soal (data pribadi sekolah)
+paket/*.json
+paket/gambar/*
+!paket/contoh-tka.json
+
+# File backup editor
+*.bak
+*.old
+*.before-*
+*.broken
+*~
+guru (Copy).html
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+*.zip
+paket/latihan-tka-sd-matematika.json

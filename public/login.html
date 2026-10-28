@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Masuk — TKA Local Host</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       background:#002654;min-height:100vh;display:flex;align-items:center;
+       justify-content:center;padding:20px;color:#111827}
+  .card{background:#fff;border-radius:12px;max-width:400px;width:100%;
+        padding:32px 28px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+  .brand{width:56px;height:56px;margin:0 auto 16px;background:#003580;color:#fff;
+         border-radius:12px;display:flex;align-items:center;justify-content:center;
+         font-weight:800;font-size:16px}
+  h1{font-size:20px;text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:#6b7280;font-size:13px;margin-bottom:24px}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#374151}
+  input{width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:8px;
+        font-size:15px;margin-bottom:14px;transition:all .15s}
+  input:focus{outline:none;border-color:#003580;box-shadow:0 0 0 3px #dbeafe}
+  button{width:100%;padding:13px;background:#003580;color:#fff;border:none;
+         border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s}
+  button:hover:not(:disabled){background:#002654}
+  button:disabled{background:#9ca3af;cursor:not-allowed}
+  .err{color:#b91c1c;font-size:13px;text-align:center;margin-top:12px;min-height:18px}
+  .footer{text-align:center;font-size:11px;color:#9ca3af;margin-top:20px;
+          padding-top:16px;border-top:1px solid #e5e7eb}
+  .help{text-align:center;font-size:12px;color:#6b7280;margin-top:12px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">TKA</div>
+    <h1>Aktivasi Aplikasi</h1>
+    <p class="sub">Masuk dengan akun sekolah Anda</p>
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input id="email" type="email" required autocomplete="username" placeholder="guru@sekolah.sch.id">
+      <label for="password">Password</label>
+      <input id="password" type="password" required autocomplete="current-password" placeholder="••••••••">
+      <button id="submitBtn" type="submit">Masuk</button>
+      <p id="err" class="err"></p>
+    </form>
+    <p class="help">Belum punya akun? Hubungi admin sekolah.</p>
+    <div class="footer">© 2026 Ekwan Nugroho · Wonogiri</div>
+  </div>
+<script>
+  const form = document.getElementById('loginForm');
+  const btn = document.getElementById('submitBtn');
+  const err = document.getElementById('err');
+  const emailEl = document.getElementById('email');
+  const passEl = document.getElementById('password');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Memverifikasi…';
+    try {
+      const r = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailEl.value.trim(),
+          password: passEl.value
+        })
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        err.textContent = d.error || 'Gagal masuk';
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+        return;
+      }
+      window.location.href = '/guru';
+    } catch (ex) {
+      err.textContent = 'Gagal terhubung ke server';
+      btn.disabled = false;
+      btn.textContent = 'Masuk';
+    }
+  });
+
+  // Auto-redirect jika session masih valid
+  fetch('/api/auth/check').then(r => r.json()).then(d => {
+    if (d.ok) window.location.href = '/guru';
+  }).catch(() => {});
+</script>
+</body>
+</html>
