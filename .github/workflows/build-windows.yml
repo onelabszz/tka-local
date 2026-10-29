@@ -67,6 +67,7 @@ jobs:
           Copy-Item guru.html dist\
           Copy-Item package.json dist\
           Copy-Item start.bat dist\
+          Copy-Item TKA-Silent.vbs dist\
           Copy-Item BACA-SAYA.txt dist\
           Copy-Item start.sh dist\
           Copy-Item install.sh dist\
